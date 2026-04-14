@@ -477,7 +477,53 @@ class TCGA_COAD_Simulator:
         
         return mfe
     
-    def network_to_adj_matrix(self, network_df: pd.DataFrame, 
+    def build_network_for_genes(self,
+                               gene_list: List[str],
+                               data_type: str = "gene",
+                               max_features: int = 200,
+                               min_weight_threshold: float = 0.0,
+                               progress_callback=None) -> pd.DataFrame:
+        """
+        针对指定基因列表构建 MRNetB 网络（用于跨尺度引擎）
+
+        参数:
+            gene_list: 目标基因/miRNA名称列表
+            data_type: "gene" 或 "mirna"
+            max_features: 最大特征数
+            min_weight_threshold: 最小权重阈值
+            progress_callback: 进度回调
+
+        返回:
+            边列表 DataFrame
+        """
+        data = self.gene_data if data_type == "gene" else self.mirna_data
+        if data is None:
+            if progress_callback:
+                progress_callback(0, "加载数据...")
+            self.load_data()
+            data = self.gene_data if data_type == "gene" else self.mirna_data
+
+        if data is None or len(gene_list) == 0:
+            return pd.DataFrame()
+
+        # 交集：只保留数据中存在的基因
+        available = set(data.index)
+        selected = [g for g in gene_list if g in available]
+
+        if len(selected) < 2:
+            return pd.DataFrame()
+
+        subset = data.loc[selected]
+
+        return self.build_network_mrnetb(
+            expression_data=subset,
+            data_type=data_type,
+            max_features=min(max_features, len(selected)),
+            min_weight_threshold=min_weight_threshold,
+            progress_callback=progress_callback,
+        )
+
+    def network_to_adj_matrix(self, network_df: pd.DataFrame,
                              feature_names: List[str],
                              data_type: str = "gene") -> np.ndarray:
         """

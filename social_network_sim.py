@@ -99,7 +99,41 @@ class SocialNetworkSimulator:
         
         return infected_density, node_state
     
-    def visualize_community_network(self, G: nx.Graph, communities: List[List[int]], 
+    def get_network_metrics(self, G: nx.Graph, communities: List[List[int]]) -> dict:
+        """
+        计算网络拓扑指标
+
+        参数:
+            G: NetworkX图对象
+            communities: 社区划分列表
+
+        返回:
+            dict: 包含 density, avg_degree, clustering, modularity 等指标
+        """
+        n = G.number_of_nodes()
+        if n == 0:
+            return {"density": 0, "avg_degree": 0, "clustering": 0, "modularity": 0}
+
+        density = nx.density(G)
+        avg_degree = sum(dict(G.degree()).values()) / n
+        clustering = nx.average_clustering(G) if n > 2 else 0
+
+        # 模块度
+        try:
+            partition = [{node for node in comm if node in G} for comm in communities]
+            partition = [s for s in partition if len(s) > 0]
+            modularity = nx.community.modularity(G, partition) if partition else 0
+        except Exception:
+            modularity = 0
+
+        return {
+            "density": round(density, 4),
+            "avg_degree": round(avg_degree, 2),
+            "clustering": round(clustering, 4),
+            "modularity": round(modularity, 4),
+        }
+
+    def visualize_community_network(self, G: nx.Graph, communities: List[List[int]],
                                     title="社区网络结构") -> go.Figure:
         """
         可视化社区网络

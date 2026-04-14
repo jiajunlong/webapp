@@ -1,0 +1,252 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║          CROSS-SCALE GENE & SOCIAL NETWORK SIMULATION PLATFORM                ║
+║                          QUICK REFERENCE CARD                                 ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 DATA INVENTORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─ MOLECULAR SCALE (Knowledge Base) ─────────────────────────────────────────────┐
+│                                                                                 │
+│  🧬 GENE-DISEASE-PATHWAY Knowledge:                                           │
+│     ├─ gene_disease.tsv (8,498 rows, 10 cols)                                │
+│     │   └─ 2,503 diseases, 4,322 genes, 347 pathways, drugs                │
+│     │                                                                         │
+│     ├─ pathway(最终版).tsv (360 rows)                                        │
+│     │   └─ 347 KEGG pathways + gene memberships                            │
+│     │                                                                         │
+│     ├─ Related Pathway.txt (1,585 pathway-pathway edges)                    │
+│     │   └─ Pathway-pathway relationship network                             │
+│     │                                                                         │
+│     └─ merged_output.tsv (129,521 edges)                                    │
+│         └─ Pre-computed gene-gene interaction network                       │
+│                                                                                 │
+│  📌 CLINICAL SCALE (TCGA-COAD Cohort):                                        │
+│     ├─ clinical.tsv (461 patients)                                           │
+│     │   └─ Age, gender, race, disease stage                                │
+│     │                                                                         │
+│     └─ filtered_clinical.csv (255 samples with complete omics)              │
+│         └─ Matched to expression/methylation/miRNA data                     │
+│                                                                                 │
+│  🧪 OMICS DATA (TCGA-COAD, 255 matched samples):                             │
+│     ├─ filtered_hiseq_data.csv (14,520 genes × 255)                        │
+│     │   └─ RNA-seq gene expression                                         │
+│     │                                                                         │
+│     ├─ filtered_miRNA_with_names.csv (619 miRNAs × 255)                    │
+│     │   └─ Small RNA-seq miRNA expression                                  │
+│     │                                                                         │
+│     └─ filtered_methylation_data.csv (14,520 CpG sites × 255)              │
+│         └─ DNA methylation (Illumina 450K beta values)                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 APPLICATION TABS (7 Total)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tab 0: 🔬 GENE NETWORK VISUALIZATION
+├─ Biological Scale: MOLECULAR
+├─ Input: Select disease + network type (interaction/regulation)
+├─ Output: Force-directed gene network, drug list, pathway search
+├─ Computation: Network visualization, degree centrality, clustering coeff
+└─ Data Source: gene_disease.tsv, pathway files, merged_output.tsv
+
+Tab 1: 📊 NETWORK MODEL CALCULATION (IS Coefficient)
+├─ Biological Scale: MOLECULAR
+├─ Input: Disease + multi-select pathways
+├─ Output: IS score rankings, bar chart, data table
+├─ Computation: Influence Score = f(coverage, overlap, density)
+└─ Data Source: Preprocessed disease/pathway objects
+
+Tab 2: 📈 DATA STATISTICS
+├─ Biological Scale: MOLECULAR + POPULATION
+├─ Input: Database type selector (Gene vs Social Network)
+├─ Output: Aggregate statistics, connection counts
+├─ Metrics: 404.8M gene connections, 75.1M social connections
+└─ Visualization: HTML styled statistic cards
+
+Tab 3: 🌐 SOCIAL NETWORK SIMULATION (SIS Model)
+├─ Biological Scale: POPULATION
+├─ Input: Network params (N, c, k, Z_in) + transmission (β, γ)
+├─ Output: Network structure, infection time-series, state snapshots
+├─ Algorithm: SIS epidemic dynamics on community-structured networks
+├─ Subtabs: Network Structure | Infection Dynamics | Infection Snapshot
+└─ Data Source: LFR benchmark generator + SIS simulator
+
+Tab 4: 🧬 GENE NETWORK SIMULATION (TCGA-COAD Analysis)
+├─ Biological Scale: MOLECULAR/CELLULAR
+├─ Input: Analysis type (Age/Sex/Stage) + data type (Gene/miRNA)
+├─ Output: Stratified networks, network statistics, centrality measures
+├─ Algorithm: MRNetB network inference (mutual information-based)
+├─ Subtabs: Network Statistics | Network Visualization | Result Data
+├─ Stratification: Age groups (0-50, 50-70, 70+) | Sex (M/F) | Disease stages
+└─ Data Source: TCGA-COAD expression, methylation, miRNA, clinical
+
+Tab 5: 📚 MODEL LIBRARY (Catalog)
+├─ Biological Scale: MULTI-SCALE
+├─ Models Listed: 6 computational models
+├─ Scale Breakdown: 3 Molecular, 2 Cellular, 1 Population
+├─ Sections: Model cards (HTML), summary table, scale distribution
+└─ Documentation: Algorithm specs, input/output descriptions
+
+Tab 6: 🔗 MULTI-SCALE LINKAGE ANALYSIS
+├─ Biological Scale: MULTI-SCALE (Molecular → Cellular → Population)
+├─ Concept: Parameter cascade through 3 biological scales
+├─ Subtabs: 
+│   ├─ Cascade Analysis: Layer 1→2→3 parameter passing
+│   ├─ Multi-Disease Comparison: IS scores across diseases
+│   └─ Gene Tracking: Trace genes through multi-scale model
+├─ Outputs: Network comparison, radar chart, summary table
+└─ Integration: Hub genes → TCGA networks → SIS transmission parameters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧬 BIOLOGICAL SCALES COVERED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SCALE 1: MOLECULAR SCALE ✓ COMPREHENSIVE
+└─ Gene networks (4,322 genes)
+   └─ Pathways (347 metabolic + signaling pathways)
+      └─ Diseases (2,503 disease-gene associations)
+         └─ Models: Gene Interaction, Gene Regulation, IS Coefficient, MRNetB
+            └─ Tabs: 0, 1, 5
+
+SCALE 2: CELLULAR/TISSUE SCALE ✓ PARTIAL
+└─ Patient cohorts (255 TCGA-COAD samples)
+   └─ Gene expression (14,520 genes)
+      └─ miRNA expression (619 miRNAs)
+         └─ DNA methylation (14,520 CpG sites)
+            └─ Stratification: Age, Sex, Disease Stage
+               └─ Model: MRNetB network inference, MFE entropy
+                  └─ Tab: 4
+
+SCALE 3: POPULATION SCALE ✓ IMPLEMENTED
+└─ Social networks (50-200 nodes, 2-10 communities)
+   └─ Transmission dynamics (SIS epidemic model)
+      └─ Parameters: β (infection), γ (recovery)
+         └─ Outputs: Infection time-series, community effects
+            └─ Model: SIS Epidemic Dynamics
+               └─ Tab: 3
+
+SCALE 4: MULTI-SCALE INTEGRATION ✓ EMERGING
+└─ Parameter cascade (Layer 1→2→3)
+   └─ Hub genes → TCGA seed nodes → SIS parameters
+      └─ Tab: 6 (Multi-Scale Linkage Analysis)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 6 MODELS DEFINED (model_library.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧬 Model 1: GENE INTERACTION NETWORK
+   Scale: Molecular | Algorithm: Graph theory + degree centrality
+   Input: Gene-disease database | Output: Network topology, Hub genes
+
+🧬 Model 2: GENE REGULATORY NETWORK  
+   Scale: Molecular | Algorithm: Directed graph + regulatory cascade
+   Input: Gene-disease DB | Output: TF rankings, regulatory pathways
+
+🧬 Model 3: IS COEFFICIENT
+   Scale: Molecular | Algorithm: Influence score computation
+   Input: Gene-pathway mapping | Output: Pathway impact rankings
+
+🔬 Model 4: MRNetB (Network Inference)
+   Scale: Cellular/Tissue | Algorithm: MI-based network reconstruction
+   Input: TCGA expression data | Output: Gene association networks
+   Formula: Weight(i,j) = MI(i,j) - max(min(MI(i,:), MI(j,:)))
+
+🔬 Model 5: NETWORK FLOW ENTROPY (MFE)
+   Scale: Cellular/Tissue | Algorithm: Information-theoretic entropy
+   Input: Gene expression + network topology | Output: Node entropy values
+
+👥 Model 6: SIS EPIDEMIC DYNAMICS
+   Scale: Population | Algorithm: SIS transmission on networks
+   Input: Network params + β/γ rates | Output: Infection curves
+   Formula: P(S→I) = 1-(1-β)^k, P(I→S) = γ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈 KEY STATISTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Knowledge Base:
+├─ 2,503 diseases (KEGG)
+├─ 4,322 genes
+├─ 347 pathways (KEGG Homo sapiens)
+├─ 1,585 pathway-pathway relationships
+├─ 129,521 gene-gene interaction edges
+└─ 8,498 gene-disease records
+
+TCGA-COAD Clinical Cohort:
+├─ 461 total patients
+├─ 255 with complete omics data
+├─ 14,520 genes in expression data
+├─ 619 miRNAs
+├─ 14,520 CpG methylation sites
+└─ Stratifications: Age, Sex (M/F), Stage (IA-IV)
+
+Synthetic Networks:
+├─ Social network: 75.1M connections
+├─ Gene network: 404.8M connections
+└─ Configurable: Size, community structure, transmission rates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 DATA PROCESSING PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: DATA LOADER (data_loader.py)
+└─ Read: gene_disease.tsv, pathway(基因名映射版).tsv, Related Pathway.txt
+└─ Build: Disease/pathway/gene indices for fast lookup
+
+STEP 2: PREPROCESSING (preprocess_data.py)
+└─ Parse gene_disease.tsv → Disease objects (genes, drugs, networks)
+└─ Parse pathway TSV → Pathway objects (genes, interactions)
+└─ Generate: Synthetic gene-gene relationships
+└─ Save: data/preprocessed_data.pkl (binary, fast loading)
+
+STEP 3: TCGA-COAD SIMULATOR (tcga_coad_simulator.py)
+└─ Load: clinical.tsv + filtered_hiseq_data.csv + methylation + miRNA
+└─ Stratify: By age, sex, disease stage
+└─ Infer: MRNetB networks for each group
+└─ Output: Stratified gene/miRNA interaction networks
+
+STEP 4: SOCIAL NETWORK SIMULATOR (social_network_sim.py)
+└─ Generate: LFR benchmark networks with community structure
+└─ Simulate: SIS epidemic dynamics
+└─ Visualize: Network structure + infection time-series
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 ANALYSIS CAPABILITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KNOWLEDGE BASE QUERYING:
+├─ Disease → genes/drugs/pathways
+├─ Gene → diseases/pathways
+├─ Pathway → genes/related pathways
+└─ Drug → associated diseases
+
+NETWORK ANALYSIS:
+├─ Hub gene detection (degree centrality)
+├─ Regulatory cascade identification
+├─ Pathway influence scoring (IS coefficient)
+├─ Network topology metrics (density, clustering, diameter)
+└─ Community detection
+
+REAL PATIENT DATA (TCGA-COAD):
+├─ Age-stratified network analysis
+├─ Sex-specific gene regulatory networks
+├─ Disease stage-specific expression patterns
+├─ Multi-omics integration (expression + methylation + miRNA)
+└─ MRNetB mutual information-based network inference
+
+POPULATION-LEVEL DYNAMICS:
+├─ Epidemic transmission modeling (SIS)
+├─ Community structure effects on spread
+├─ Parameter sensitivity analysis
+└─ Cross-scale parameter propagation
+
+MULTI-SCALE INTEGRATION:
+├─ Molecular → Cellular: Hub genes seed TCGA analysis
+├─ Cellular → Population: Network density informs SIS parameters
+├─ Automated parameter cascade across 3 biological scales
+└─ Visualization of multi-scale relationships
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
