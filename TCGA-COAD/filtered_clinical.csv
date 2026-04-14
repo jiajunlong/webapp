@@ -1,0 +1,256 @@
+case_submitter_id,gender,race,ajcc_pathologic_stage
+TCGA-F4-6854,female,white,Stage IIA
+TCGA-DM-A28F,male,white,Stage IIIB
+TCGA-NH-A6GC,female,black or african american,Stage IVB
+TCGA-A6-2675,male,white,Stage IIA
+TCGA-D5-6922,male,white,Stage IIIA
+TCGA-G4-6323,male,black or african american,Stage IA
+TCGA-F4-6703,male,white,Stage IIA
+TCGA-D5-5538,female,white,Stage IIIB
+TCGA-A6-5660,male,black or african american,Stage IIIC
+TCGA-A6-6651,female,white,Stage IIIB
+TCGA-AD-5900,male,white,Stage I
+TCGA-5M-AAT4,male,black or african american,Stage IV
+TCGA-D5-6932,male,white,Stage IIA
+TCGA-AD-6888,male,white,Stage IIIB
+TCGA-DM-A288,male,white,Stage IIIC
+TCGA-AY-5543,female,black or african american,Stage IVA
+TCGA-D5-5539,male,white,Stage IIIA
+TCGA-G4-6627,male,white,Stage IIA
+TCGA-DM-A1D0,female,white,Stage IIA
+TCGA-F4-6855,female,white,Stage IIA
+TCGA-NH-A8F8,male,black or african american,Stage IV
+TCGA-A6-6140,male,white,Stage IIA
+TCGA-CM-5349,female,white,Stage IIA
+TCGA-G4-6299,male,white,Stage IIIC
+TCGA-A6-5666,male,white,Stage IIC
+TCGA-G4-6303,female,white,Stage IV
+TCGA-CA-6717,male,asian,Stage IIA
+TCGA-AM-5820,female,white,Stage IVA
+TCGA-CA-5254,female,asian,Stage IIA
+TCGA-G4-6293,female,white,Stage III
+TCGA-D5-6898,female,white,Stage I
+TCGA-D5-6930,male,white,Stage IIA
+TCGA-A6-5667,female,white,Stage IIIB
+TCGA-F4-6461,female,white,Stage IIIC
+TCGA-F4-6460,female,white,Stage IIIB
+TCGA-AA-3712,male,not reported,Stage III
+TCGA-G4-6628,male,white,Stage I
+TCGA-AY-6196,male,white,Stage IIIC
+TCGA-QG-A5YX,female,black or african american,Stage IIA
+TCGA-G4-6306,male,white,'--
+TCGA-AA-3655,male,not reported,Stage II
+TCGA-D5-5540,male,white,Stage IIA
+TCGA-A6-6137,male,white,Stage IIIB
+TCGA-AU-6004,female,white,Stage I
+TCGA-CM-6161,female,white,Stage I
+TCGA-AY-6386,female,black or african american,Stage IIIB
+TCGA-CK-5913,female,white,Stage IIA
+TCGA-CK-5916,female,white,Stage I
+TCGA-D5-6541,male,white,Stage IIA
+TCGA-A6-6649,male,white,Stage IIIB
+TCGA-D5-6926,male,white,Stage IIIB
+TCGA-G4-6626,male,white,Stage IIA
+TCGA-CA-5797,male,asian,Stage IIA
+TCGA-DM-A28K,male,white,Stage IIA
+TCGA-A6-6782,male,white,Stage IIB
+TCGA-CM-6172,female,white,Stage IIIB
+TCGA-CM-6676,male,white,Stage I
+TCGA-G4-6294,male,white,Stage IV
+TCGA-AD-6963,male,white,'--
+TCGA-A6-A5ZU,male,black or african american,Stage IIIB
+TCGA-NH-A50T,female,black or african american,Stage IIA
+TCGA-A6-2684,female,white,Stage I
+TCGA-F4-6808,female,white,Stage I
+TCGA-CM-5868,female,white,Stage IVA
+TCGA-A6-6138,male,white,Stage I
+TCGA-A6-5661,female,black or african american,Stage IIA
+TCGA-A6-5665,female,white,Stage IIA
+TCGA-AD-6895,male,white,Stage IIIB
+TCGA-5M-AAT5,'--,'--,'--
+TCGA-NH-A6GA,male,black or african american,Stage IIIC
+TCGA-CK-4952,female,white,Stage IIIC
+TCGA-CM-6674,male,white,Stage IIA
+TCGA-CA-5255,male,asian,Stage IIA
+TCGA-A6-2671,male,white,Stage IV
+TCGA-G4-6304,female,white,Stage IIB
+TCGA-G4-6307,female,white,Stage IIIB
+TCGA-DM-A1HA,male,white,Stage IIIC
+TCGA-AZ-6603,female,white,'--
+TCGA-AA-3713,male,not reported,Stage IV
+TCGA-CK-5914,male,white,Stage IIIB
+TCGA-A6-6141,male,black or african american,Stage IIA
+TCGA-CM-5864,male,white,Stage I
+TCGA-D5-6931,male,white,Stage IIIC
+TCGA-CK-4948,female,white,Stage III
+TCGA-AD-6964,male,white,'--
+TCGA-RU-A8FL,male,black or african american,Stage IIIB
+TCGA-AM-5821,female,white,Stage IIA
+TCGA-AD-A5EJ,female,black or african american,Stage IIA
+TCGA-G4-6297,female,white,Stage IV
+TCGA-AA-3496,female,not reported,Stage II
+TCGA-NH-A8F7,female,black or african american,Stage IIA
+TCGA-D5-6929,female,white,Stage IV
+TCGA-F4-6856,male,white,Stage I
+TCGA-AZ-6607,male,white,Stage IV
+TCGA-A6-6648,male,white,Stage IVA
+TCGA-CA-5796,female,asian,Stage IIA
+TCGA-DM-A280,female,white,Stage IIA
+TCGA-A6-6653,male,white,Stage I
+TCGA-CM-6164,female,white,Stage IIA
+TCGA-A6-6650,female,black or african american,Stage IIA
+TCGA-G4-6302,female,white,Stage IIA
+TCGA-CK-4947,female,white,Stage IIIB
+TCGA-A6-A56B,male,black or african american,Stage IIIB
+TCGA-CK-6747,female,white,Stage IIA
+TCGA-G4-6586,female,white,Stage IIA
+TCGA-CM-6168,female,black or african american,Stage IIA
+TCGA-DM-A0X9,female,white,Stage IIA
+TCGA-CM-6679,male,white,Stage IIA
+TCGA-A6-A566,female,black or african american,Stage IIIB
+TCGA-CA-6715,male,asian,Stage IIIB
+TCGA-G4-6311,male,white,Stage III
+TCGA-CK-6751,female,white,Stage I
+TCGA-WS-AB45,female,black or african american,Stage IIA
+TCGA-T9-A92H,male,black or african american,Stage IIA
+TCGA-A6-6654,female,white,Stage IIIB
+TCGA-AZ-6605,male,white,Stage IIIB
+TCGA-DM-A1D4,male,white,Stage IIA
+TCGA-QG-A5Z2,male,black or african american,Stage I
+TCGA-A6-A567,male,black or african american,Stage IV
+TCGA-AZ-5403,male,white,Stage II
+TCGA-DM-A28E,female,white,Stage IIA
+TCGA-A6-6780,male,white,Stage IIA
+TCGA-CK-6748,female,white,Stage IV
+TCGA-CM-6163,male,white,Stage I
+TCGA-DM-A1HB,male,white,Stage IIIB
+TCGA-SS-A7HO,female,black or african american,Stage IIB
+TCGA-CM-6169,male,black or african american,Stage IIA
+TCGA-4N-A93T,male,black or african american,Stage IIIB
+TCGA-DM-A1D8,female,white,'--
+TCGA-G4-6588,female,white,Stage IIA
+TCGA-F4-6807,female,white,Stage IIIC
+TCGA-AA-3511,male,not reported,Stage II
+TCGA-D5-5541,male,white,Stage IIIB
+TCGA-AD-6889,male,asian,Stage IIA
+TCGA-CA-6716,male,asian,Stage IIA
+TCGA-A6-4105,male,white,Stage IIA
+TCGA-A6-5662,male,white,Stage IVA
+TCGA-A6-6652,male,black or african american,Stage IVA
+TCGA-CM-5860,male,white,Stage IIA
+TCGA-CM-5861,female,white,Stage IIA
+TCGA-A6-5659,male,white,Stage I
+TCGA-DM-A285,female,white,Stage IV
+TCGA-DM-A28A,male,white,Stage IIIC
+TCGA-D5-6529,male,white,Stage IIA
+TCGA-QG-A5Z1,male,black or african american,Stage IIIB
+TCGA-CA-6719,male,asian,Stage IIA
+TCGA-NH-A50U,male,black or african american,Stage IVA
+TCGA-CM-6170,female,white,Stage I
+TCGA-QG-A5YW,female,black or african american,Stage IIIC
+TCGA-F4-6459,female,white,Stage IIIB
+TCGA-D5-6538,female,white,Stage IIIB
+TCGA-D5-6535,female,white,Stage IIIB
+TCGA-CM-5862,male,white,Stage IVA
+TCGA-5M-AATE,male,black or african american,Stage IIA
+TCGA-DM-A0XD,male,white,Stage IIA
+TCGA-4T-AA8H,female,black or african american,Stage IIA
+TCGA-CK-6746,female,white,Stage IIB
+TCGA-D5-6927,male,white,Stage IIA
+TCGA-CM-6677,female,white,Stage IIA
+TCGA-AZ-6598,female,white,Stage II
+TCGA-3L-AA1B,female,black or african american,Stage I
+TCGA-5M-AATA,'--,'--,'--
+TCGA-G4-6298,male,black or african american,Stage IIIB
+TCGA-D5-6532,male,white,Stage IIA
+TCGA-AY-A69D,female,black or african american,Stage IIA
+TCGA-D5-5537,male,white,'--
+TCGA-DM-A28H,male,white,Stage IIIC
+TCGA-CM-6166,female,white,Stage I
+TCGA-AZ-6600,male,black or african american,Stage IV
+TCGA-D5-6540,male,white,Stage I
+TCGA-D5-6923,male,white,Stage I
+TCGA-G4-6322,male,white,Stage IIIB
+TCGA-A6-6781,male,white,Stage IIIC
+TCGA-CM-5344,female,white,Stage IIIB
+TCGA-AZ-5407,female,white,Stage I
+TCGA-AD-6901,male,white,'--
+TCGA-DM-A0XF,female,white,Stage IIIC
+TCGA-CM-5348,male,white,Stage IIIB
+TCGA-AA-3489,male,not reported,Stage II
+TCGA-F4-6806,female,white,Stage I
+TCGA-D5-6924,male,white,Stage IIA
+TCGA-CK-5912,male,white,Stage I
+TCGA-AD-6548,female,white,Stage I
+TCGA-AA-3663,male,not reported,Stage II
+TCGA-CK-4950,female,black or african american,Stage IIIB
+TCGA-DM-A28M,male,white,Stage IIA
+TCGA-AZ-4323,male,white,Stage IV
+TCGA-CK-5915,male,white,Stage I
+TCGA-F4-6704,male,american indian or alaska native,Stage IIIC
+TCGA-AY-A8YK,male,black or african american,Stage IVA
+TCGA-A6-6142,female,white,Stage IVA
+TCGA-QG-A5YV,female,black or african american,Stage IIIC
+TCGA-AZ-6606,male,white,Stage IV
+TCGA-CM-4743,male,white,Stage IIA
+TCGA-AD-6965,male,white,Stage IIIC
+TCGA-G4-6315,male,white,Stage IV
+TCGA-F4-6463,male,white,Stage IIA
+TCGA-CM-5863,female,white,Stage IIIB
+TCGA-NH-A5IV,female,black or african american,Stage IIA
+TCGA-5M-AAT6,female,black or african american,Stage IV
+TCGA-G4-6317,female,white,Stage IIIC
+TCGA-D5-6534,female,white,Stage IIA
+TCGA-F4-6569,male,white,Stage I
+TCGA-NH-A50V,male,black or african american,Stage IIIB
+TCGA-CM-6167,female,black or african american,Stage IIIC
+TCGA-AY-A71X,female,black or african american,Stage I
+TCGA-QL-A97D,female,black or african american,Stage I
+TCGA-D5-7000,female,white,Stage I
+TCGA-CM-6678,female,white,Stage IVA
+TCGA-DM-A1DB,male,white,Stage IIA
+TCGA-AY-A54L,female,black or african american,Stage I
+TCGA-G4-6320,male,white,Stage III
+TCGA-A6-5657,male,black or african american,Stage IIIB
+TCGA-D5-6920,female,white,Stage IIA
+TCGA-A6-A565,female,black or african american,Stage IIIC
+TCGA-CA-6718,male,asian,Stage IIA
+TCGA-G4-6295,female,white,Stage II
+TCGA-NH-A6GB,female,black or african american,Stage IIIC
+TCGA-DM-A1D9,female,white,Stage IIA
+TCGA-CM-4751,male,white,Stage IIIB
+TCGA-G4-6309,female,black or african american,Stage IIIB
+TCGA-D5-6531,male,white,Stage IIA
+TCGA-A6-2685,female,black or african american,Stage IIA
+TCGA-AZ-4616,female,white,Stage IV
+TCGA-DM-A282,female,white,Stage IIA
+TCGA-F4-6805,female,white,Stage IIA
+TCGA-F4-6809,female,white,Stage IVA
+TCGA-G4-6321,female,white,Stage III
+TCGA-D5-6536,male,white,Stage IIA
+TCGA-AD-6890,male,white,'--
+TCGA-AD-A5EK,male,black or african american,Stage I
+TCGA-AD-6899,male,white,Stage IIIC
+TCGA-DM-A1D6,male,white,Stage IIA
+TCGA-A6-5656,male,white,Stage I
+TCGA-D5-6537,male,white,Stage IIIB
+TCGA-CM-6162,female,white,Stage IIIB
+TCGA-F4-6570,female,white,Stage IIA
+TCGA-D5-6928,male,white,Stage IIA
+TCGA-CM-6171,female,white,Stage I
+TCGA-D5-6539,female,white,'--
+TCGA-DM-A1DA,female,white,Stage IIIC
+TCGA-CM-6165,male,white,Stage IIA
+TCGA-AY-6197,male,white,Stage IIA
+TCGA-DM-A28C,male,white,Stage IIA
+TCGA-A6-5664,male,black or african american,Stage IIIC
+TCGA-D5-6530,male,white,Stage I
+TCGA-AA-3660,female,not reported,Stage II
+TCGA-D5-6533,female,white,'--
+TCGA-DM-A1D7,male,white,Stage IIA
+TCGA-AU-3779,female,white,Stage IIA
+TCGA-CM-6680,female,white,Stage IIIB
+TCGA-AZ-6599,male,white,Stage I
+TCGA-CM-6675,male,black or african american,Stage IVB
+TCGA-A6-2680,female,black or african american,Stage II
+TCGA-DM-A28G,male,white,Stage IIA

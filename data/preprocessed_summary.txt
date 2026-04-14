@@ -1,0 +1,102 @@
+============================================================
+数据预处理摘要
+Data Preprocessing Summary
+============================================================
+
+生成时间: 2025-12-20 22:45:03
+
+📊 数据统计
+------------------------------------------------------------
+疾病总数: 2503
+通路总数: 347
+基因总数: 4322
+
+📋 疾病列表（前20个）
+------------------------------------------------------------
+1. Renal cell carcinoma
+   基因数: 9, 药物数: 15
+2. Testicular cancer
+   基因数: 4, 药物数: 7
+3. Mucopolysaccharidosis type VI;
+   基因数: 1, 药物数: 1
+4. Papillon-Lefevre syndrome
+   基因数: 1, 药物数: 1
+5. GM1 gangliosidosis
+   基因数: 1, 药物数: 1
+6. Mucopolysaccharidosis type IV
+   基因数: 2, 药物数: 1
+7. Vulvar cancer
+   基因数: 2, 药物数: 3
+8. Late complement pathway defects
+   基因数: 7, 药物数: 1
+9. Neuroblastoma
+   基因数: 7, 药物数: 5
+10. Carcinoid
+   基因数: 2, 药物数: 2
+11. Gallbladder cancer
+   基因数: 4, 药物数: 1
+12. Congenital lactase deficiency;
+   基因数: 1, 药物数: 1
+13. Disaccharide intolerance II
+   基因数: 1, 药物数: 1
+14. Afibrinogenemia;
+   基因数: 3, 药物数: 1
+15. Congenital sucrase-isomaltase deficiency;
+   基因数: 1, 药物数: 1
+16. Disaccharide intolerance I
+   基因数: 1, 药物数: 1
+17. Glutaric acidemia
+   基因数: 5, 药物数: 1
+18. 3-Hydroxy-3-methylglutaryl-CoA lyase deficiency
+   基因数: 1, 药物数: 1
+19. Holocarboxylase synthetase deficiency;
+   基因数: 1, 药物数: 1
+20. Multiple carboxylase deficiency
+   基因数: 1, 药物数: 1
+... 还有 2483 个疾病
+
+📋 通路列表（前20条）
+------------------------------------------------------------
+1. Glycolysis / Gluconeogenesis - Homo sapiens (human)
+   基因数: 30
+2. Citrate cycle (TCA cycle) - Homo sapiens (human)
+   基因数: 30
+3. Pentose phosphate pathway - Homo sapiens (human)
+   基因数: 30
+4. Pentose and glucuronate interconversions - Homo sapiens (human)
+   基因数: 30
+5. Fructose and mannose metabolism - Homo sapiens (human)
+   基因数: 30
+6. Galactose metabolism - Homo sapiens (human)
+   基因数: 30
+7. Ascorbate and aldarate metabolism - Homo sapiens (human)
+   基因数: 30
+8. Fatty acid biosynthesis - Homo sapiens (human)
+   基因数: 18
+9. Fatty acid elongation - Homo sapiens (human)
+   基因数: 27
+10. Fatty acid degradation - Homo sapiens (human)
+   基因数: 30
+11. Steroid biosynthesis - Homo sapiens (human)
+   基因数: 20
+12. Primary bile acid biosynthesis - Homo sapiens (human)
+   基因数: 17
+13. Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human)
+   基因数: 11
+14. Steroid hormone biosynthesis - Homo sapiens (human)
+   基因数: 30
+15. Oxidative phosphorylation - Homo sapiens (human)
+   基因数: 30
+16. Arginine biosynthesis - Homo sapiens (human)
+   基因数: 22
+17. Purine metabolism - Homo sapiens (human)
+   基因数: 30
+18. Caffeine metabolism - Homo sapiens (human)
+   基因数: 6
+19. Pyrimidine metabolism - Homo sapiens (human)
+   基因数: 30
+20. Alanine, aspartate and glutamate metabolism - Homo sapiens (human)
+   基因数: 30
+... 还有 327 条通路
+
+============================================================
