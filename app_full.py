@@ -31,7 +31,8 @@ from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoa
 from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
 # 导入Phase 2网络医学分析模块
 from gradio_phase2_integration import create_phase2_network_medicine_tab, Phase2DataLoader
-
+# 导入Phase 3 SIS生物标志物发现模块
+from gradio_phase3_integration import create_phase3_biomarker_tab, Phase3DataLoader
 
 # ==================== 配置 ====================
 
@@ -2043,6 +2044,10 @@ def create_gradio_interface():
             # ========== Tab 6.5: 网络医学分析 (Phase 2) ==========
             with gr.Tab("🔗 网络医学分析 (Phase 2)", id=6.5):
                 create_phase2_network_medicine_tab()
+
+            # ========== Tab 6.7: SIS生物标志物发现 (Phase 3) ==========
+            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=6.7):
+                create_phase3_biomarker_tab()
 
             # ========== Tab 7: 多尺度联动分析 ==========
             with gr.Tab("🔗 多尺度联动分析", id=6):

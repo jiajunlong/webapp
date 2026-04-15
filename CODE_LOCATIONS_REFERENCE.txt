@@ -1,0 +1,332 @@
+================================================================================
+CODE LOCATIONS AND REFERENCES - Multi-Phase Network Medicine Platform
+================================================================================
+
+## PHASE 1: PATHWAY ACTIVITY ANALYSIS ✅
+
+### Main Integration File
+FILE: gradio_phase1_integration.py (458 lines, 17KB)
+
+CLASS: Phase1DataLoader (lines 37-118)
+  - __init__(self) → lines 40-47
+  - load_all(self) → lines 49-65
+  - _load_pathways(self) → lines 67-94
+  - _load_tcga_data(self) → lines 96-117
+
+FUNCTION: create_pathway_analysis_tab() (lines 120-395)
+  - UI Components setup → lines 132-223
+  - Markdown descriptions → lines 133-142
+  - Parameter controls → lines 145-192
+  - Results tabs → lines 197-223
+  - Hidden state → lines 225-230
+  - Main callback: run_pathway_analysis() → lines 233-366
+  - Event handlers → lines 368-393
+
+FUNCTION: get_integration_instructions() → lines 398-453
+
+### Core Analysis Classes
+FILE: pathway_activity.py (main class)
+  - Class: PathwayActivityScorer
+  - Methods: load_expression_data(), score_gsva(), score_mean()
+  - Implements GSVA scoring via z-score normalization
+
+FILE: differential_pathway_analysis.py
+  - Class: DifferentialPathwayAnalysis
+  - Methods: compare_by_group(), statistical tests
+  - Supports ANOVA, t-test, Kruskal-Wallis with FDR correction
+
+FILE: hub_gene_identification.py
+  - Class: HubGeneIdentifier
+  - Methods: calculate_hub_genes(), calculate_all_hub_genes()
+  - Combines centrality measures + expression variance
+
+FILE: pathway_visualizations.py
+  - Functions: plot_pathway_activity_heatmap()
+  - Functions: plot_pathway_violin()
+  - Functions: plot_hub_genes_bar()
+  - Functions: plot_differential_pathways()
+
+### Integration in app_full.py
+LINE 30: Import statement
+  from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoader
+
+LINE 1800-1801: UI Integration
+  with gr.Tab("🧬 通路活性分析"):
+      create_pathway_analysis_tab()
+
+================================================================================
+
+## PHASE 2: NETWORK MEDICINE ANALYSIS ⚙️ (PARTIAL)
+
+### Main Integration File
+FILE: gradio_phase2_integration.py (705 lines, 28KB)
+
+CLASS: Phase2DataLoader (lines 40-135)
+  - __init__(self) → lines 43-50
+  - load_all(self) → lines 52-71
+  - _load_gene_disease() → lines 73-84
+  - _load_expression_data() → lines 86-107
+  - _load_pathway_genes() → lines 109-135
+
+FUNCTION: create_disease_module_tab(data_loader) → lines 138-275
+  - UI Parameters → lines 166-203
+  - Results tabs → lines 208-229
+  - Callback: detect_disease_modules() → lines 238-268
+  - Event handler → lines 270-274
+  - ⚠️ STATUS: STUBBED - progress bars only (0.2→0.95)
+
+FUNCTION: create_wgcna_tab(data_loader) → lines 278-420
+  - UI Parameters → lines 307-344
+  - Results tabs → lines 349-370
+  - Callback: run_wgcna_analysis() → lines 379-413
+  - Event handler → lines 415-420
+  - ⚠️ STATUS: STUBBED - progress bars only (0.2→0.95)
+
+FUNCTION: create_mirna_tab(data_loader) → lines 423-570
+  - UI Parameters → lines 450-488
+  - Results tabs → lines 493-519
+  - Callback: analyze_mirna_regulation() → lines 528-563
+  - Event handler → lines 565-570
+  - ⚠️ STATUS: STUBBED - progress bars only (0.2→0.95)
+
+FUNCTION: create_phase2_network_medicine_tab() → lines 573-641
+  - Master tab group
+  - Sub-tabs: Disease Modules, WGCNA, miRNA, Module Comparison
+  - Calls all 3 tab functions
+
+### Core Analysis Classes (Defined but NOT Connected to UI)
+FILE: disease_module_detection.py (25KB)
+  - Class: DiseaseNetworkBuilder (PPI network construction)
+  - Class: CommunityDetector (Louvain algorithm)
+  - Class: ModuleSeparationMetrics (Comorbidity analysis)
+
+FILE: wgcna_analysis.py (23KB)
+  - Class: WGCNAAnalyzer (network + module identification)
+  - Class: ModuleTraitCorrelation (clinical trait association)
+
+FILE: mirna_integration.py (18KB)
+  - Class: miRNATargetPredictor (correlation-based prediction)
+  - Class: miRNARegulatoryNetwork (network construction)
+  - Class: RegulatoryModuleAnalysis (module detection)
+
+### Integration in app_full.py
+LINE 33: Import statement
+  from gradio_phase2_integration import create_phase2_network_medicine_tab, Phase2DataLoader
+
+LINES 2043-2045: UI Integration
+  with gr.Tab("🔗 网络医学分析 (Phase 2)", id=6.5):
+      create_phase2_network_medicine_tab()
+
+================================================================================
+
+## PHASE 3: SIS BIOMARKER DISCOVERY ✅ (NOT YET INTEGRATED)
+
+### Main Integration File
+FILE: gradio_phase3_integration.py (618 lines, 25KB)
+
+CLASS: Phase3DataLoader (lines 38-135)
+  - __init__(self) → lines 41-49
+  - load_all(self) → lines 51-77
+  - _load_expression_data() → lines 79-87
+  - _load_clinical_data() → lines 89-97
+  - _load_disease_modules() → lines 99-111
+  - _load_ppi_network() → lines 113-123
+  - _load_wgcna_modules() → lines 125-135
+
+FUNCTION: create_phase3_biomarker_tab() → lines 138-569
+  - UI Parameters → lines 170-246
+  - Results tabs → lines 251-291
+  - Main callback: run_phase3_analysis() → lines 303-552
+    - Step 1: Parameter Extraction (progress 0.05→0.15)
+    - Step 2: SIS Propagation (progress 0.15→0.35)
+    - Step 3: Biomarker Selection (progress 0.35→0.55)
+    - Step 4: Validation (progress 0.55→0.85)
+    - Step 5: Results Prep (progress 0.85→0.98)
+  - Event handler → lines 554-567
+
+FUNCTION: get_phase3_integration_instructions() → lines 572-613
+
+### Core Analysis Classes
+FILE: parameter_extraction.py (18KB)
+  - Class: ParameterExtractor
+  - Methods: extract_all_parameters(), extract_module_parameters()
+
+FILE: sis_network_propagation.py (15KB)
+  - Class: SISNetworkPropagation
+  - Methods: run_dynamics(), get_persistence_scores()
+  - Methods: get_biomarker_table(), get_infection_dynamics()
+
+FILE: biomarker_validation.py (16KB)
+  - Class: BiomarkerValidator
+  - Methods: validate_expression_changes()
+  - Methods: validate_clinical_correlation()
+  - Methods: compare_with_literature()
+
+### Integration Status in app_full.py
+❌ NOT YET IMPORTED
+❌ NOT YET INTEGRATED INTO UI
+
+NEEDED INTEGRATION:
+  # Add to line ~33
+  from gradio_phase3_integration import create_phase3_biomarker_tab
+  
+  # Add new tab after line 2045
+  with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)"):
+      create_phase3_biomarker_tab()
+
+================================================================================
+
+## DATA LOADER SEQUENCE
+
+### Phase 1 Loading (Automatic when Tab 4 accessed)
+1. Phase1DataLoader.__init__() → creates empty attributes
+2. Phase1DataLoader.load_all() → calls loaders sequentially
+3. _load_pathways() → reads data/pathway(基因名映射版).tsv
+4. _load_tcga_data() → reads 3 CSV files from data/TCGA-COAD/
+   - filtered_hiseq_data.csv
+   - filtered_clinical.csv
+   - filtered_miRNA_with_names.csv
+
+### Phase 2 Loading (Automatic when Tab 6.5 accessed)
+1. Phase2DataLoader.__init__() → creates empty attributes
+2. Phase2DataLoader.load_all() → calls loaders sequentially
+3. _load_gene_disease() → reads data/gene_disease.tsv
+4. _load_expression_data() → reads same TCGA files as Phase 1
+5. _load_pathway_genes() → reads pathway file from Phase 1
+
+### Phase 3 Loading (Currently NOT called anywhere)
+1. Phase3DataLoader.__init__() → creates empty attributes
+2. Phase3DataLoader.load_all() → calls loaders sequentially
+3. _load_expression_data() → reads TCGA expression
+4. _load_clinical_data() → reads TCGA clinical
+5. _load_disease_modules() → reads data/phase2_disease_modules.pkl
+6. _load_ppi_network() → reads data/phase2_ppi_network.pkl
+7. _load_wgcna_modules() → optional, reads data/phase2_wgcna_modules.pkl
+
+================================================================================
+
+## DATA FLOW DIAGRAM
+
+USER CLICKS BUTTON
+  ↓
+[Phase 1]
+  ↓ (run_pathway_analysis)
+PathwayActivityScorer.score_gsva/mean() → DataFrame
+  ↓
+DifferentialPathwayAnalysis.compare_by_group() → DataFrame with p-values
+  ↓
+HubGeneIdentifier.calculate_all_hub_genes() → Dict[pathway, DataFrame]
+  ↓
+Visualizations: plot_*() → Figure objects
+  ↓
+Return to UI, display plots + tables
+
+[Phase 2 - Currently Stubbed]
+  ↓ (detect_disease_modules) [PLACEHOLDER]
+  ↓ (run_wgcna_analysis) [PLACEHOLDER]
+  ↓ (analyze_mirna_regulation) [PLACEHOLDER]
+Status bar: 0.2 → 0.95 → Return empty results
+
+[Phase 3 - Not Integrated]
+  ↓ (run_phase3_analysis)
+ParameterExtractor.extract_module_parameters() → Dict
+  ↓
+SISNetworkPropagation.run_dynamics() → stochastic trajectories
+  ↓
+SISNetworkPropagation.get_persistence_scores() → biomarker scores
+  ↓
+BiomarkerValidator.validate_*() → validation results
+  ↓
+Return biomarkers + validation tables to UI
+
+================================================================================
+
+## KEY FUNCTIONS AT A GLANCE
+
+### Phase 1 - Entry Point
+→ create_pathway_analysis_tab() [gradio_phase1_integration.py, line 120]
+  └─ run_pathway_analysis() [line 233]
+
+### Phase 2 - Entry Points  
+→ create_phase2_network_medicine_tab() [gradio_phase2_integration.py, line 573]
+  ├─ create_disease_module_tab() [line 138]
+  │  └─ detect_disease_modules() [line 238] [STUBBED]
+  ├─ create_wgcna_tab() [line 278]
+  │  └─ run_wgcna_analysis() [line 379] [STUBBED]
+  └─ create_mirna_tab() [line 423]
+     └─ analyze_mirna_regulation() [line 528] [STUBBED]
+
+### Phase 3 - Entry Point (Not Called)
+→ create_phase3_biomarker_tab() [gradio_phase3_integration.py, line 138]
+  └─ run_phase3_analysis() [line 303]
+
+================================================================================
+
+## CLASS INHERITANCE & DEPENDENCIES
+
+Phase 1:
+  PathwayActivityScorer
+    └─ loads → pd.DataFrame (expression)
+  DifferentialPathwayAnalysis
+    └─ uses → PathwayActivityScorer output
+  HubGeneIdentifier
+    └─ uses → NetworkX graph + expression data
+  Visualizations
+    └─ use → output from all above
+
+Phase 2:
+  DiseaseNetworkBuilder
+    └─ creates → NetworkX graph (PPI)
+  CommunityDetector
+    └─ uses → PPI network
+  WGCNAAnalyzer
+    └─ uses → expression data
+  miRNATargetPredictor
+    └─ uses → expression + miRNA data
+
+Phase 3:
+  ParameterExtractor
+    └─ uses → Phase 2 modules
+  SISNetworkPropagation
+    └─ uses → parameters from ParameterExtractor
+  BiomarkerValidator
+    └─ uses → SIS results + expression data
+
+================================================================================
+
+## FILE MANIFEST (21 NEW FILES)
+
+Integration (3):
+  1. gradio_phase1_integration.py
+  2. gradio_phase2_integration.py
+  3. gradio_phase3_integration.py
+
+Phase 1 Implementation (4):
+  4. pathway_activity.py
+  5. differential_pathway_analysis.py
+  6. hub_gene_identification.py
+  7. pathway_visualizations.py
+
+Phase 2 Implementation (5):
+  8. disease_module_detection.py
+  9. wgcna_analysis.py
+  10. mirna_integration.py
+  11. [support files]
+
+Phase 3 Implementation (3):
+  12. parameter_extraction.py
+  13. sis_network_propagation.py
+  14. biomarker_validation.py
+
+Supporting (6):
+  15. pathway_activity_improved.py
+  16. generate_tcga_test_data.py
+  17-20. test_*.py files
+  21. [additional utilities]
+
+Total: ~236KB, ~3500 lines, ~20 classes
+
+================================================================================
+
+Created: 2026-04-15 | For: Multi-Phase Network Medicine Platform
+
