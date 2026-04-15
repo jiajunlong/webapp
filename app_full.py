@@ -25,6 +25,9 @@ from tcga_coad_simulator import TCGA_COAD_Simulator
 
 # 导入跨尺度引擎与模型库
 from cross_scale_engine import CrossScaleEngine
+
+# 导入Phase 1通路分析模块
+from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoader
 from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
 
 
@@ -1791,6 +1794,9 @@ def create_gradio_interface():
                                     row_count=10
                                 )
                 
+                            
+                            with gr.Tab("🧬 通路活性分析"):
+                                create_pathway_analysis_tab()
                 # TCGA-COAD仿真逻辑
                 tcga_sim = TCGA_COAD_Simulator()
                 tcga_results_state = gr.State({})
