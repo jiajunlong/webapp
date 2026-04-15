@@ -29,6 +29,8 @@ from cross_scale_engine import CrossScaleEngine
 # 导入Phase 1通路分析模块
 from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoader
 from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
+# 导入Phase 2网络医学分析模块
+from gradio_phase2_integration import create_phase2_network_medicine_tab, Phase2DataLoader
 
 
 # ==================== 配置 ====================
@@ -2036,6 +2038,11 @@ def create_gradio_interface():
                         {"尺度": list(dist.keys()), "模型数": list(dist.values())}
                     )
                     gr.Dataframe(value=dist_df, label="各尺度模型数量", interactive=False)
+
+
+            # ========== Tab 6.5: 网络医学分析 (Phase 2) ==========
+            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=6.5):
+                create_phase2_network_medicine_tab()
 
             # ========== Tab 7: 多尺度联动分析 ==========
             with gr.Tab("🔗 多尺度联动分析", id=6):
