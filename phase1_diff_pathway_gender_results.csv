@@ -1,0 +1,348 @@
+pathway,statistic,pvalue,group,n_groups,group_labels,group_sizes,padj,significant
+"Valine, leucine and isoleucine degradation - Homo sapiens (human)",5.512786172239194,0.0045324582660871806,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Starch and sucrose metabolism - Homo sapiens (human),4.968544912295948,0.007644132073472083,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Maturity onset diabetes of the young - Homo sapiens (human),4.574750580475878,0.011172697052382911,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Citrate cycle (TCA cycle) - Homo sapiens (human),3.798714794443852,0.023682689423644397,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Non-homologous end-joining - Homo sapiens (human),3.731195211192969,0.025287746575763194,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),3.700680129180406,0.026048692254544852,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ribosome - Homo sapiens (human),3.56275930548385,0.029786463224977803,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Coronavirus disease - COVID-19 - Homo sapiens (human),3.534475314437006,0.03061742226847949,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Propanoate metabolism - Homo sapiens (human),3.522361377819077,0.03098042883491589,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Thermogenesis - Homo sapiens (human),3.3633650497870344,0.0361673048959291,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Terpenoid backbone biosynthesis - Homo sapiens (human),3.3563974904400244,0.03641364289714804,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Folate biosynthesis - Homo sapiens (human),3.258195382598619,0.04007101194945414,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fatty acid elongation - Homo sapiens (human),3.0251512363603177,0.05030334645009596,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+beta-Alanine metabolism - Homo sapiens (human),2.9179162059934334,0.05586035585785062,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Arginine biosynthesis - Homo sapiens (human),2.8739594267630477,0.05831338908813617,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Non-alcoholic fatty liver disease - Homo sapiens (human),2.7735937551194185,0.06432924596580357,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Nitrogen metabolism - Homo sapiens (human),2.628979831236496,0.07411488805147035,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fatty acid degradation - Homo sapiens (human),2.5618089556681833,0.07915770140048287,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chemical carcinogenesis - reactive oxygen species - Homo sapiens (human),2.3965783108877776,0.09308462333043531,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pyruvate metabolism - Homo sapiens (human),2.369230531503187,0.09561723732634793,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Mannose type O-glycan biosynthesis - Homo sapiens (human),2.3204260634410536,0.10031074593632551,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glutathione metabolism - Homo sapiens (human),2.277000563413881,0.10468190704686149,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Arginine and proline metabolism - Homo sapiens (human),2.217969982469801,0.11093344137428225,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+RNA polymerase - Homo sapiens (human),2.1714210230709483,0.11612748583279127,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Sphingolipid metabolism - Homo sapiens (human),2.1581023083795876,0.11765823407039641,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Spliceosome - Homo sapiens (human),2.071339258558054,0.12814034322123027,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Oxidative phosphorylation - Homo sapiens (human),2.004992043006595,0.13678705224687596,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+SNARE interactions in vesicular transport - Homo sapiens (human),1.9714573158987143,0.14137885137847267,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Butanoate metabolism - Homo sapiens (human),1.9479479386658396,0.14469025707906233,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Tryptophan metabolism - Homo sapiens (human),1.942903102699328,0.1454109719954948,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Vibrio cholerae infection - Homo sapiens (human),1.8859771140766888,0.1537987046647392,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Lipoic acid metabolism - Homo sapiens (human),1.8561373552668132,0.15838854428394067,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Parkinson disease - Homo sapiens (human),1.8371784488731628,0.16137620861904803,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Drug metabolism - other enzymes - Homo sapiens (human),1.8367261280253533,0.161448177742736,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Vitamin digestion and absorption - Homo sapiens (human),1.8355820732836121,0.16163035360448133,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Taurine and hypotaurine metabolism - Homo sapiens (human),1.831574856212424,0.16227008622643957,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Collecting duct acid secretion - Homo sapiens (human),1.8159220348985308,0.1647935323747859,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Caffeine metabolism - Homo sapiens (human),1.7473577151105304,0.17632151781722585,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Galactose metabolism - Homo sapiens (human),1.696467734124258,0.18540050198781594,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pancreatic secretion - Homo sapiens (human),1.6865678526683918,0.18722069692161183,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Thiamine metabolism - Homo sapiens (human),1.662758760124158,0.19167233825932373,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fat digestion and absorption - Homo sapiens (human),1.658743526882374,0.1924335207402977,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Huntington disease - Homo sapiens (human),1.6206444182798008,0.19980946338626474,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Renin-angiotensin system - Homo sapiens (human),1.6107625817178783,0.2017686870787488,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ribosome biogenesis in eukaryotes - Homo sapiens (human),1.5755195853698019,0.20891517298462095,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Biosynthesis of unsaturated fatty acids - Homo sapiens (human),1.5081672149269192,0.22329031535748042,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Histidine metabolism - Homo sapiens (human),1.5057511548823315,0.22382410885102408,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Vasopressin-regulated water reabsorption - Homo sapiens (human),1.50363121618869,0.22429353786936626,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Metabolism of xenobiotics by cytochrome P450 - Homo sapiens (human),1.5017878450512139,0.22470253159220013,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Porphyrin metabolism - Homo sapiens (human),1.4416447129951393,0.238467159580597,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+RNA degradation - Homo sapiens (human),1.4334932440903307,0.24039702725625303,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Diabetic cardiomyopathy - Homo sapiens (human),1.428838409869088,0.24150611654674156,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Nucleocytoplasmic transport - Homo sapiens (human),1.4045034429595973,0.24738882961879996,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycerolipid metabolism - Homo sapiens (human),1.3851305917737617,0.2521751036860451,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+One carbon pool by folate - Homo sapiens (human),1.3457296839774058,0.2621994570520543,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fanconi anemia pathway - Homo sapiens (human),1.3421911341940427,0.26311915653960855,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Linoleic acid metabolism - Homo sapiens (human),1.303212515319189,0.27346778817235917,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Drug metabolism - cytochrome P450 - Homo sapiens (human),1.2471290357625644,0.2890818305465629,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Prion disease - Homo sapiens (human),1.232900395190679,0.2931841341108374,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Peroxisome - Homo sapiens (human),1.2142179457088924,0.2986597692449073,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Aminoacyl-tRNA biosynthesis - Homo sapiens (human),1.210700491924862,0.2997021716812666,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Amyotrophic lateral sclerosis - Homo sapiens (human),1.1817764926332215,0.30841408787316016,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Lysosome - Homo sapiens (human),1.1719782997316444,0.311422823632318,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chemical carcinogenesis - DNA adducts - Homo sapiens (human),1.1522484992284436,0.3175713286853471,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Bile secretion - Homo sapiens (human),1.139767239869084,0.3215239675447872,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cysteine and methionine metabolism - Homo sapiens (human),1.1359063654743362,0.32275666516303075,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Sphingolipid signaling pathway - Homo sapiens (human),1.1357465291888587,0.3228078001494734,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glyoxylate and dicarboxylate metabolism - Homo sapiens (human),1.1323943774498253,0.32388210727325273,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Mineral absorption - Homo sapiens (human),1.127224997823619,0.32554587239828825,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Riboflavin metabolism - Homo sapiens (human),1.1190896488080249,0.32818169835571126,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Polycomb repressive complex - Homo sapiens (human),1.0687192723939827,0.3449873101998316,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Proximal tubule bicarbonate reclamation - Homo sapiens (human),1.065703583205778,0.3460205592643514,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phenylalanine metabolism - Homo sapiens (human),1.064647339936131,0.34638319116226746,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+p53 signaling pathway - Homo sapiens (human),1.0643061983056914,0.3465003945150576,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Small cell lung cancer - Homo sapiens (human),1.0576076643261365,0.34880987231777405,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Endocrine and other factor-regulated calcium reabsorption - Homo sapiens (human),1.0571324430646503,0.3489743042342441,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chemical carcinogenesis - receptor activation - Homo sapiens (human),1.0566824436568656,0.3491300811198958,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pentose and glucuronate interconversions - Homo sapiens (human),1.0449447803257221,0.3532181728720022,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+alpha-Linolenic acid metabolism - Homo sapiens (human),1.0431697352016553,0.3538405864968793,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Retinol metabolism - Homo sapiens (human),1.002826265742879,0.36828886402751004,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosphingolipid biosynthesis - lacto and neolacto series - Homo sapiens (human),1.0018142303431221,0.36865885252978214,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Tyrosine metabolism - Homo sapiens (human),1.0004429096062144,0.3691607894199171,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Mucin type O-glycan biosynthesis - Homo sapiens (human),0.9924737367324927,0.3720913636454841,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ferroptosis - Homo sapiens (human),0.986702283899346,0.3742283806570815,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ether lipid metabolism - Homo sapiens (human),0.9656276500942306,0.3821373646108949,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Oocyte meiosis - Homo sapiens (human),0.9637710859320224,0.38284212774352205,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosylphosphatidylinositol (GPI)-anchor biosynthesis - Homo sapiens (human),0.9576762647980823,0.38516498177065694,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Biotin metabolism - Homo sapiens (human),0.9536038482028422,0.38672496987404814,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+PPAR signaling pathway - Homo sapiens (human),0.9446363450642622,0.39018256730359496,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Valine, leucine and isoleucine biosynthesis - Homo sapiens (human)",0.9303529337897679,0.39575427335827573,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Base excision repair - Homo sapiens (human),0.9170802546108178,0.40100357245673873,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),0.8764755359424855,0.4175024221159572,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Retrograde endocannabinoid signaling - Homo sapiens (human),0.8571690042644611,0.4255855547355003,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ascorbate and aldarate metabolism - Homo sapiens (human),0.8318741981433295,0.4364150364584209,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+IL-17 signaling pathway - Homo sapiens (human),0.8187901727865282,0.4421252683782115,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phagosome - Homo sapiens (human),0.8011275980131107,0.44995334420902544,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycolysis / Gluconeogenesis - Homo sapiens (human),0.799466763858377,0.4506965756016844,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Various types of N-glycan biosynthesis - Homo sapiens (human),0.7744287408598562,0.46205233488815006,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Arachidonic acid metabolism - Homo sapiens (human),0.7668205116469977,0.46555977800921117,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Olfactory transduction - Homo sapiens (human),0.7546902215125454,0.47120750762672503,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Gastric acid secretion - Homo sapiens (human),0.7481920748730261,0.4742613254940466,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Homologous recombination - Homo sapiens (human),0.7450216780781586,0.4757584926031058,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cholesterol metabolism - Homo sapiens (human),0.735374647722479,0.48034350677341564,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Renin secretion - Homo sapiens (human),0.718989189826402,0.4882334431516888,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Staphylococcus aureus infection - Homo sapiens (human),0.7138814987802443,0.4907195079426557,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Prostate cancer - Homo sapiens (human),0.7057841023716629,0.4946869248175397,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosaminoglycan degradation - Homo sapiens (human),0.6902993242546552,0.5023641325221798,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Natural killer cell mediated cytotoxicity - Homo sapiens (human),0.6820537003676636,0.5065011189267233,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+D-Amino acid metabolism - Homo sapiens (human),0.6702654811059374,0.5124752016997056,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Colorectal cancer - Homo sapiens (human),0.6630386718423976,0.5161726977733754,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Sulfur metabolism - Homo sapiens (human),0.6615600477519801,0.5169325223175943,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Steroid biosynthesis - Homo sapiens (human),0.6556832993964814,0.5199635833069827,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pantothenate and CoA biosynthesis - Homo sapiens (human),0.6533763122050942,0.5211583526891858,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cholinergic synapse - Homo sapiens (human),0.6531608759763484,0.5212700664737989,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Endometrial cancer - Homo sapiens (human),0.6480273457918154,0.523939193911312,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Inositol phosphate metabolism - Homo sapiens (human),0.6389747767184747,0.5286795945354762,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Rotavirus - Homo sapiens (human),0.6332894622271446,0.5316787992094052,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Basal transcription factors - Homo sapiens (human),0.6304978723542228,0.5331577331976384,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Progesterone-mediated oocyte maturation - Homo sapiens (human),0.6296676713213676,0.5335983581125495,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Thyroid cancer - Homo sapiens (human),0.6251641016993994,0.5359950080498884,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Central carbon metabolism in cancer - Homo sapiens (human),0.6185190606133586,0.5395511070424178,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Protein processing in endoplasmic reticulum - Homo sapiens (human),0.6181214355103641,0.539764648895529,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fructose and mannose metabolism - Homo sapiens (human),0.6130407703501101,0.5425006950758405,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Steroid hormone biosynthesis - Homo sapiens (human),0.6066700165506514,0.545951243551996,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Antigen processing and presentation - Homo sapiens (human),0.6037778559403819,0.5475249971260382,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cell cycle - Homo sapiens (human),0.6012641322844716,0.5488965398295241,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Dopaminergic synapse - Homo sapiens (human),0.5988002171544602,0.5502442664285075,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Salivary secretion - Homo sapiens (human),0.5822035833881548,0.5594097014872189,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Autophagy - other - Homo sapiens (human),0.5783395459612596,0.5615655936479966,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Vitamin B6 metabolism - Homo sapiens (human),0.5612594456288884,0.5711959935167931,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Renal cell carcinoma - Homo sapiens (human),0.5474773484635664,0.5790880827966324,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Long-term potentiation - Homo sapiens (human),0.540930372510853,0.582875513783196,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+RIG-I-like receptor signaling pathway - Homo sapiens (human),0.5366355840716477,0.5853736035013655,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phosphonate and phosphinate metabolism - Homo sapiens (human),0.535655796110734,0.5859450131212738,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Nucleotide excision repair - Homo sapiens (human),0.5351107962600715,0.586263098809132,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Bladder cancer - Homo sapiens (human),0.5338091803404152,0.58702348298883,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Longevity regulating pathway - Homo sapiens (human),0.5243932713329708,0.5925537983445887,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fc gamma R-mediated phagocytosis - Homo sapiens (human),0.520658495913525,0.5947618895919172,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pyrimidine metabolism - Homo sapiens (human),0.5078314309952872,0.6024089148578025,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Graft-versus-host disease - Homo sapiens (human),0.5078218960636227,0.6024146359364086,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Viral myocarditis - Homo sapiens (human),0.49920644406918024,0.6076064593698921,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Autoimmune thyroid disease - Homo sapiens (human),0.49590648084821254,0.609606999733333,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Tuberculosis - Homo sapiens (human),0.4935782844527776,0.6110224176860392,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Serotonergic synapse - Homo sapiens (human),0.49254521005185636,0.6116515317518993,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Alzheimer disease - Homo sapiens (human),0.491153353347244,0.6125001668713371,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Adenovirus - Homo sapiens (human),0.4880758312592222,0.6143807917704297,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Lysine degradation - Homo sapiens (human),0.48640048212484405,0.6154070163691059,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+GnRH signaling pathway - Homo sapiens (human),0.4818914523551622,0.6181775846522998,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycerophospholipid metabolism - Homo sapiens (human),0.4758041951900111,0.6219378459584687,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Sulfur relay system - Homo sapiens (human),0.47396816986613105,0.6230765267731911,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Amphetamine addiction - Homo sapiens (human),0.4693704444530389,0.6259372084726981,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Adrenergic signaling in cardiomyocytes - Homo sapiens (human),0.46004243203260275,0.6317817895277837,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Efferocytosis - Homo sapiens (human),0.45663071264696303,0.633933155385254,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Viral life cycle - HIV-1 - Homo sapiens (human),0.44337859508233235,0.6423599666645036,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Glycine, serine and threonine metabolism - Homo sapiens (human)",0.4402077271706678,0.6443929546139576,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Leukocyte transendothelial migration - Homo sapiens (human),0.43614531743299406,0.647007029862059,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glucagon signaling pathway - Homo sapiens (human),0.4250595720219934,0.6541949823613247,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Nicotine addiction - Homo sapiens (human),0.4234007881870887,0.6552774321407191,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Taste transduction - Homo sapiens (human),0.4168314561883123,0.6595820512667506,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pentose phosphate pathway - Homo sapiens (human),0.4131733534853895,0.6619914011799781,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cardiac muscle contraction - Homo sapiens (human),0.40193453980408633,0.6694492968714093,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosphingolipid biosynthesis - ganglio series - Homo sapiens (human),0.4004986374497969,0.6704082195733927,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pathogenic Escherichia coli infection - Homo sapiens (human),0.3942343655555906,0.6746078389668173,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Systemic lupus erythematosus - Homo sapiens (human),0.39418877953227044,0.6746384971902962,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Longevity regulating pathway - multiple species - Homo sapiens (human),0.39165419128045437,0.6763453094665757,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hepatitis C - Homo sapiens (human),0.39153429213976737,0.6764261582440664,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Allograft rejection - Homo sapiens (human),0.3906615835435532,0.6770149249270259,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Flavivirus - Homo sapiens (human),0.37573098155413825,0.6871681388474199,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Apoptosis - multiple species - Homo sapiens (human),0.37547294460102654,0.6873449535030265,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cell adhesion molecules - Homo sapiens (human),0.37116310816176673,0.6903049708506486,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Proteasome - Homo sapiens (human),0.3701993555139219,0.6909686367729893,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+N-Glycan biosynthesis - Homo sapiens (human),0.3617381998480066,0.6968228921490904,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Long-term depression - Homo sapiens (human),0.36042191143422836,0.697738112155664,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Alcoholism - Homo sapiens (human),0.35856822499758567,0.6990290417557846,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cocaine addiction - Homo sapiens (human),0.3518760478239645,0.7037096204708955,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Aldosterone-regulated sodium reabsorption - Homo sapiens (human),0.3483996402138199,0.7061535096936724,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Prolactin signaling pathway - Homo sapiens (human),0.3429995900918544,0.709966680836576,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),0.34186274034938524,0.7107720923664225,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Human immunodeficiency virus - Homo sapiens (human),0.3405898761779096,0.711674957350666,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Platelet activation - Homo sapiens (human),0.33643501685268223,0.7146301247386673,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Asthma - Homo sapiens (human),0.33455060478193477,0.7159744972548177,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cellular senescence - Homo sapiens (human),0.3343317566608144,0.7161307924431571,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+cGMP-PKG signaling pathway - Homo sapiens (human),0.3320488419906758,0.7177632377996677,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Aldosterone synthesis and secretion - Homo sapiens (human),0.33172594901234437,0.7179944316568867,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Intestinal immune network for IgA production - Homo sapiens (human),0.3292112935481513,0.7197975145669179,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ubiquitin mediated proteolysis - Homo sapiens (human),0.3254407099027753,0.7225096910600528,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Endocytosis - Homo sapiens (human),0.3240099459573194,0.7235415315557253,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Regulation of lipolysis in adipocytes - Homo sapiens (human),0.3211525026673334,0.7256067140360628,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phosphatidylinositol signaling system - Homo sapiens (human),0.32030879272512064,0.7262176304851063,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Neutrophil extracellular trap formation - Homo sapiens (human),0.3149347192507148,0.7301210943680757,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Spinocerebellar ataxia - Homo sapiens (human),0.3122340026634598,0.7320907396655046,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+cAMP signaling pathway - Homo sapiens (human),0.30696441553993725,0.7359493068490172,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Gap junction - Homo sapiens (human),0.30268288209892014,0.7390994764013403,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Mismatch repair - Homo sapiens (human),0.3012418359261264,0.7401627906361528,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Thyroid hormone synthesis - Homo sapiens (human),0.3006197659001065,0.740622277853891,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),0.299500938154919,0.7414494149726869,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ovarian steroidogenesis - Homo sapiens (human),0.29902536148744413,0.7418012855299081,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Parathyroid hormone synthesis, secretion and action - Homo sapiens (human)",0.2976788412136762,0.7427984646084461,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+GnRH secretion - Homo sapiens (human),0.2946362411951981,0.7450566708796958,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Tight junction - Homo sapiens (human),0.2937356212741145,0.7457264338601227,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phototransduction - Homo sapiens (human),0.2932676340515456,0.746074700930739,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+ATP-dependent chromatin remodeling - Homo sapiens (human),0.29251051741112916,0.7466384797040395,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Purine metabolism - Homo sapiens (human),0.29113949806718975,0.7476604875341216,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+B cell receptor signaling pathway - Homo sapiens (human),0.28966830707816404,0.7487587352721056,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Leishmaniasis - Homo sapiens (human),0.2880508059994857,0.7499680804924262,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Adherens junction - Homo sapiens (human),0.2871276266015038,0.7506591895293367,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Bacterial invasion of epithelial cells - Homo sapiens (human),0.28302624888761313,0.7537373249016017,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Type II diabetes mellitus - Homo sapiens (human),0.2786300092879854,0.7570508859608936,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Acute myeloid leukemia - Homo sapiens (human),0.2740537217875204,0.7605157512736352,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Thyroid hormone signaling pathway - Homo sapiens (human),0.26335634980243006,0.7686775798642723,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Measles - Homo sapiens (human),0.25942464749619143,0.7716995083430344,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Legionellosis - Homo sapiens (human),0.25806122541417525,0.7727502359279624,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Type I diabetes mellitus - Homo sapiens (human),0.25282078112200557,0.7768022484089674,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Toll-like receptor signaling pathway - Homo sapiens (human),0.25010624365582973,0.7789095935566895,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Wnt signaling pathway - Homo sapiens (human),0.24774214474426728,0.7807495805441395,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Apelin signaling pathway - Homo sapiens (human),0.2472248099025219,0.7811528080327823,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Neurotrophin signaling pathway - Homo sapiens (human),0.24388907321718994,0.7837578336732989,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Necroptosis - Homo sapiens (human),0.23975696728665466,0.7869969239873067,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Arrhythmogenic right ventricular cardiomyopathy - Homo sapiens (human),0.2364192801820957,0.7896231303916844,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+NF-kappa B signaling pathway - Homo sapiens (human),0.23261245921500906,0.7926292514914615,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Inflammatory mediator regulation of TRP channels - Homo sapiens (human),0.23230373923651143,0.7928735425386276,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Salmonella infection - Homo sapiens (human),0.22894912978854676,0.7955329523951518,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+mRNA surveillance pathway - Homo sapiens (human),0.2208858664439662,0.8019620431013084,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Circadian entrainment - Homo sapiens (human),0.2208109467034495,0.8020220238320029,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+NOD-like receptor signaling pathway - Homo sapiens (human),0.21945616441039026,0.8031074427612765,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Apoptosis - Homo sapiens (human),0.21756474430866066,0.8046252797826844,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Morphine addiction - Homo sapiens (human),0.21638289068684283,0.8055751674469476,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Growth hormone synthesis, secretion and action - Homo sapiens (human)",0.2133289372215144,0.8080349492354653,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hematopoietic cell lineage - Homo sapiens (human),0.20984389925650784,0.8108511942633603,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Influenza A - Homo sapiens (human),0.20661612067070276,0.813468372809868,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+AMPK signaling pathway - Homo sapiens (human),0.20517309177732226,0.8146411757982328,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chemokine signaling pathway - Homo sapiens (human),0.2029311769732739,0.8164666444213071,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Estrogen signaling pathway - Homo sapiens (human),0.19991029048632647,0.8189329092836415,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fc epsilon RI signaling pathway - Homo sapiens (human),0.19937633997456286,0.819369609017691,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Insulin signaling pathway - Homo sapiens (human),0.19609552900469596,0.8220580277055384,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Vascular smooth muscle contraction - Homo sapiens (human),0.1892488483069466,0.8276971239935107,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+TNF signaling pathway - Homo sapiens (human),0.186300011436455,0.8301378559676702,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Osteoclast differentiation - Homo sapiens (human),0.18032915827602253,0.8351021274119378,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Calcium signaling pathway - Homo sapiens (human),0.1797771944350318,0.8355625478886204,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cytosolic DNA-sensing pathway - Homo sapiens (human),0.17931352783948198,0.8359495129658666,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Other glycan degradation - Homo sapiens (human),0.178687432967172,0.8364723234402868,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hedgehog signaling pathway - Homo sapiens (human),0.1777336533085801,0.837269395305245,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Ebolavirus and Lyssavirus - Homo sapiens (human),0.1769843618806557,0.8378961136246214,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Th1 and Th2 cell differentiation - Homo sapiens (human),0.17696864973570667,0.837909260552642,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pathways of neurodegeneration - multiple diseases - Homo sapiens (human),0.17655748186657225,0.8382533737083365,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Nicotinate and nicotinamide metabolism - Homo sapiens (human),0.1673157540969053,0.8460256201294784,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Amoebiasis - Homo sapiens (human),0.16474810416881655,0.8481978654842242,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Human immunodeficiency virus 1 infection - Homo sapiens (human),0.16449102615095243,0.8484156641902755,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+DNA replication - Homo sapiens (human),0.16264796446990523,0.8499787733974093,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Primary immunodeficiency - Homo sapiens (human),0.16096687981828536,0.8514070401325167,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Epstein-Barr virus infection - Homo sapiens (human),0.16040412544618882,0.8518857022162594,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Shigellosis - Homo sapiens (human),0.16010336904175315,0.8521416278434284,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Other types of O-glycan biosynthesis - Homo sapiens (human),0.15862759354437933,0.8533985475748548,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Human cytomegalovirus infection - Homo sapiens (human),0.1569911740603156,0.8547944728665517,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Melanogenesis - Homo sapiens (human),0.15669301079446699,0.8550490647161905,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Relaxin signaling pathway - Homo sapiens (human),0.15560568693461266,0.8559781426563227,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),0.14786251249634974,0.8626238870988024,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hepatitis B - Homo sapiens (human),0.14597920112115156,0.8642481264597285,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Primary bile acid biosynthesis - Homo sapiens (human),0.14567268907172784,0.8645127656115102,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Carbohydrate digestion and absorption - Homo sapiens (human),0.14368601892726646,0.8662300162487823,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Toxoplasmosis - Homo sapiens (human),0.13767219701880423,0.8714492659933273,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Rap1 signaling pathway - Homo sapiens (human),0.1373366299610167,0.8717414283491559,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Viral protein interaction with cytokine and cytokine receptor - Homo sapiens (human),0.13654282640911736,0.8724329485781955,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Oxytocin signaling pathway - Homo sapiens (human),0.12608962599639076,0.8815909778199709,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Alanine, aspartate and glutamate metabolism - Homo sapiens (human)",0.1232953966997211,0.8840553669771274,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glutamatergic synapse - Homo sapiens (human),0.12087690077748411,0.8861939804830395,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Gastric cancer - Homo sapiens (human),0.11986931431966029,0.8870865011585004,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Insulin resistance - Homo sapiens (human),0.11856587792904433,0.8882424300671391,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Dilated cardiomyopathy - Homo sapiens (human),0.11805817320849891,0.8886930895030007,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Transcriptional misregulation in cancer - Homo sapiens (human),0.11423486022635468,0.8920942285237079,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chronic myeloid leukemia - Homo sapiens (human),0.11306089475224353,0.8931411938852699,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+HIF-1 signaling pathway - Homo sapiens (human),0.11109313478371699,0.8948988590050007,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Regulation of actin cytoskeleton - Homo sapiens (human),0.10710672359734548,0.8984703397004075,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cobalamin transport and metabolism - Homo sapiens (human),0.10670700468503455,0.8988292448916737,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fluid shear stress and atherosclerosis - Homo sapiens (human),0.10568101260990045,0.8997511385579657,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Virion - Herpesvirus - Homo sapiens (human),0.1013801303688138,0.9036260301928281,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human)",0.09879505104862503,0.9059631528140125,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+GABAergic synapse - Homo sapiens (human),0.09857671222901644,0.9061608277145654,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Th17 cell differentiation - Homo sapiens (human),0.09525253348378863,0.9091757758882544,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Signaling pathways regulating pluripotency of stem cells - Homo sapiens (human),0.09494573952806368,0.9094545395387111,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Phospholipase D signaling pathway - Homo sapiens (human),0.09441813042596363,0.9099341449838692,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+ErbB signaling pathway - Homo sapiens (human),0.09411620995153124,0.9102087103797627,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Notch signaling pathway - Homo sapiens (human),0.09129916044279109,0.9127745527190148,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+mTOR signaling pathway - Homo sapiens (human),0.09095511170198746,0.9130884204327754,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Selenocompound metabolism - Homo sapiens (human),0.088984059819012,0.914888663355332,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Ras signaling pathway - Homo sapiens (human),0.0883320176407216,0.9154849874546513,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Malaria - Homo sapiens (human),0.08712920514831059,0.9165860456823722,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Focal adhesion - Homo sapiens (human),0.08667578986416798,0.9170014497236736,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Synaptic vesicle cycle - Homo sapiens (human),0.08444992086179312,0.9190434708618851,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Motor proteins - Homo sapiens (human),0.07551345521781745,0.9272880629363818,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+FoxO signaling pathway - Homo sapiens (human),0.07033347141488996,0.9321010913892404,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Non-small cell lung cancer - Homo sapiens (human),0.06991682452440916,0.9324893149169975,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pathways in cancer - Homo sapiens (human),0.06991494225079234,0.9324910691529441,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Choline metabolism in cancer - Homo sapiens (human),0.06753858266621486,0.9347084368903631,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cortisol synthesis and secretion - Homo sapiens (human),0.06687247637818355,0.9353309299486622,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+PD-L1 expression and PD-1 checkpoint pathway in cancer - Homo sapiens (human),0.06604915700419332,0.936100920008572,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Epithelial cell signaling in Helicobacter pylori infection - Homo sapiens (human),0.06426466591936505,0.9377720169899239,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Neuroactive ligand-receptor interaction - Homo sapiens (human),0.062126233015986194,0.939778525712176,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Fatty acid biosynthesis - Homo sapiens (human),0.0619260422635318,0.939966587657409,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pancreatic cancer - Homo sapiens (human),0.0611886419650662,0.9406596388720578,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Proteoglycans in cancer - Homo sapiens (human),0.06079688021072022,0.9410280485704398,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hepatocellular carcinoma - Homo sapiens (human),0.05948886398537338,0.9422591504937732,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Human papillomavirus infection - Homo sapiens (human),0.05923596535926797,0.9424973653126889,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Axon guidance - Homo sapiens (human),0.05908088486446754,0.9426434715408893,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glioma - Homo sapiens (human),0.05800391063331066,0.9436587528788396,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Autophagy - animal - Homo sapiens (human),0.05708093767383791,0.9445297316421133,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Chagas disease - Homo sapiens (human),0.0559901757943804,0.9455600918270429,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cytoskeleton in muscle cells - Homo sapiens (human),0.05598750633268081,0.9455626148545659,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Adipocytokine signaling pathway - Homo sapiens (human),0.054497031894652076,0.9469723888953981,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+C-type lectin receptor signaling pathway - Homo sapiens (human),0.05230584263248746,0.9490487855931149,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Viral carcinogenesis - Homo sapiens (human),0.0511102498447163,0.95018367770441,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+ABC transporters - Homo sapiens (human),0.0496844729563122,0.9515388557183267,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Herpes simplex virus 1 infection - Homo sapiens (human),0.04870605649849053,0.9524699517472615,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Kaposi sarcoma-associated herpesvirus infection - Homo sapiens (human),0.043904785479008446,0.9570523391839114,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Yersinia infection - Homo sapiens (human),0.04378135806688536,0.9571704321970184,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+MAPK signaling pathway - Homo sapiens (human),0.042338824389835016,0.9585517104804667,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+"Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human)",0.04199539978556064,0.958880847954328,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Inflammatory bowel disease - Homo sapiens (human),0.04136481830560957,0.9594854926391309,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cushing syndrome - Homo sapiens (human),0.04107711963236931,0.9597614854615893,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Insulin secretion - Homo sapiens (human),0.0403836378916083,0.9604270798254847,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Lipid and atherosclerosis - Homo sapiens (human),0.03987442427373947,0.9609161123511036,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Human T-cell leukemia virus 1 infection - Homo sapiens (human),0.037924120281107365,0.9627914446193481,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Glycosphingolipid biosynthesis - globo and isoglobo series - Homo sapiens (human),0.03721016912638886,0.9634788727046593,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Alcoholic liver disease - Homo sapiens (human),0.03703819443609567,0.96364453250456,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Protein digestion and absorption - Homo sapiens (human),0.035543144493883835,0.9650858945189542,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+ECM-receptor interaction - Homo sapiens (human),0.034556690317333834,0.9660381143166905,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+T cell receptor signaling pathway - Homo sapiens (human),0.0338153516211803,0.9667543484092244,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Basal cell carcinoma - Homo sapiens (human),0.03322650672778501,0.9673236341047678,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Cytokine-cytokine receptor interaction - Homo sapiens (human),0.03186705606634049,0.9686392197430964,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Circadian rhythm - Homo sapiens (human),0.031836085671641375,0.9686692118244766,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+JAK-STAT signaling pathway - Homo sapiens (human),0.03183140478163991,0.9686737449328482,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Rheumatoid arthritis - Homo sapiens (human),0.027578825803778143,0.9728009105298097,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hypertrophic cardiomyopathy - Homo sapiens (human),0.026240249138852936,0.9741036748210599,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Mitophagy - animal - Homo sapiens (human),0.024484775568900406,0.9758148478672952,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+TGF-beta signaling pathway - Homo sapiens (human),0.022535057785687075,0.9777189145466346,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Pertussis - Homo sapiens (human),0.019081668394792334,0.9811006404413275,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Complement and coagulation cascades - Homo sapiens (human),0.017451525752872607,0.9827010483345439,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+MicroRNAs in cancer - Homo sapiens (human),0.01580931421533416,0.9843159655185418,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hippo signaling pathway - Homo sapiens (human),0.013285902035943703,0.986802651716964,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Protein export - Homo sapiens (human),0.012303663810845843,0.9877723054505951,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+PI3K-Akt signaling pathway - Homo sapiens (human),0.011313662936546712,0.988750594107177,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Hippo signaling pathway - multiple species - Homo sapiens (human),0.010639276205216262,0.9894175616149183,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+African trypanosomiasis - Homo sapiens (human),0.008425060547361524,0.9916106079125977,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+AGE-RAGE signaling pathway in diabetic complications - Homo sapiens (human),0.00646491192621071,0.9935561041376894,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Breast cancer - Homo sapiens (human),0.0031325372882271625,0.9968724024991269,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+VEGF signaling pathway - Homo sapiens (human),0.002714720827048307,0.9972889896308788,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False
+Melanoma - Homo sapiens (human),0.0004209450176238375,0.9995791442646217,gender,3,"'--,female,male","2,117,138",0.9995791442646217,False

@@ -1,0 +1,250 @@
+pathway,rank,gene,hub_score,degree,betweenness,expr_variance,pathway_connectivity
+Alanine, aspartate and glutamate metabolism - Homo sapiens (human),1,ASS1,0.417126,3,0.021978,1.055981,3
+Alanine, aspartate and glutamate metabolism - Homo sapiens (human),2,CPS1,0.344510,2,0.000000,7.804477,2
+Alanine, aspartate and glutamate metabolism - Homo sapiens (human),3,ALDH5A1,0.275043,2,0.010989,0.509290,2
+Alanine, aspartate and glutamate metabolism - Homo sapiens (human),4,ASL,0.270193,2,0.000000,0.353532,2
+Alanine, aspartate and glutamate metabolism - Homo sapiens (human),5,ABAT,0.155087,1,0.000000,2.180990,1
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),1,GALT,0.404084,2,0.005263,0.251175,2
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),2,GALE,0.203974,1,0.000000,0.398402,1
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),3,HEXA,0.203970,1,0.000000,0.398053,1
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),4,GALK1,0.203523,1,0.000000,0.353240,1
+Amino sugar and nucleotide sugar metabolism - Homo sapiens (human),5,PGM3,0.202240,1,0.000000,0.224560,1
+Arginine and proline metabolism - Homo sapiens (human),1,ALDH4A1,0.416601,5,0.021053,1.031142,5
+Arginine and proline metabolism - Homo sapiens (human),2,ALDH3A2,0.324376,4,0.000000,0.438709,4
+Arginine and proline metabolism - Homo sapiens (human),3,ALDH7A1,0.323832,4,0.000000,0.384210,4
+Arginine and proline metabolism - Homo sapiens (human),4,ALDH2,0.323516,4,0.000000,0.352526,4
+Arginine and proline metabolism - Homo sapiens (human),5,ALDH18A1,0.321660,4,0.000000,0.166480,4
+Arginine biosynthesis - Homo sapiens (human),1,ASS1,0.426896,4,0.054545,1.055981,4
+Arginine biosynthesis - Homo sapiens (human),2,CPS1,0.377843,3,0.000000,7.804477,3
+Arginine biosynthesis - Homo sapiens (human),3,OTC,0.365074,3,0.000000,6.524273,3
+Arginine biosynthesis - Homo sapiens (human),4,ASL,0.303526,3,0.000000,0.353532,3
+Arginine biosynthesis - Homo sapiens (human),5,GLUL,0.106735,1,0.000000,0.675263,1
+Ascorbate and aldarate metabolism - Homo sapiens (human),1,ALDH3A2,0.404376,2,0.000000,0.438709,2
+Ascorbate and aldarate metabolism - Homo sapiens (human),2,ALDH7A1,0.403832,2,0.000000,0.384210,2
+Ascorbate and aldarate metabolism - Homo sapiens (human),3,ALDH2,0.403516,2,0.000000,0.352526,2
+Ascorbate and aldarate metabolism - Homo sapiens (human),4,UGT2B15,0.074157,0,0.000000,7.434949,0
+Ascorbate and aldarate metabolism - Homo sapiens (human),5,UGT1A10,0.055657,0,0.000000,5.580102,0
+Caffeine metabolism - Homo sapiens (human),1,XDH,0.031271,0,0.000000,3.135197,0
+Caffeine metabolism - Homo sapiens (human),2,NAT1,0.009042,0,0.000000,0.906552,0
+Caffeine metabolism - Homo sapiens (human),3,CYP2A7,0.003655,0,0.000000,0.366401,0
+Caffeine metabolism - Homo sapiens (human),4,CYP1A2,0.000753,0,0.000000,0.075527,0
+Caffeine metabolism - Homo sapiens (human),5,NAT2,0.000000,0,0.000000,0.000000,0
+Citrate cycle (TCA cycle) - Homo sapiens (human),1,FH,0.464731,6,0.209150,0.199097,6
+Citrate cycle (TCA cycle) - Homo sapiens (human),2,PC,0.359362,4,0.287582,0.643714,4
+Citrate cycle (TCA cycle) - Homo sapiens (human),3,SDHA,0.269375,4,0.000000,0.271504,4
+Citrate cycle (TCA cycle) - Homo sapiens (human),4,SDHB,0.268711,4,0.000000,0.204983,4
+Citrate cycle (TCA cycle) - Homo sapiens (human),5,SDHD,0.268461,4,0.000000,0.179865,4
+Cysteine and methionine metabolism - Homo sapiens (human),1,DNMT3B,0.410509,2,0.000000,1.053621,2
+Cysteine and methionine metabolism - Homo sapiens (human),2,DNMT3A,0.404494,2,0.000000,0.450540,2
+Cysteine and methionine metabolism - Homo sapiens (human),3,DNMT1,0.402865,2,0.000000,0.287290,2
+Cysteine and methionine metabolism - Homo sapiens (human),4,SRM,0.202995,1,0.000000,0.300311,1
+Cysteine and methionine metabolism - Homo sapiens (human),5,SMS,0.202811,1,0.000000,0.281797,1
+D-Amino acid metabolism - Homo sapiens (human),1,DDO,0.029621,0,0.000000,2.969817,0
+D-Amino acid metabolism - Homo sapiens (human),2,GLS2,0.017571,0,0.000000,1.761660,0
+D-Amino acid metabolism - Homo sapiens (human),3,DAO,0.012069,0,0.000000,1.210025,0
+D-Amino acid metabolism - Homo sapiens (human),4,SRR,0.003907,0,0.000000,0.391693,0
+D-Amino acid metabolism - Homo sapiens (human),5,GLS,0.003058,0,0.000000,0.306637,0
+Fatty acid biosynthesis - Homo sapiens (human),1,ACSL6,0.078061,0,0.000000,7.826343,0
+Fatty acid biosynthesis - Homo sapiens (human),2,ACACB,0.010760,0,0.000000,1.078778,0
+Fatty acid biosynthesis - Homo sapiens (human),3,ACSL1,0.009049,0,0.000000,0.907213,0
+Fatty acid biosynthesis - Homo sapiens (human),4,ACSL4,0.006674,0,0.000000,0.669113,0
+Fatty acid biosynthesis - Homo sapiens (human),5,ACSBG2,0.006291,0,0.000000,0.630742,0
+Fatty acid degradation - Homo sapiens (human),1,ACADSB,0.432083,4,0.095238,0.352069,4
+Fatty acid degradation - Homo sapiens (human),2,GCDH,0.335988,3,0.114286,0.170688,3
+Fatty acid degradation - Homo sapiens (human),3,ALDH7A1,0.329546,3,0.085714,0.384210,3
+Fatty acid degradation - Homo sapiens (human),4,ALDH2,0.314945,3,0.038095,0.352526,3
+Fatty acid degradation - Homo sapiens (human),5,ACADL,0.210765,2,0.000000,1.079319,2
+Fatty acid elongation - Homo sapiens (human),1,HADHB,0.401734,1,0.000000,0.173822,1
+Fatty acid elongation - Homo sapiens (human),2,HADHA,0.401172,1,0.000000,0.117518,1
+Fatty acid elongation - Homo sapiens (human),3,ELOVL2,0.020159,0,0.000000,2.021100,0
+Fatty acid elongation - Homo sapiens (human),4,ELOVL4,0.012844,0,0.000000,1.287733,0
+Fatty acid elongation - Homo sapiens (human),5,ELOVL5,0.011802,0,0.000000,1.183291,0
+Fructose and mannose metabolism - Homo sapiens (human),1,GFUS,0.400000,1,0.000000,0.000000,1
+Fructose and mannose metabolism - Homo sapiens (human),2,FCSK,0.400000,1,0.000000,0.000000,1
+Fructose and mannose metabolism - Homo sapiens (human),3,AKR1B10,0.069991,0,0.000000,7.017276,0
+Fructose and mannose metabolism - Homo sapiens (human),4,ALDOB,0.069765,0,0.000000,6.994548,0
+Fructose and mannose metabolism - Homo sapiens (human),5,HK3,0.032957,0,0.000000,3.304245,0
+Galactose metabolism - Homo sapiens (human),1,GALT,0.407505,3,0.016667,0.251175,3
+Galactose metabolism - Homo sapiens (human),2,GALE,0.270640,2,0.000000,0.398402,2
+Galactose metabolism - Homo sapiens (human),3,GALM,0.270623,2,0.000000,0.396658,2
+Galactose metabolism - Homo sapiens (human),4,SI,0.269167,2,0.008333,0.000000,2
+Galactose metabolism - Homo sapiens (human),5,MGAM,0.156397,1,0.000000,2.312393,1
+Glutathione metabolism - Homo sapiens (human),1,RRM2B,0.408922,2,0.019048,0.321641,2
+Glutathione metabolism - Homo sapiens (human),2,SMS,0.408525,2,0.019048,0.281797,2
+Glutathione metabolism - Homo sapiens (human),3,IDH2,0.204177,1,0.000000,0.418805,1
+Glutathione metabolism - Homo sapiens (human),4,SRM,0.202995,1,0.000000,0.300311,1
+Glutathione metabolism - Homo sapiens (human),5,IDH1,0.202438,1,0.000000,0.244471,1
+Glycine, serine and threonine metabolism - Homo sapiens (human),1,GLDC,0.445604,2,0.000000,4.572188,2
+Glycine, serine and threonine metabolism - Homo sapiens (human),2,CBS,0.434200,2,0.006536,3.232284,2
+Glycine, serine and threonine metabolism - Homo sapiens (human),3,CBS,0.434200,2,0.006536,3.232284,2
+Glycine, serine and threonine metabolism - Homo sapiens (human),4,AMT,0.427151,2,0.000000,2.722173,2
+Glycine, serine and threonine metabolism - Homo sapiens (human),5,GCSH,0.411872,2,0.000000,1.190238,2
+Glycolysis / Gluconeogenesis - Homo sapiens (human),1,ALDH2,0.405362,3,0.006154,0.352526,3
+Glycolysis / Gluconeogenesis - Homo sapiens (human),2,PDHA1,0.271460,2,0.003077,0.387985,2
+Glycolysis / Gluconeogenesis - Homo sapiens (human),3,ALDH3A2,0.271042,2,0.000000,0.438709,2
+Glycolysis / Gluconeogenesis - Homo sapiens (human),4,ALDH7A1,0.270499,2,0.000000,0.384210,2
+Glycolysis / Gluconeogenesis - Homo sapiens (human),5,LDHA,0.270457,2,0.003077,0.287477,2
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),1,CHST13,0.027358,0,0.000000,2.742920,0
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),2,UST,0.026673,0,0.000000,2.674225,0
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),3,DSEL,0.017564,0,0.000000,1.760909,0
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),4,CHST11,0.016940,0,0.000000,1.698406,0
+Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate - Homo sapiens (human),5,CHST3,0.016250,0,0.000000,1.629233,0
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),1,EXT1,0.402379,1,0.000000,0.238550,1
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),2,EXT2,0.401221,1,0.000000,0.122443,1
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),3,HS6ST2,0.071342,0,0.000000,7.152691,0
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),4,HS3ST2,0.032760,0,0.000000,3.284471,0
+Glycosaminoglycan biosynthesis - heparan sulfate / heparin - Homo sapiens (human),5,HS3ST5,0.020612,0,0.000000,2.066569,0
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),1,CHST4,0.081211,0,0.000000,8.142181,0
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),2,B3GNT7,0.043260,0,0.000000,4.337247,0
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),3,CHST6,0.024261,0,0.000000,2.432427,0
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),4,ST3GAL1,0.017824,0,0.000000,1.787039,0
+Glycosaminoglycan biosynthesis - keratan sulfate - Homo sapiens (human),5,CHST1,0.014638,0,0.000000,1.467634,0
+Glycosaminoglycan degradation - Homo sapiens (human),1,SGSH,0.412904,2,0.035714,0.219517,2
+Glycosaminoglycan degradation - Homo sapiens (human),2,HEXA,0.403970,2,0.000000,0.398053,2
+Glycosaminoglycan degradation - Homo sapiens (human),3,HEXB,0.401627,2,0.000000,0.163112,2
+Glycosaminoglycan degradation - Homo sapiens (human),4,GLB1,0.401519,2,0.000000,0.152290,2
+Glycosaminoglycan degradation - Homo sapiens (human),5,IDUA,0.206409,1,0.000000,0.642564,1
+Histidine metabolism - Homo sapiens (human),1,ALDH2,0.424945,3,0.071429,0.352526,3
+Histidine metabolism - Homo sapiens (human),2,ALDH3A2,0.271042,2,0.000000,0.438709,2
+Histidine metabolism - Homo sapiens (human),3,ALDH7A1,0.270499,2,0.000000,0.384210,2
+Histidine metabolism - Homo sapiens (human),4,MAOB,0.175860,1,0.000000,4.263673,1
+Histidine metabolism - Homo sapiens (human),5,MAOA,0.151016,1,0.000000,1.772818,1
+Lysine degradation - Homo sapiens (human),1,KMT2A,0.408000,4,0.026667,0.000000,4
+Lysine degradation - Homo sapiens (human),2,EHMT1,0.307267,3,0.020000,0.127049,3
+Lysine degradation - Homo sapiens (human),3,ALDH7A1,0.305832,3,0.006667,0.384210,3
+Lysine degradation - Homo sapiens (human),4,KMT2D,0.302000,3,0.006667,0.000000,3
+Lysine degradation - Homo sapiens (human),5,ALDH3A2,0.204376,2,0.000000,0.438709,2
+Mannose type O-glycan biosynthesis - Homo sapiens (human),1,POMT1,0.532917,10,0.436364,0.201281,10
+Mannose type O-glycan biosynthesis - Homo sapiens (human),2,FKTN,0.242502,6,0.000000,0.250842,6
+Mannose type O-glycan biosynthesis - Homo sapiens (human),3,LARGE1,0.240000,6,0.000000,0.000000,6
+Mannose type O-glycan biosynthesis - Homo sapiens (human),4,B4GAT1,0.240000,6,0.000000,0.000000,6
+Mannose type O-glycan biosynthesis - Homo sapiens (human),5,RXYLT1,0.240000,6,0.000000,0.000000,6
+Mucin type O-glycan biosynthesis - Homo sapiens (human),1,GCNT3,0.443667,2,0.000000,4.378014,2
+Mucin type O-glycan biosynthesis - Homo sapiens (human),2,GALNT7,0.404105,2,0.000000,0.411605,2
+Mucin type O-glycan biosynthesis - Homo sapiens (human),3,B4GALT5,0.402369,2,0.000000,0.237508,2
+Mucin type O-glycan biosynthesis - Homo sapiens (human),4,B3GNT6,0.115334,0,0.000000,11.563272,0
+Mucin type O-glycan biosynthesis - Homo sapiens (human),5,GALNT8,0.054644,0,0.000000,5.478573,0
+N-Glycan biosynthesis - Homo sapiens (human),1,ALG9,0.420752,10,0.066176,0.090118,10
+N-Glycan biosynthesis - Homo sapiens (human),2,DPM1,0.364568,9,0.000000,0.458025,9
+N-Glycan biosynthesis - Homo sapiens (human),3,DPM3,0.364062,9,0.000000,0.407301,9
+N-Glycan biosynthesis - Homo sapiens (human),4,ALG13,0.362122,9,0.000000,0.212751,9
+N-Glycan biosynthesis - Homo sapiens (human),5,ALG1,0.361728,9,0.000000,0.173233,9
+Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human),1,HKDC1,0.013017,0,0.000000,1.305038,0
+Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human),2,GCK,0.007472,0,0.000000,0.749140,0
+Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human),3,HK2,0.006582,0,0.000000,0.659954,0
+Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human),4,HOOK3,0.004776,0,0.000000,0.478854,0
+Neomycin, kanamycin and gentamicin biosynthesis - Homo sapiens (human),5,HK1,0.002724,0,0.000000,0.273141,0
+Other glycan degradation - Homo sapiens (human),1,GLB1,0.487233,5,0.285714,0.152290,5
+Other glycan degradation - Homo sapiens (human),2,NEU4,0.190744,2,0.000000,3.082385,2
+Other glycan degradation - Homo sapiens (human),3,HEXA,0.163970,2,0.000000,0.398053,2
+Other glycan degradation - Homo sapiens (human),4,HEXB,0.161627,2,0.000000,0.163112,2
+Other glycan degradation - Homo sapiens (human),5,NEU2,0.160000,2,0.000000,0.000000,2
+Other types of O-glycan biosynthesis - Homo sapiens (human),1,POMT1,0.410341,2,0.027778,0.201281,2
+Other types of O-glycan biosynthesis - Homo sapiens (human),2,POMT2,0.202309,1,0.000000,0.231540,1
+Other types of O-glycan biosynthesis - Homo sapiens (human),3,POFUT2,0.201860,1,0.000000,0.186508,1
+Other types of O-glycan biosynthesis - Homo sapiens (human),4,POGLUT1,0.200000,1,0.000000,0.000000,1
+Other types of O-glycan biosynthesis - Homo sapiens (human),5,B3GLCT,0.200000,1,0.000000,0.000000,1
+Oxidative phosphorylation - Homo sapiens (human),1,COX5A,0.414985,13,0.040816,0.274765,13
+Oxidative phosphorylation - Homo sapiens (human),2,UQCRB,0.251877,8,0.011054,0.241320,8
+Oxidative phosphorylation - Homo sapiens (human),3,NDUFV2,0.218754,7,0.000000,0.337794,7
+Oxidative phosphorylation - Homo sapiens (human),4,NDUFB9,0.218689,7,0.000000,0.331271,7
+Oxidative phosphorylation - Homo sapiens (human),5,COX6A1,0.217737,7,0.000000,0.235802,7
+Pentose and glucuronate interconversions - Homo sapiens (human),1,UGT2B15,0.074157,0,0.000000,7.434949,0
+Pentose and glucuronate interconversions - Homo sapiens (human),2,AKR1B10,0.069991,0,0.000000,7.017276,0
+Pentose and glucuronate interconversions - Homo sapiens (human),3,UGT1A10,0.055657,0,0.000000,5.580102,0
+Pentose and glucuronate interconversions - Homo sapiens (human),4,UGT1A8,0.055626,0,0.000000,5.577015,0
+Pentose and glucuronate interconversions - Homo sapiens (human),5,UGT1A9,0.052099,0,0.000000,5.223369,0
+Pentose phosphate pathway - Homo sapiens (human),1,PFKM,0.404011,1,0.000000,0.402092,1
+Pentose phosphate pathway - Homo sapiens (human),2,PGM2,0.402219,1,0.000000,0.222457,1
+Pentose phosphate pathway - Homo sapiens (human),3,ALDOB,0.069765,0,0.000000,6.994548,0
+Pentose phosphate pathway - Homo sapiens (human),4,RGN,0.040559,0,0.000000,4.066402,0
+Pentose phosphate pathway - Homo sapiens (human),5,TKTL1,0.019744,0,0.000000,1.979532,0
+Phenylalanine metabolism - Homo sapiens (human),1,MAOB,0.442526,1,0.000000,4.263673,1
+Phenylalanine metabolism - Homo sapiens (human),2,MAOA,0.417682,1,0.000000,1.772818,1
+Phenylalanine metabolism - Homo sapiens (human),3,PAH,0.082596,0,0.000000,8.281049,0
+Phenylalanine metabolism - Homo sapiens (human),4,ALDH3B2,0.038177,0,0.000000,3.827621,0
+Phenylalanine metabolism - Homo sapiens (human),5,DDC,0.033884,0,0.000000,3.397140,0
+Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human),1,PAH,0.082596,0,0.000000,8.281049,0
+Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human),2,TAT,0.009832,0,0.000000,0.985760,0
+Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human),3,GOLT1B,0.002032,0,0.000000,0.203734,0
+Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human),4,GOT2,0.001831,0,0.000000,0.183600,0
+Phenylalanine, tyrosine and tryptophan biosynthesis - Homo sapiens (human),5,GOT1L1,0.000162,0,0.000000,0.016235,0
+Phosphonate and phosphinate metabolism - Homo sapiens (human),1,PCYT1B,0.020689,0,0.000000,2.074242,0
+Phosphonate and phosphinate metabolism - Homo sapiens (human),2,CHPT1,0.003618,0,0.000000,0.362726,0
+Phosphonate and phosphinate metabolism - Homo sapiens (human),3,PCYT2,0.002758,0,0.000000,0.276564,0
+Phosphonate and phosphinate metabolism - Homo sapiens (human),4,PCYT1A,0.001515,0,0.000000,0.151909,0
+Phosphonate and phosphinate metabolism - Homo sapiens (human),5,CEPT1,0.001366,0,0.000000,0.136924,0
+Primary bile acid biosynthesis - Homo sapiens (human),1,CYP7B1,0.422997,1,0.000000,2.305665,1
+Primary bile acid biosynthesis - Homo sapiens (human),2,AMACR,0.412174,1,0.000000,1.220559,1
+Primary bile acid biosynthesis - Homo sapiens (human),3,CYP46A1,0.408843,1,0.000000,0.886573,1
+Primary bile acid biosynthesis - Homo sapiens (human),4,HSD3B7,0.404919,1,0.000000,0.493211,1
+Primary bile acid biosynthesis - Homo sapiens (human),5,AKR1D1,0.401136,1,0.000000,0.113862,1
+Purine metabolism - Homo sapiens (human),1,PDE1B,0.421496,2,0.001161,2.120274,2
+Purine metabolism - Homo sapiens (human),2,PDE6H,0.400351,2,0.000000,0.035151,2
+Purine metabolism - Homo sapiens (human),3,PDE6C,0.400000,2,0.000000,0.000000,2
+Purine metabolism - Homo sapiens (human),4,GUCY2D,0.400000,2,0.000000,0.000000,2
+Purine metabolism - Homo sapiens (human),5,PDE10A,0.224022,1,0.000000,2.408475,1
+Pyrimidine metabolism - Homo sapiens (human),1,TK2,0.415826,3,0.043956,0.264579,3
+Pyrimidine metabolism - Homo sapiens (human),2,RRM2B,0.279765,2,0.032967,0.321641,2
+Pyrimidine metabolism - Homo sapiens (human),3,TK1,0.272198,2,0.000000,0.554523,2
+Pyrimidine metabolism - Homo sapiens (human),4,DCK,0.268806,2,0.000000,0.214506,2
+Pyrimidine metabolism - Homo sapiens (human),5,RRM1,0.135022,1,0.000000,0.169337,1
+Selenocompound metabolism - Homo sapiens (human),1,INMT,0.015838,0,0.000000,1.587930,0
+Selenocompound metabolism - Homo sapiens (human),2,PAPSS2,0.014822,0,0.000000,1.486063,0
+Selenocompound metabolism - Homo sapiens (human),3,CTH,0.009482,0,0.000000,0.950637,0
+Selenocompound metabolism - Homo sapiens (human),4,SEPHS2,0.003838,0,0.000000,0.384841,0
+Selenocompound metabolism - Homo sapiens (human),5,PSTK,0.002949,0,0.000000,0.295703,0
+Starch and sucrose metabolism - Homo sapiens (human),1,SI,0.409890,3,0.032967,0.000000,3
+Starch and sucrose metabolism - Homo sapiens (human),2,MGAM,0.156397,1,0.000000,2.312393,1
+Starch and sucrose metabolism - Homo sapiens (human),3,GAA,0.143072,1,0.000000,0.976351,1
+Starch and sucrose metabolism - Homo sapiens (human),4,PGM1,0.139363,1,0.000000,0.604533,1
+Starch and sucrose metabolism - Homo sapiens (human),5,AGL,0.138168,1,0.000000,0.484718,1
+Steroid biosynthesis - Homo sapiens (human),1,NSDHL,0.448676,6,0.151515,0.323025,6
+Steroid biosynthesis - Homo sapiens (human),2,FDFT1,0.366340,5,0.090909,0.574885,5
+Steroid biosynthesis - Homo sapiens (human),3,DHCR24,0.271680,4,0.000000,0.502650,4
+Steroid biosynthesis - Homo sapiens (human),4,DHCR7,0.271466,4,0.000000,0.481219,4
+Steroid biosynthesis - Homo sapiens (human),5,EBP,0.270831,4,0.000000,0.417530,4
+Steroid hormone biosynthesis - Homo sapiens (human),1,HSD3B2,0.439939,5,0.000000,4.004219,5
+Steroid hormone biosynthesis - Homo sapiens (human),2,AKR1C2,0.423812,5,0.000000,2.387418,5
+Steroid hormone biosynthesis - Homo sapiens (human),3,HSD17B3,0.422465,5,0.000000,2.252333,5
+Steroid hormone biosynthesis - Homo sapiens (human),4,CYP11A1,0.414364,5,0.000000,1.440168,5
+Steroid hormone biosynthesis - Homo sapiens (human),5,CYP17A1,0.411710,5,0.000000,1.174015,5
+Taurine and hypotaurine metabolism - Homo sapiens (human),1,GAD1,0.050880,0,0.000000,5.101144,0
+Taurine and hypotaurine metabolism - Homo sapiens (human),2,FMO2,0.040615,0,0.000000,4.072059,0
+Taurine and hypotaurine metabolism - Homo sapiens (human),3,GGT6,0.039023,0,0.000000,3.912431,0
+Taurine and hypotaurine metabolism - Homo sapiens (human),4,BAAT,0.034645,0,0.000000,3.473447,0
+Taurine and hypotaurine metabolism - Homo sapiens (human),5,GGT7,0.021543,0,0.000000,2.159837,0
+Tryptophan metabolism - Homo sapiens (human),1,ALDH7A1,0.408575,3,0.015810,0.384210,3
+Tryptophan metabolism - Homo sapiens (human),2,GCDH,0.271926,2,0.011858,0.170688,2
+Tryptophan metabolism - Homo sapiens (human),3,ALDH3A2,0.271042,2,0.000000,0.438709,2
+Tryptophan metabolism - Homo sapiens (human),4,ALDH2,0.270183,2,0.000000,0.352526,2
+Tryptophan metabolism - Homo sapiens (human),5,MAOB,0.175860,1,0.000000,4.263673,1
+Tyrosine metabolism - Homo sapiens (human),1,TYR,0.408835,2,0.009524,0.599357,2
+Tyrosine metabolism - Homo sapiens (human),2,MAOB,0.242526,1,0.000000,4.263673,1
+Tyrosine metabolism - Homo sapiens (human),3,TH,0.232504,1,0.000000,3.258844,1
+Tyrosine metabolism - Homo sapiens (human),4,TYRP1,0.227755,1,0.000000,2.782659,1
+Tyrosine metabolism - Homo sapiens (human),5,MAOA,0.217682,1,0.000000,1.772818,1
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),1,NQO1,0.012358,0,0.000000,1.239043,0
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),2,HPD,0.006043,0,0.000000,0.605913,0
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),3,COQ3,0.003763,0,0.000000,0.377308,0
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),4,COQ2,0.003037,0,0.000000,0.304528,0
+Ubiquinone and other terpenoid-quinone biosynthesis - Homo sapiens (human),5,COQ6,0.002094,0,0.000000,0.209972,0
+Valine, leucine and isoleucine biosynthesis - Homo sapiens (human),1,BCAT1,0.021652,0,0.000000,2.170832,0
+Valine, leucine and isoleucine biosynthesis - Homo sapiens (human),2,SDSL,0.004676,0,0.000000,0.468852,0
+Valine, leucine and isoleucine biosynthesis - Homo sapiens (human),3,BCAT2,0.003359,0,0.000000,0.336727,0
+Valine, leucine and isoleucine biosynthesis - Homo sapiens (human),4,SBDS,0.001978,0,0.000000,0.198267,0
+Valine, leucine and isoleucine degradation - Homo sapiens (human),1,ACADSB,0.415477,8,0.039886,0.352069,8
+Valine, leucine and isoleucine degradation - Homo sapiens (human),2,ACAD8,0.356425,7,0.017094,0.130036,7
+Valine, leucine and isoleucine degradation - Homo sapiens (human),3,HIBCH,0.259279,5,0.022792,0.244731,5
+Valine, leucine and isoleucine degradation - Homo sapiens (human),4,ACADS,0.207105,4,0.000000,0.712366,4
+Valine, leucine and isoleucine degradation - Homo sapiens (human),5,IVD,0.203309,4,0.000000,0.331713,4
+Various types of N-glycan biosynthesis - Homo sapiens (human),1,ALG13,0.402122,6,0.000000,0.212751,6
+Various types of N-glycan biosynthesis - Homo sapiens (human),2,ALG1,0.401728,6,0.000000,0.173233,6
+Various types of N-glycan biosynthesis - Homo sapiens (human),3,ALG3,0.401720,6,0.000000,0.172479,6
+Various types of N-glycan biosynthesis - Homo sapiens (human),4,ALG12,0.401569,6,0.000000,0.157273,6
+Various types of N-glycan biosynthesis - Homo sapiens (human),5,ALG2,0.401403,6,0.000000,0.140636,6
+beta-Alanine metabolism - Homo sapiens (human),1,ALDH6A1,0.406572,3,0.000000,0.658900,3
+beta-Alanine metabolism - Homo sapiens (human),2,ALDH3A2,0.404376,3,0.000000,0.438709,3
+beta-Alanine metabolism - Homo sapiens (human),3,ALDH7A1,0.403832,3,0.000000,0.384210,3
+beta-Alanine metabolism - Homo sapiens (human),4,ALDH2,0.403516,3,0.000000,0.352526,3
+beta-Alanine metabolism - Homo sapiens (human),5,ACADS,0.273772,2,0.000000,0.712366,2
