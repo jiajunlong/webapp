@@ -77,8 +77,9 @@ class DifferentialPathwayAnalysis:
         
         logger.info(f"Comparing pathway activity by '{clinical_var}'")
         
-        # Get unique groups
-        groups = sorted(self.clinical_data[clinical_var].unique())
+        # Get unique groups (drop NaN)
+        raw_groups = self.clinical_data[clinical_var].dropna().unique()
+        groups = sorted([g for g in raw_groups if pd.notna(g)], key=str)
         n_groups = len(groups)
         
         logger.info(f"  Found {n_groups} groups: {groups}")
