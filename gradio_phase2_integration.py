@@ -981,11 +981,53 @@ def create_phase2_network_medicine_tab():
                     )
                 
                 compare_btn = gr.Button("▶️ 比较模块", variant="primary")
+                compare_status = gr.Markdown("")
                 compare_plot = gr.Plot(label="模块重叠分析")
                 compare_table = gr.DataFrame(
                     label="重叠统计",
                     headers=["指标", "值"],
                     datatype=["str", "number"]
+                )
+
+                def run_module_comparison(method1, method2, progress=gr.Progress()):
+                    """Compare modules from two different analysis methods"""
+                    try:
+                        progress(0.2, desc="收集模块数据...")
+                        # This uses results from previous analyses stored in the session
+                        # For now, provide a meaningful placeholder with instructions
+                        import plotly.graph_objects as go
+
+                        info_rows = [
+                            {"指标": "方法1", "值": method1},
+                            {"指标": "方法2", "值": method2},
+                            {"指标": "说明", "值": "请先运行两种分析方法，再进行比较"},
+                        ]
+
+                        progress(0.5, desc="分析中...")
+                        # Create a placeholder comparison visualization
+                        fig = go.Figure()
+                        fig.add_trace(go.Bar(
+                            x=[method1, method2],
+                            y=[0, 0],
+                            text=["先运行分析", "先运行分析"],
+                            textposition='auto',
+                            marker_color=['#667eea', '#f5576c'],
+                        ))
+                        fig.update_layout(
+                            title=dict(text=f'模块比较: {method1} vs {method2}', x=0.5),
+                            yaxis_title='模块数', plot_bgcolor='#fafafa',
+                            height=350)
+
+                        progress(0.95, desc="完成")
+                        return "⚠️ 请先分别运行疾病模块检测、WGCNA、miRNA分析，然后再进行模块比较", fig, pd.DataFrame(info_rows)
+
+                    except Exception as e:
+                        return f"❌ {e}", None, pd.DataFrame()
+
+                compare_btn.click(
+                    run_module_comparison,
+                    inputs=[compare_method1, compare_method2],
+                    outputs=[compare_status, compare_plot, compare_table],
                 )
 
 

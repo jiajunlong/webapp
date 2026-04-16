@@ -1612,22 +1612,11 @@ def create_gradio_interface():
                 def update_statistics(db_type, progress=gr.Progress()):
                     """更新统计信息显示"""
                     import time
-                    
-                    # 显示加载动画
-                    progress(0, desc="正在统计信息...")
-                    time.sleep(0.5)
-                    
-                    progress(0.3, desc="正在统计信息...")
-                    time.sleep(0.5)
-                    
-                    progress(0.6, desc="正在统计信息...")
-                    time.sleep(0.5)
-                    
-                    progress(0.9, desc="统计完成")
-                    time.sleep(0.3)
-                    
+
+                    progress(0.5, desc="正在统计信息...")
+
                     progress(1.0)
-                    
+
                     # 根据数据库类型显示不同的统计信息
                     if db_type == "基因网络":
                         # 固定数值（不需要真的读取文件）

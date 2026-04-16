@@ -412,10 +412,18 @@ def create_phase3_biomarker_tab():
                 if validate and len(biomarkers) > 0:
                     progress(0.65, desc="表达验证...")
                     try:
+                        # Build biomarker scores from display_biomarker_df
+                        bio_scores = np.ones(len(biomarkers))
+                        if 'weighted_biomarker_score' in display_biomarker_df.columns:
+                            bio_scores = display_biomarker_df['weighted_biomarker_score'].values
+                        elif len(display_biomarker_df.columns) > 1:
+                            bio_scores = display_biomarker_df.iloc[:, -1].values
+
                         validator = BiomarkerValidator(
+                            predicted_biomarkers=biomarkers,
+                            biomarker_scores=bio_scores,
                             expression_data=data_loader.expr_data,
-                            sample_metadata=data_loader.sample_metadata,
-                            biomarkers=biomarkers
+                            clinical_data=data_loader.sample_metadata,
                         )
 
                         stage_col = 'Age_Group' if 'Age_Group' in data_loader.sample_metadata.columns else 'Stage'
@@ -513,7 +521,7 @@ def create_phase3_biomarker_tab():
             except Exception as e:
                 logger.error(f"Error in Phase 3 analysis: {e}", exc_info=True)
                 error_msg = f"❌ 错误: {str(e)}"
-                return None, None, None, None, "分析失败", {}, error_msg, {}
+                return pd.DataFrame(), None, pd.DataFrame(), pd.DataFrame(), "分析失败", "", error_msg, {}
         
         # Connect button callback
         run_button.click(

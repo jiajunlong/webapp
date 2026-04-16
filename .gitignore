@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.bak
+*.backup
+venv*/
+.env
+*.egg-info/
+dist/
+build/
+test_*.html
+*.pkl.bak
