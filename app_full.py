@@ -1161,19 +1161,19 @@ def create_gradio_interface():
             # ========== Tab 0: 多尺度联动分析 ==========
             with gr.Tab("🔗 多尺度联动分析", id=0):
                 gr.HTML("""<div class="tab-banner banner-purple">
-                    <h3>🔗 多尺度联动分析</h3>
-                    <p>分子层指标 → 自动推导 → 细胞层种子基因 → 自动推导 → 群体层传播参数</p>
+                    <h3>🔗 基因网络多尺度联动分析</h3>
+                    <p>基因网络: 分子(互作/调控) → 通路(IS系数) → 细胞/组织(TCGA表达) → 疾病模块(网络医学)</p>
+                    <p style="opacity:0.7; font-size:0.85em; margin-top:4px;">社交网络(SIS传播)为独立系统，见「SIS传播动力学」Tab</p>
                 </div>""")
 
                 with gr.Tabs():
 
-                    # ---- 子Tab 1: 跨尺度级联（参数传递） ----
-                    with gr.Tab("🚀 跨尺度级联"):
-                        gr.Markdown("#### 三层级联分析 — 参数自动传递")
+                    # ---- 子Tab 1: 基因网络级联 ----
+                    with gr.Tab("🚀 基因网络级联"):
+                        gr.Markdown("#### 基因网络两层级联：分子 → 细胞/组织")
                         gr.Markdown("""
                         **传递机制:**
-                        - Layer 1 → Layer 2: 分子层Hub基因 → 细胞层MRNetB种子节点
-                        - Layer 2 → Layer 3: 分子密度+细胞聚类系数 → 群体层感染率β和社区数c
+                        - **Layer 1 → Layer 2**: 分子层Hub基因 → 细胞层MRNetB种子节点（网络邻近性原理, Guney 2016）
                         """)
 
                         with gr.Row():
@@ -1191,41 +1191,40 @@ def create_gradio_interface():
                                     50, 300, value=100, step=50,
                                     label="最大特征数",
                                 )
-                                cascade_run_btn = gr.Button("🚀 运行三层级联分析",
+                                cascade_run_btn = gr.Button("🚀 运行基因网络级联分析",
                                                              variant="primary", size="lg")
                             with gr.Column(scale=2):
                                 cascade_status = gr.Markdown("")
-                                cascade_arch = gr.HTML(label="级联架构 + 参数传递")
+                                cascade_arch = gr.HTML(label="级联架构")
 
                         with gr.Row():
                             with gr.Column():
-                                cascade_network_plot = gr.Plot(label="三层网络对比")
+                                cascade_network_plot = gr.Plot(label="两层网络对比")
                             with gr.Column():
                                 cascade_radar = gr.Plot(label="跨尺度雷达图")
 
-                        cascade_summary = gr.Dataframe(label="三层汇总表", interactive=False)
+                        cascade_summary = gr.Dataframe(label="级联汇总表", interactive=False)
                         cascade_insights = gr.Markdown("")
 
-                        def run_full_cascade(disease, net_type, max_feat):
+                        def run_gene_cascade(disease, net_type, max_feat):
                             try:
                                 engine = CrossScaleEngine(
                                     db=app.db,
-                                    social_sim=SocialNetworkSimulator(),
                                     tcga_sim=TCGA_COAD_Simulator(),
                                 )
-                                report = engine.run_full_cascade(
+                                report = engine.run_gene_cascade(
                                     disease_name=disease,
                                     network_type=net_type,
                                     max_features=int(max_feat),
                                 )
                                 arch = report.architecture_html
-                                network_fig = engine.create_three_network_plots(report)
-                                radar_fig = engine.create_radar_chart(report)
+                                network_fig = engine.create_two_network_plots(report)
+                                radar_fig = engine.create_gene_radar_chart(report)
                                 summary = engine.cascade_summary_df(report)
                                 insights = "\n".join(
                                     f"- {i}" for i in report.cross_scale_insights
                                 )
-                                return ("✅ 三层级联分析完成", arch,
+                                return ("✅ 基因网络级联分析完成", arch,
                                         network_fig, radar_fig, summary, insights)
                             except Exception as e:
                                 import traceback
@@ -1234,7 +1233,7 @@ def create_gradio_interface():
                                         f"```\n{traceback.format_exc()}\n```")
 
                         cascade_run_btn.click(
-                            fn=run_full_cascade,
+                            fn=run_gene_cascade,
                             inputs=[cascade_disease, cascade_net_type, cascade_max_feat],
                             outputs=[cascade_status, cascade_arch,
                                      cascade_network_plot, cascade_radar,
@@ -1274,8 +1273,8 @@ def create_gradio_interface():
 
                     # ---- 子Tab 3: 基因追踪 ----
                     with gr.Tab("🔍 基因追踪"):
-                        gr.Markdown("#### 基因跨尺度追踪")
-                        gr.Markdown("输入一个基因，追踪它从 **分子层→细胞层→群体层** 的角色变化。")
+                        gr.Markdown("#### 基因多尺度追踪")
+                        gr.Markdown("输入一个基因，查看它在 **分子层（互作网络）** 和 **细胞层（TCGA表达）** 中的角色。")
 
                         with gr.Row():
                             trace_gene_input = gr.Textbox(
@@ -1298,7 +1297,6 @@ def create_gradio_interface():
                                 engine = CrossScaleEngine(
                                     db=app.db,
                                     tcga_sim=TCGA_COAD_Simulator(),
-                                    social_sim=SocialNetworkSimulator(),
                                 )
                                 return engine.trace_gene(gene.strip().upper(), disease)
                             except Exception as e:
@@ -1310,72 +1308,61 @@ def create_gradio_interface():
                             outputs=[trace_result],
                         )
 
-                    # ---- 子Tab 4: 跨尺度洞察说明 ----
-                    with gr.Tab("📖 跨尺度说明"):
+                    # ---- 子Tab 4: 跨尺度说明 ----
+                    with gr.Tab("📖 多尺度说明"):
                         gr.Markdown("""
-                        #### 跨尺度联动机制说明
+                        #### 平台多尺度架构说明
 
-                        本平台实现了 **分子 → 细胞/组织 → 群体** 三个生物学尺度的级联分析，
-                        采用经过文献验证的跨尺度桥接方法。
+                        本平台包含两个独立的网络分析系统：
 
                         ---
 
-                        ##### 🧬 Layer 1 → Layer 2: 分子 → 细胞 桥接
+                        ##### 🧬 系统一：基因网络多尺度分析
 
-                        **方法:** Hub基因种子定向推断
+                        | 尺度 | 模型 | 数据 | 关键方法 |
+                        |------|------|------|---------|
+                        | **分子** | 基因互作/调控网络 | gene_disease.tsv | 图论拓扑分析、Hub基因识别 |
+                        | **通路** | IS系数/通路活性 | pathway.tsv + TCGA表达 | ssGSEA/GSVA (Barbie 2009; Hänzelmann 2013) |
+                        | **细胞/组织** | MRNetB网络推断 | TCGA-COAD表达数据 | 互信息网络推断 (Meyer 2007) |
+                        | **疾病模块** | 网络医学分析 | PPI + 社区检测 | Louvain算法, 疾病模块分离度 (Menche 2015) |
 
-                        分子层通过度中心性识别Hub基因，作为细胞层MRNetB推断的种子节点。
-                        这基于 **网络邻近性原理** — 疾病基因在互作组中倾向于聚集在
-                        同一网络邻域内 (Guney et al. *Nature Communications*, 2016;
-                        Menche et al. *Science*, 2015)。
+                        **跨尺度桥接:**
+                        - 分子层Hub基因 → 细胞层MRNetB种子节点（网络邻近性, Guney 2016）
+                        - WGCNA共表达模块 → 疾病模块重叠分析（Langfelder 2008）
+                        - miRNA调控网络 → 通路映射（靶基因-通路交集）
 
-                        ##### 🔬 Layer 2 → Layer 3: 细胞 → 群体 桥接
+                        ##### 🌐 系统二：社交网络传播动力学
 
-                        **方法:** Hill函数剂量-响应模型
+                        | 模型 | 算法 | 参数 |
+                        |------|------|------|
+                        | SIS传播 | 社区网络 + 随机传播 | β(感染率), γ(恢复率), N(节点数), c(社区数) |
 
-                        采用 PhysiCell 框架 (Ghaffarizadeh et al. *PLoS Comput Biol*, 2018)
-                        中的 **Hill函数信号-行为规则** 将跨尺度拓扑信号映射为群体传播参数:
+                        社交网络SIS模型是独立的传播动力学仿真，不与基因网络桥接。
 
-                        ```
-                        信号: s = (分子网络密度 + 细胞聚类系数) / 2
-                        感染率: β = B_min + (B_max - B_min) × s² / (s² + K²)
-                            其中 B_min=0.01, B_max=0.20, K=0.3, n=2
-                        ```
+                        ##### 🔬 Phase 3: SIS-as-Biomarker（创新应用）
 
-                        Hill函数的生物学意义: 低连通性网络 → 低传播率（阈值行为），
-                        高连通性网络 → 趋于饱和的传播率（超敏感性）。
-
-                        ##### 👥 Layer 3: 群体层参数
-
-                        - **社区数 c**: 由Hub基因数量映射，类比疾病模块数
-                          (Menche et al. *Science*, 2015)
-                        - **基本再生数**: R₀ ≈ β⟨k⟩/γ，决定传播是否可持续
+                        Phase 3 将SIS动力学**类比性地**应用于基因网络：
+                        将dysregulated基因视为"感染"状态，通过表达相关性网络传播，
+                        持久感染的基因作为候选生物标志物。这是网络传播算法在
+                        基因优先级排序中的应用 (Cowen et al. *Nature Rev Genet*, 2017)，
+                        而非真正的群体传播。
 
                         ---
 
                         ##### 📚 核心参考文献
 
-                        1. Ghaffarizadeh et al. "PhysiCell: An open source physics-based cell
-                           simulator for 3-D multicellular systems." *PLoS Comput Biol*, 2018.
-                        2. Guney et al. "Network-based in silico drug efficacy screening."
+                        1. Guney et al. "Network-based in silico drug efficacy screening."
                            *Nature Communications*, 2016.
-                        3. Menche et al. "Uncovering disease-disease relationships through
+                        2. Menche et al. "Uncovering disease-disease relationships through
                            the incomplete interactome." *Science*, 2015.
-                        4. Xue & Bhatt. "Coupling the within-host process and between-host
-                           transmission." *Bull Math Biol*, 2022.
-                        5. Moran, P.A.P. *The Statistical Processes of Evolutionary Theory*. 1962.
-                        6. Albert et al. "Error and attack tolerance of complex networks."
-                           *Nature*, 2000.
-
-                        ---
-
-                        ##### 🔍 基因追踪
-
-                        追踪单个基因在三层中的角色:
-                        - **分子层**: 连接度排名、是否为Hub、所在通路
-                        - **细胞层**: TCGA-COAD 真实表达量（均值/方差/排名）
-                        - **群体层**: 基于图论的网络角色分类 + Moran固定概率
-                          (相对适合度映射)
+                        3. Langfelder & Horvath. "WGCNA: an R package for weighted correlation
+                           network analysis." *BMC Bioinformatics*, 2008.
+                        4. Meyer et al. "Information-theoretic inference of large transcriptional
+                           regulatory networks." *EURASIP J Bioinform Syst Biol*, 2007.
+                        5. Cowen et al. "Network propagation: a universal amplifier of genetic
+                           associations." *Nature Reviews Genetics*, 2017.
+                        6. Barbie et al. "Systematic RNA interference reveals oncogenic
+                           KRAS-driven cancers require TBK1." *Nature*, 2009. (ssGSEA)
                         """)
 
             # ========== Tab 1: 基因网络可视化 ==========

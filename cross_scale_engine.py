@@ -614,6 +614,79 @@ class CrossScaleEngine:
         )
         return fig
 
+    def create_two_network_plots(self, report: CascadeReport) -> go.Figure:
+        """两层并排网络缩略图 (分子层 + 细胞层)"""
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=["🧬 分子层网络", "🔬 细胞层网络"],
+                            horizontal_spacing=0.08)
+
+        def _add_network(G, col, color, max_nodes=50):
+            if G is None or G.number_of_nodes() == 0:
+                fig.add_trace(go.Scatter(x=[0], y=[0], mode='text',
+                                          text=["无数据"], textfont=dict(size=14)),
+                              row=1, col=col)
+                return
+            if G.number_of_nodes() > max_nodes:
+                top_nodes = sorted(G.degree(), key=lambda x: x[1], reverse=True)[:max_nodes]
+                G = G.subgraph([n[0] for n in top_nodes]).copy()
+            pos = nx.spring_layout(G, seed=42, k=0.8, iterations=30)
+            ex, ey = [], []
+            for e in G.edges():
+                x0, y0 = pos[e[0]]; x1, y1 = pos[e[1]]
+                ex.extend([x0, x1, None]); ey.extend([y0, y1, None])
+            fig.add_trace(go.Scatter(x=ex, y=ey, mode='lines',
+                                      line=dict(width=0.5, color='#ccc'),
+                                      hoverinfo='none', showlegend=False), row=1, col=col)
+            nl = list(G.nodes())
+            nx_arr = [pos[n][0] for n in nl]; ny_arr = [pos[n][1] for n in nl]
+            degs = [G.degree(n) for n in nl]; md = max(degs) if degs else 1
+            sizes = [5 + 15 * d / md for d in degs]
+            fig.add_trace(go.Scatter(x=nx_arr, y=ny_arr, mode='markers',
+                                      marker=dict(size=sizes, color=color, opacity=0.8,
+                                                  line=dict(width=0.5, color='white')),
+                                      text=[str(n) for n in nl], hoverinfo='text',
+                                      showlegend=False), row=1, col=col)
+
+        mol = report.results.get("molecular")
+        mol_G = mol.detail.get("graph") if mol and isinstance(mol.detail, dict) else None
+        _add_network(mol_G, 1, '#764ba2')
+        cell = report.results.get("cellular")
+        cell_G = cell.detail.get("graph") if cell and isinstance(cell.detail, dict) else None
+        _add_network(cell_G, 2, '#f5576c')
+        for i in range(1, 3):
+            fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False, row=1, col=i)
+            fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False, row=1, col=i)
+        fig.update_layout(height=450, title=dict(text="基因网络两层结构对比", x=0.5),
+                          plot_bgcolor='white')
+        return fig
+
+    def create_gene_radar_chart(self, report: CascadeReport) -> go.Figure:
+        """基因网络两层雷达图（分子层 + 细胞层）"""
+        categories = ["网络密度", "聚类系数", "节点数(归一化)", "边数(归一化)"]
+        mol = report.results.get("molecular")
+        cell = report.results.get("cellular")
+        def _norm(v, mx): return min(v / mx, 1.0) if mx > 0 else 0
+        mol_vals = [0, 0, 0, 0]; cell_vals = [0, 0, 0, 0]
+        max_n = 1; max_e = 1
+        if mol and "error" not in mol.summary:
+            s = mol.summary
+            mol_vals = [s.get("density", 0), s.get("clustering", 0), s.get("nodes", 0), s.get("edges", 0)]
+            max_n = max(max_n, s.get("nodes", 0)); max_e = max(max_e, s.get("edges", 0))
+        if cell and "error" not in cell.summary:
+            s = cell.summary
+            cell_vals = [s.get("cell_density", 0), s.get("cell_clustering", 0), s.get("cell_nodes", 0), s.get("total_edges", 0)]
+            max_n = max(max_n, s.get("cell_nodes", 0)); max_e = max(max_e, s.get("total_edges", 0))
+        mol_n = [mol_vals[0], mol_vals[1], _norm(mol_vals[2], max_n), _norm(mol_vals[3], max_e)]
+        cell_n = [cell_vals[0], cell_vals[1], _norm(cell_vals[2], max_n), _norm(cell_vals[3], max_e)]
+        fig = go.Figure()
+        fig.add_trace(go.Scatterpolar(r=mol_n + [mol_n[0]], theta=categories + [categories[0]],
+                                       fill='toself', name='🧬 分子层', line=dict(color='#764ba2')))
+        fig.add_trace(go.Scatterpolar(r=cell_n + [cell_n[0]], theta=categories + [categories[0]],
+                                       fill='toself', name='🔬 细胞层', line=dict(color='#f5576c')))
+        fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+                          title=dict(text="基因网络两层拓扑对比", x=0.5), height=450, showlegend=True)
+        return fig
+
     def create_three_network_plots(self, report: CascadeReport) -> go.Figure:
         """三层并排网络缩略图 (1×3 subplots)"""
         fig = make_subplots(rows=1, cols=3,
@@ -827,60 +900,6 @@ class CrossScaleEngine:
 
         cell_html = self._gene_card_section("🔬 细胞/组织尺度", "#f5576c", cell_html_content)
         card_sections.append(cell_html)
-
-        # === 群体层（基于网络科学的角色映射）===
-        pop_html_content = ""
-        if mol_info["found"]:
-            degree = mol_info.get("degree", 0)
-            total = mol_info.get("total", 1)
-            is_hub = mol_info.get("is_hub", False)
-
-            # 基于图论的角色分类 (网络科学标准定义)
-            if is_hub:
-                role = "网络枢纽 (Hub Node)"
-                role_desc = (
-                    "在无标度网络中，Hub节点的移除会显著降低网络连通性 "
-                    "(Albert et al. Nature 2000)。在SIS模型中，高度节点的免疫接种 "
-                    "（靶向免疫策略）能有效降低传播阈值。"
-                )
-            elif degree > 3:
-                role = "桥接节点 (Bridge Node)"
-                role_desc = (
-                    "具有中等连接度和较高介数中心性，在网络中连接不同模块/社区，"
-                    "是信号传递的关键通道。"
-                )
-            else:
-                role = "外围节点 (Peripheral Node)"
-                role_desc = "低连接度节点，主要在局部发挥功能，传播影响力有限。"
-
-            # Moran过程固定概率 (适用于有增长优势的突变)
-            # ρ = (1 - 1/s) / (1 - 1/s^N), s = degree / avg_degree (相对适合度)
-            avg_degree_est = max(1, 2 * mol_info.get("degree", 1))  # 粗略估计
-            s = degree / max(avg_degree_est / 2, 0.1)  # 相对适合度
-            N_pop = min(total, 50)  # 有效群体大小
-            if s > 0 and s != 1 and N_pop > 1:
-                try:
-                    moran_rho = (1 - 1/s) / (1 - 1/(s**N_pop))
-                    moran_rho = max(0, min(1, moran_rho))
-                    moran_str = f"{moran_rho:.4f}"
-                except (ZeroDivisionError, OverflowError):
-                    moran_str = "N/A"
-            else:
-                moran_str = f"{1/max(N_pop,1):.4f} (中性)"
-
-            pop_html_content = (
-                f"<b>网络角色:</b> {role}<br/>"
-                f"<b>角色依据:</b> 度数={degree}, 排名 Top-{mol_info.get('rank','-')}/{total}<br/>"
-                f"<b>传播学意义:</b> {role_desc}<br/>"
-                f"<b>Moran固定概率:</b> ρ ≈ {moran_str} "
-                f"<span style='font-size:0.8em;'>(Moran 1962; 相对适合度 s={s:.2f})</span>"
-            )
-        else:
-            pop_html_content = f"<i>无法映射（{gene_name} 不在分子网络中）</i>"
-
-        pop_html = self._gene_card_section("👥 群体尺度 (网络科学映射)", "#43e97b", pop_html_content,
-                                            text_color="#333")
-        card_sections.append(pop_html)
 
         # 组装卡片
         return f"""
