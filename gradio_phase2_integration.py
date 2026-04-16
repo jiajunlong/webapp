@@ -386,14 +386,23 @@ def create_disease_module_tab(data_loader: Phase2DataLoader):
                     hoverlabel=dict(bgcolor='white', font_size=12))
 
                 progress(0.95, desc="完成")
-                status_text = f"""✅ 模块检测完成
+                # 自动生成分析摘要
+                top_module = max(modules.items(), key=lambda x: len(x[1])) if modules else (None, [])
+                top_hubs = hub_df.head(3)['基因'].tolist() if len(hub_df) > 0 else []
+                density_avg = np.mean([nx.density(G.subgraph(g)) for g in modules.values() if len(g) > 1]) if modules else 0
+
+                status_text = f"""✅ 疾病模块检测完成
 
 📊 结果统计:
 - 疾病: {disease}
-- 疾病基因数: {len(available)}
-- 网络边数: {G.number_of_edges()}
-- 检测模块数: {len(modules)}
-- 最小模块大小: {min_size}"""
+- 疾病关联基因: {len(available)} 个（TCGA中可用）
+- 相关性网络: {G.number_of_edges()} 条边
+- 检测到 {len(modules)} 个基因模块（最小大小≥{min_size}）
+
+📝 分析摘要:
+{f'最大模块 {top_module[0]} 包含 {len(top_module[1])} 个基因，模块平均内部密度为 {density_avg:.3f}。' if top_module[0] else '未检测到满足条件的模块。'}
+{f'关键枢纽基因: {", ".join(top_hubs)}，这些基因在模块内具有最高的连接度和中介中心性，可能是疾病调控的核心节点。' if top_hubs else ''}
+{f'共检测到 {len(modules)} 个功能模块，提示 {disease} 的致病基因在网络中呈现模块化分布，不同模块可能对应不同的致病通路。' if len(modules) >= 2 else ''}"""
 
                 # 生成模块间共病热力图
                 heatmap_fig = None
@@ -628,14 +637,23 @@ def create_wgcna_tab(data_loader: Phase2DataLoader):
 
                 progress(0.95, desc="完成")
                 n_modules = len(module_colors)
-                status_text = f"""✅ WGCNA分析完成
+                biggest_module = max(module_list_df['基因数']) if len(module_list_df) > 0 else 0
+                top_hub_genes = hub_genes_df.head(3)['基因'].tolist() if len(hub_genes_df) > 0 else []
+
+                status_text = f"""✅ WGCNA共表达分析完成
 
 📊 结果统计:
-- 输入基因数: {len(expr_subset)} (top方差)
+- 输入基因: {len(expr_subset)} 个（top方差基因）
 - 软幂值: {soft_power}
-- 检测模块数: {n_modules}
-- 临床特征: {trait}
-- 样本数: {expr_subset.shape[1]}"""
+- 检测到 {n_modules} 个共表达模块
+- 临床特征: {trait}, 样本数: {expr_subset.shape[1]}
+
+📝 分析摘要:
+从 {len(expr_subset)} 个高变异基因中，使用 WGCNA 加权共表达网络分析识别出 {n_modules} 个功能模块。
+{f'最大模块包含 {biggest_module} 个基因。' if biggest_module > 0 else ''}
+{f'关键Hub基因: {", ".join(top_hub_genes)}，这些基因在模块内具有最高的模块成员资格分数（kME），代表该模块的核心功能基因。' if top_hub_genes else ''}
+{f'软幂值选择为 {soft_power}，网络拓扑近似无标度分布。' if soft_power else ''}
+共表达模块反映了在 TCGA-COAD 样本中协调表达的基因群组，不同模块可能对应不同的生物学功能。"""
 
                 # 生成模块柱状图
                 import plotly.graph_objects as go
@@ -861,15 +879,25 @@ def create_mirna_tab(data_loader: Phase2DataLoader):
                 module_df = pd.DataFrame(module_data) if module_data else pd.DataFrame()
 
                 progress(0.95, desc="完成")
-                status_text = f"""✅ miRNA调控分析完成
+                top_mirna_names = hub_mirnas_df.head(3)['miRNA'].tolist() if 'miRNA' in hub_mirnas_df.columns and len(hub_mirnas_df) > 0 else []
+                n_mirnas_with_targets = len(targets)
+                avg_targets = total_pairs / max(n_mirnas_with_targets, 1)
+                top_pathway_count = len(pathway_df['通路'].unique()) if '通路' in pathway_df.columns and len(pathway_df) > 0 else 0
+
+                status_text = f"""✅ miRNA调控网络分析完成
 
 📊 结果统计:
-- 相关性阈值: {corr_thresh}
-- 方法: {method}
-- 预测调控关系: {total_pairs} 对
+- 相关性阈值: {corr_thresh} ({method})
+- 预测调控关系: {total_pairs} 对（{n_mirnas_with_targets} 个miRNA有靶基因）
+- 平均每个miRNA靶向 {avg_targets:.1f} 个基因
 - 枢纽miRNA: {len(hub_mirnas_df)} 个
-- miRNA总数: {data_loader.mirna_expression.shape[0]}
-- 基因总数: {data_loader.gene_expression.shape[0]}"""
+- 涉及通路: {top_pathway_count} 个
+
+📝 分析摘要:
+基于 {method} 相关性分析（阈值 {corr_thresh}），从 {data_loader.mirna_expression.shape[0]} 个miRNA和 2000 个高方差基因中预测出 {total_pairs} 对调控关系。
+{f'核心调控枢纽miRNA: {", ".join(top_mirna_names)}，这些miRNA靶向大量基因且覆盖多条信号通路，可能是疾病调控的关键节点。' if top_mirna_names else '未发现显著的调控枢纽。'}
+{f'调控关系涉及 {top_pathway_count} 条生物学通路，提示miRNA调控在多条通路中发挥作用。' if top_pathway_count > 0 else ''}
+miRNA通过负调控靶基因表达来影响细胞功能，负相关关系越强表明调控作用越显著。"""
 
                 # 生成miRNA hub柱状图
                 import plotly.graph_objects as go

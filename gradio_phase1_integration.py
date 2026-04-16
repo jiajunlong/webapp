@@ -383,16 +383,24 @@ def create_pathway_analysis_tab():
                 # Prepare results DataFrame
                 diff_table = diff_results_filtered[['pathway', 'pvalue', 'padj', 'significant']].copy()
                 
-                status_text = f"""
-                ✅ 分析完成
-                
-                📊 结果统计:
-                - 总通路数: {len(pathway_activity)}
-                - 显著通路 (p<{pval_thresh}): {diff_results_filtered.shape[0]}
-                - 评分方法: {method}
-                - 分组变量: {group_var}
-                - 枢纽基因数: {len(hub_genes_df)}
-                """
+                # 生成分析摘要
+                n_sig = diff_results_filtered.shape[0]
+                top_sig_pathways = diff_results_filtered.head(3)['pathway'].tolist() if n_sig > 0 else []
+                top_hub_list = hub_genes_df.head(5)['gene'].tolist() if 'gene' in hub_genes_df.columns and len(hub_genes_df) > 0 else []
+
+                status_text = f"""✅ 通路活性分析完成
+
+📊 结果统计:
+- 分析通路: {len(pathway_activity)} 个
+- 评分方法: {method}
+- 分组变量: {group_var}
+- 显著差异通路 (padj<{pval_thresh}): {n_sig} 个
+- 识别枢纽基因: {len(hub_genes_df)} 个
+
+📝 分析摘要:
+使用 {method} 方法对 {len(pathway_activity)} 条生物学通路进行活性评分，并按 {group_var} 分组进行差异分析。
+{f'发现 {n_sig} 条通路在不同组间存在显著差异（FDR校正后 p<{pval_thresh}），其中最显著的通路为: {", ".join(top_sig_pathways)}。这些通路可能与 {group_var} 相关的生物学过程密切相关。' if n_sig > 0 else f'未发现在 {group_var} 分组间具有显著差异的通路（FDR校正后 p<{pval_thresh}）。这可能是由于样本量不足或分组变量与通路活性关联较弱。建议尝试其他分组变量或降低阈值。'}
+{f'关键枢纽基因: {", ".join(top_hub_list)}，这些基因在通路网络中具有较高的中心性和表达变异度，可能是通路功能的核心调控因子。' if top_hub_list else ''}"""
                 
                 # Store results in state
                 results_state = {
