@@ -96,23 +96,56 @@ class Phase1DataLoader:
     def _load_tcga_data(self):
         """Load TCGA-COAD expression and clinical data"""
         try:
-            # Load expression
-            expr_file = "data/TCGA-COAD/filtered_hiseq_data.csv"
-            if os.path.exists(expr_file):
-                self.tcga_expression = pd.read_csv(expr_file, index_col=0)
-                logger.info(f"✓ Loaded expression: {self.tcga_expression.shape}")
-            
-            # Load clinical
-            clinical_file = "data/TCGA-COAD/filtered_clinical.csv"
-            if os.path.exists(clinical_file):
-                self.tcga_clinical = pd.read_csv(clinical_file, index_col=0)
-                logger.info(f"✓ Loaded clinical: {self.tcga_clinical.shape}")
-            
+            # Load expression - prefer gene symbol indexed file
+            for expr_file in ["TCGA-COAD/filtered_hiseq_data.csv", "data/TCGA-COAD/filtered_hiseq_data.csv"]:
+                if os.path.exists(expr_file):
+                    self.tcga_expression = pd.read_csv(expr_file, index_col=0)
+                    if not str(self.tcga_expression.index[0]).startswith('ENSG'):
+                        logger.info(f"✓ Loaded expression: {self.tcga_expression.shape} (gene symbols)")
+                        break
+                    else:
+                        logger.warning(f"  Skipping {expr_file} (ENSG IDs)")
+                        self.tcga_expression = None
+
+            # Load clinical - must match expression sample IDs
+            # data/TCGA-COAD/filtered_clinical.csv has anonymized IDs (TCGA-0000)
+            # TCGA-COAD/clinical.tsv has real IDs matching expression columns
+            clinical_tsv = "TCGA-COAD/clinical.tsv"
+            if os.path.exists(clinical_tsv) and self.tcga_expression is not None:
+                raw_clin = pd.read_csv(clinical_tsv, sep='\t')
+                if 'case_submitter_id' in raw_clin.columns:
+                    c_idx = raw_clin.set_index('case_submitter_id')
+                    sample_rows = {}
+                    for col in self.tcga_expression.columns:
+                        patient = col[:12]
+                        if patient in c_idx.index:
+                            row = c_idx.loc[patient]
+                            if isinstance(row, pd.DataFrame):
+                                row = row.iloc[0]
+                            sample_rows[col] = row
+                    self.tcga_clinical = pd.DataFrame(sample_rows).T
+                    # Add derived columns
+                    if 'age_at_index' in self.tcga_clinical.columns:
+                        self.tcga_clinical['age_at_index'] = pd.to_numeric(
+                            self.tcga_clinical['age_at_index'], errors='coerce')
+                        self.tcga_clinical['Age_Group'] = pd.cut(
+                            self.tcga_clinical['age_at_index'],
+                            bins=[0, 50, 70, 200], labels=['young', 'middle', 'old'])
+                    if 'gender' in self.tcga_clinical.columns:
+                        self.tcga_clinical['Gender'] = self.tcga_clinical['gender']
+                    if 'ajcc_pathologic_stage' in self.tcga_clinical.columns:
+                        self.tcga_clinical['Stage'] = self.tcga_clinical['ajcc_pathologic_stage']
+                    logger.info(f"✓ Loaded clinical: {self.tcga_clinical.shape} (matched to expression)")
+            elif os.path.exists("data/TCGA-COAD/filtered_clinical.csv"):
+                self.tcga_clinical = pd.read_csv("data/TCGA-COAD/filtered_clinical.csv", index_col=0)
+                logger.info(f"✓ Loaded clinical (fallback): {self.tcga_clinical.shape}")
+
             # Load miRNA
-            mirna_file = "data/TCGA-COAD/filtered_miRNA_with_names.csv"
-            if os.path.exists(mirna_file):
-                self.tcga_mirna = pd.read_csv(mirna_file, index_col=0)
-                logger.info(f"✓ Loaded miRNA: {self.tcga_mirna.shape}")
+            for mirna_file in ["TCGA-COAD/filtered_miRNA_with_names.csv", "data/TCGA-COAD/filtered_miRNA_with_names.csv"]:
+                if os.path.exists(mirna_file):
+                    self.tcga_mirna = pd.read_csv(mirna_file, index_col=0)
+                    logger.info(f"✓ Loaded miRNA: {self.tcga_mirna.shape}")
+                    break
         except Exception as e:
             logger.error(f"Error loading TCGA data: {e}")
 
