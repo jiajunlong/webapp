@@ -63,7 +63,7 @@ def plot_pathway_activity_heatmap(pathway_activity: pd.DataFrame,
     
     # Create color bar labels for groups
     group_values = clinical_data[group_by].values
-    unique_groups = sorted(set(group_values))
+    unique_groups = sorted([g for g in set(group_values) if pd.notna(g)], key=str)
     group_colors = {}
     colors = px.colors.qualitative.Plotly
     for i, group in enumerate(unique_groups):
@@ -330,7 +330,7 @@ def plot_pathway_comparison_boxplot(pathway_activity: pd.DataFrame,
     logger.info(f"Creating pathway comparison for {len(pathways)} pathways")
     
     # Get unique groups
-    unique_groups = sorted(set(clinical_data[group_by]))
+    unique_groups = sorted([g for g in set(clinical_data[group_by]) if pd.notna(g)], key=str)
     
     # Create subplots
     n_pathways = len(pathways)
@@ -425,7 +425,7 @@ def create_pathway_summary_dashboard(pathway_activity: pd.DataFrame,
     pathway_vals = pathway_vals[common_samples]
     groups = clinical_data.loc[common_samples, group_by]
     
-    for group in sorted(set(groups)):
+    for group in sorted([g for g in set(groups) if pd.notna(g)], key=str):
         mask = groups == group
         fig.add_trace(
             go.Box(y=pathway_vals[mask].values, name=group),
