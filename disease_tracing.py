@@ -28,6 +28,22 @@ logger = logging.getLogger(__name__)
 class DiseaseTracer:
     """疾病多尺度溯源分析器"""
 
+    # 论文研究的疾病（只展示有文献支撑的）
+    PAPER_DISEASES = {
+        "Colorectal cancer": {
+            "paper": "Decoding Colon Cancer Heterogeneity Through Integrated miRNA–Gene Network Analysis",
+            "method": "miRNA-基因整合网络分析",
+        },
+        "Non-small cell lung cancer": {
+            "paper": "Weighted Gene Networks Derived from Multi-Omics Reveal Core Cancer Genes in Lung Cancer",
+            "method": "多组学加权基因网络",
+        },
+        "Small cell lung cancer": {
+            "paper": "Weighted Gene Networks Derived from Multi-Omics Reveal Core Cancer Genes in Lung Cancer",
+            "method": "多组学加权基因网络",
+        },
+    }
+
     def __init__(self):
         self.gene_disease = None
         self.pathway_data = None
@@ -92,11 +108,14 @@ class DiseaseTracer:
     # ==========================================================
 
     def get_disease_list(self) -> List[str]:
-        """获取有足够基因的疾病列表"""
+        """获取论文研究的疾病列表（仅限有文献支撑的）"""
         if self.gene_disease is None:
             return []
-        counts = self.gene_disease.groupby('disease_name')['gene_symbol'].nunique()
-        return sorted([d for d, c in counts.items() if c >= 5], key=lambda x: -counts[x])
+        available = []
+        for d in self.PAPER_DISEASES:
+            if d in self.gene_disease['disease_name'].values:
+                available.append(d)
+        return available
 
     def get_disease_overview(self, disease_name: str) -> dict:
         """Layer 1: 疾病概览信息"""
@@ -128,6 +147,9 @@ class DiseaseTracer:
         # 表达数据中可用的基因
         avail_genes = [g for g in genes if self.expr_data is not None and g in self.expr_data.index]
 
+        # 论文信息
+        paper_info = self.PAPER_DISEASES.get(disease_name, {})
+
         return {
             "disease": disease_name,
             "category": category,
@@ -137,6 +159,8 @@ class DiseaseTracer:
             "available_genes": avail_genes,
             "n_pathways": len(all_pathways),
             "pathways": sorted(all_pathways),
+            "paper": paper_info.get("paper", ""),
+            "method": paper_info.get("method", ""),
         }
 
     # ==========================================================
@@ -519,6 +543,10 @@ class DiseaseTracer:
         mirna_text = f"发现 {len(mirna_list)} 个负调控miRNA" if mirna_list else "未发现显著负调控miRNA"
         top_mirna = ", ".join([m["miRNA"] for m in mirna_list[:3]]) if mirna_list else "无"
 
+        # 论文信息
+        paper_info = self.PAPER_DISEASES.get(disease, {})
+        paper_ref = paper_info.get("paper", "")
+
         return f"""
         <div style="font-family:system-ui;padding:16px;max-width:700px;margin:auto;">
           <h3 style="text-align:center;">📋 溯源分析报告</h3>
@@ -527,6 +555,7 @@ class DiseaseTracer:
             <h4>🏥 疾病: {disease}</h4>
             <p>分类: {overview.get('category','未知')} | 关联基因: {overview.get('n_genes',0)} 个 |
                涉及通路: {overview.get('n_pathways',0)} 个</p>
+            {f'<p style="font-size:0.85em;color:#666;">📚 参考论文: <i>{paper_ref}</i></p>' if paper_ref else ''}
           </div>
 
           <div style="text-align:center;font-size:1.5em;">⬇️</div>

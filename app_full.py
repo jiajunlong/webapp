@@ -1433,7 +1433,11 @@ def create_gradio_interface():
                     if "error" in ov:
                         return f"❌ {ov['error']}", gr.update(choices=[]), gr.update(choices=[])
 
+                    paper = ov.get('paper', '')
+                    method = ov.get('method', '')
                     info = f"**{disease}** | 关联基因: {ov['n_genes']} | TCGA可用: {ov['n_genes_in_tcga']} | 通路: {ov['n_pathways']}"
+                    if paper:
+                        info += f"\n\n📚 参考论文: *{paper}*\n\n🔬 分析方法: {method}"
 
                     pw_df = _tracer.get_pathway_ranking(disease)
                     pw_choices = [f"{row['通路']} ({row['影响力评分']:.2f})" for _, row in pw_df.head(30).iterrows()]
