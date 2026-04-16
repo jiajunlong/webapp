@@ -26,6 +26,9 @@ from tcga_coad_simulator import TCGA_COAD_Simulator
 # 导入跨尺度引擎与模型库
 from cross_scale_engine import CrossScaleEngine
 
+# 导入疾病溯源模块
+from disease_tracing import DiseaseTracer
+
 # 导入Phase 1通路分析模块
 from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoader
 from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
@@ -1365,7 +1368,153 @@ def create_gradio_interface():
                            KRAS-driven cancers require TBK1." *Nature*, 2009. (ssGSEA)
                         """)
 
-            # ========== Tab 1: 基因网络可视化 ==========
+            # ========== Tab 1: 疾病多尺度溯源 ==========
+            with gr.Tab("🔬 疾病多尺度溯源", id=1):
+                gr.HTML("""<div class="tab-banner banner-red">
+                    <h3>🔬 疾病多尺度溯源分析</h3>
+                    <p>疾病 → 信号通路 → 基因模块 → 表达特征 · 逐层下钻 · 论文方法驱动</p>
+                </div>""")
+
+                # 初始化溯源器
+                _tracer = DiseaseTracer()
+                _tracer.load_data()
+                _tracer_diseases = _tracer.get_disease_list()
+
+                with gr.Row():
+                    # 左侧: 层级选择
+                    with gr.Column(scale=1):
+                        gr.Markdown("### 📋 逐层选择")
+
+                        trace_disease = gr.Dropdown(
+                            choices=_tracer_diseases,
+                            value=_tracer_diseases[0] if _tracer_diseases else None,
+                            label="🏥 Layer 1: 选择疾病",
+                        )
+                        trace_disease_info = gr.Markdown("")
+
+                        trace_pathway = gr.Dropdown(
+                            choices=[], label="🔬 Layer 2: 选择通路",
+                            info="按影响力评分排序（CV加权）",
+                        )
+
+                        trace_gene = gr.Dropdown(
+                            choices=[], label="🧬 Layer 3: 选择基因",
+                            info="按NAE评分排序",
+                        )
+
+                        trace_run_btn = gr.Button("📋 生成溯源报告", variant="primary", size="lg")
+
+                    # 右侧: 结果
+                    with gr.Column(scale=3):
+                        with gr.Tabs():
+                            with gr.Tab("🌊 溯源全景"):
+                                trace_sankey = gr.Plot(label="Sankey溯源图")
+                                trace_report = gr.HTML(label="溯源报告")
+
+                            with gr.Tab("📊 通路影响力"):
+                                trace_pw_bar = gr.Plot(label="通路排名")
+                                trace_pw_table = gr.Dataframe(label="通路详情", interactive=False)
+
+                            with gr.Tab("🧬 基因网络与NAE"):
+                                trace_gene_network = gr.Plot(label="基因模块网络")
+                                trace_gene_table = gr.Dataframe(label="基因NAE排名", interactive=False)
+
+                            with gr.Tab("📈 基因表达档案"):
+                                trace_expr_plot = gr.Plot(label="表达箱线图")
+                                trace_mirna_table = gr.Dataframe(label="miRNA调控关系", interactive=False)
+                                trace_expr_summary = gr.Markdown("")
+
+                # === 回调 ===
+                def on_disease_select(disease):
+                    """选择疾病后更新通路列表"""
+                    if not disease:
+                        return "", gr.update(choices=[]), gr.update(choices=[])
+                    ov = _tracer.get_disease_overview(disease)
+                    if "error" in ov:
+                        return f"❌ {ov['error']}", gr.update(choices=[]), gr.update(choices=[])
+
+                    info = f"**{disease}** | 关联基因: {ov['n_genes']} | TCGA可用: {ov['n_genes_in_tcga']} | 通路: {ov['n_pathways']}"
+
+                    pw_df = _tracer.get_pathway_ranking(disease)
+                    pw_choices = [f"{row['通路']} ({row['影响力评分']:.2f})" for _, row in pw_df.head(30).iterrows()]
+
+                    return info, gr.update(choices=pw_choices, value=pw_choices[0] if pw_choices else None), gr.update(choices=[])
+
+                def on_pathway_select(disease, pathway_str):
+                    """选择通路后更新基因列表"""
+                    if not disease or not pathway_str:
+                        return gr.update(choices=[])
+                    pathway = pathway_str.split(" (")[0]  # 去掉评分后缀
+                    gene_df, _ = _tracer.get_gene_module(disease, pathway)
+                    if gene_df.empty:
+                        return gr.update(choices=[])
+                    gene_choices = [f"{row['基因']} (NAE:{row['NAE评分']:.3f})" for _, row in gene_df.iterrows()]
+                    return gr.update(choices=gene_choices, value=gene_choices[0] if gene_choices else None)
+
+                def run_full_trace(disease, pathway_str, gene_str):
+                    """运行完整溯源分析"""
+                    empty = (go.Figure(), "", go.Figure(), pd.DataFrame(),
+                             go.Figure(), pd.DataFrame(), go.Figure(),
+                             pd.DataFrame(), "")
+                    if not disease or not pathway_str:
+                        return empty
+
+                    pathway = pathway_str.split(" (")[0]
+                    gene = gene_str.split(" (")[0] if gene_str else ""
+
+                    try:
+                        # Sankey
+                        sankey = _tracer.create_sankey_diagram(disease)
+
+                        # 通路
+                        pw_df = _tracer.get_pathway_ranking(disease)
+                        pw_bar = _tracer.create_pathway_bar(pw_df)
+
+                        # 基因模块
+                        gene_df, G = _tracer.get_gene_module(disease, pathway)
+                        gene_net = _tracer.create_gene_network_plot(G, gene_df)
+
+                        # 基因表达
+                        expr_plot = go.Figure()
+                        mirna_df = pd.DataFrame()
+                        expr_summary = ""
+                        if gene and gene in (_tracer.expr_data.index if _tracer.expr_data is not None else []):
+                            profile = _tracer.get_gene_expression_profile(gene)
+                            expr_plot = _tracer.create_expression_boxplot(gene, profile)
+                            mirnas = profile.get("mirna_regulators", [])
+                            mirna_df = pd.DataFrame(mirnas) if mirnas else pd.DataFrame()
+                            expr_summary = f"""**{gene}** | 表达均值: {profile.get('expr_mean','N/A')} | 排名: #{profile.get('expr_rank','N/A')}/{profile.get('total_genes','N/A')} | miRNA调控: {len(mirnas)} 个"""
+
+                        # 报告
+                        report = _tracer.generate_tracing_report(disease, pathway, gene) if gene else ""
+
+                        return (sankey, report, pw_bar, pw_df.head(20),
+                                gene_net, gene_df, expr_plot, mirna_df, expr_summary)
+                    except Exception as e:
+                        import traceback
+                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), pd.DataFrame(),
+                                go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(),
+                                f"❌ {traceback.format_exc()}")
+
+                trace_disease.change(
+                    on_disease_select,
+                    inputs=[trace_disease],
+                    outputs=[trace_disease_info, trace_pathway, trace_gene],
+                )
+                trace_pathway.change(
+                    on_pathway_select,
+                    inputs=[trace_disease, trace_pathway],
+                    outputs=[trace_gene],
+                )
+                trace_run_btn.click(
+                    run_full_trace,
+                    inputs=[trace_disease, trace_pathway, trace_gene],
+                    outputs=[trace_sankey, trace_report, trace_pw_bar, trace_pw_table,
+                             trace_gene_network, trace_gene_table, trace_expr_plot,
+                             trace_mirna_table, trace_expr_summary],
+                )
+
+            # ========== Tab 2: 基因网络可视化 ==========
             with gr.Tab("🔬 基因网络可视化", id=1):
                 gr.HTML("""<div class="tab-banner banner-indigo">
                     <h3>🔬 基因网络可视化</h3>
