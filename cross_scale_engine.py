@@ -331,6 +331,114 @@ class CrossScaleEngine:
             ],
         }
 
+    def run_gene_cascade(self, disease_name: str,
+                         network_type: str = "interaction",
+                         data_type: str = "gene",
+                         max_features: int = 100,
+                         progress_callback=None) -> CascadeReport:
+        """
+        基因网络两层级联：分子层 → 细胞层（不含群体层）
+
+        流程:
+            1. 分子层 → Hub基因 + 网络拓扑
+            2. 细胞层 → 用Hub基因做定向MRNetB推断
+        """
+        report = CascadeReport(disease=disease_name)
+
+        # Layer 1: 分子
+        if progress_callback:
+            progress_callback(0.0, "🧬 分子尺度分析...")
+        mol = self.analyze_molecular(disease_name, network_type)
+        report.results["molecular"] = mol
+
+        # 参数传递: Hub基因 → 种子节点
+        hub_genes = mol.summary.get("hub_genes", []) if "error" not in mol.summary else []
+        all_disease_genes = []
+        if self.db and disease_name in self.db.diseases:
+            all_disease_genes = self.db.diseases[disease_name].genes
+        seed_genes = hub_genes + [g for g in all_disease_genes if g not in hub_genes]
+        seed_genes = seed_genes[:max_features]
+
+        # Layer 2: 细胞
+        if progress_callback:
+            progress_callback(0.4, f"🔬 细胞尺度 (种子: {len(seed_genes)} 基因)...")
+        cell = self.analyze_cellular(
+            data_type=data_type,
+            max_features=max_features,
+            seed_genes=seed_genes if seed_genes else None,
+        )
+        report.results["cellular"] = cell
+
+        # 生成洞察
+        insights = []
+        if "error" not in mol.summary:
+            s = mol.summary
+            insights.append(
+                f"🧬 分子层: {s.get('nodes',0)} 个疾病基因，{s.get('edges',0)} 条互作边，"
+                f"密度 {s.get('density',0):.4f}，Hub基因: {', '.join(s.get('hub_genes',[])[:5]) or '无'}。"
+            )
+        if "error" not in cell.summary:
+            s = cell.summary
+            insights.append(
+                f"🔬 细胞层: 从TCGA-COAD推断出 {s.get('cell_nodes',0)} 个节点、"
+                f"{s.get('total_edges',0)} 条功能关联（{s.get('seed_info','')})。"
+            )
+        if hub_genes and "error" not in cell.summary:
+            insights.append(
+                f"📐 跨尺度传递: {len(seed_genes)} 个Hub基因作为种子节点定向推断细胞层网络"
+                f"（网络邻近性原理, Guney et al. 2016）。"
+            )
+        report.cross_scale_insights = insights or ["未产生洞察。"]
+
+        # 架构HTML
+        report.architecture_html = self._gene_cascade_html(report, len(seed_genes))
+
+        if progress_callback:
+            progress_callback(1.0, "✅ 完成")
+        return report
+
+    def _gene_cascade_html(self, report: CascadeReport, seed_count: int) -> str:
+        """基因网络两层级联架构图HTML"""
+        mol = report.results.get("molecular")
+        cell = report.results.get("cellular")
+
+        def _m(label, val):
+            return f"<span style='margin-right:12px;'><b>{label}:</b> {val}</span>"
+
+        mol_metrics = ""
+        if mol and "error" not in mol.summary:
+            s = mol.summary
+            hubs = ", ".join(s.get("hub_genes", [])[:5])
+            mol_metrics = (
+                f"{_m('节点', s.get('nodes','-'))} {_m('边', s.get('edges','-'))} "
+                f"{_m('密度', s.get('density','-'))} {_m('聚类', s.get('clustering','-'))}"
+                f"<br/>{_m('Hub基因', hubs or '-')}"
+            )
+        cell_metrics = ""
+        if cell and "error" not in cell.summary:
+            s = cell.summary
+            cell_metrics = (
+                f"{_m('节点', s.get('cell_nodes','-'))} {_m('边', s.get('total_edges','-'))} "
+                f"{_m('密度', s.get('cell_density','-'))} {_m('聚类', s.get('cell_clustering','-'))}"
+            )
+
+        return f"""
+        <div style="font-family:system-ui;padding:16px;display:flex;flex-direction:column;align-items:center;gap:0;">
+          <h3>基因网络级联分析 — {report.disease}</h3>
+          <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;
+                      border-radius:12px;padding:14px 20px;width:100%;max-width:600px;">
+            <b>🧬 Layer 1 — 分子尺度</b><br/><span style="font-size:0.85em;">基因互作/调控网络</span>
+            <div style="font-size:0.82em;margin-top:6px;">{mol_metrics}</div>
+          </div>
+          <div style="text-align:center;margin:3px 0;">⬇️ <span style="font-size:0.75em;color:#555;">传递 {seed_count} 个Hub基因 → 种子节点</span></div>
+          <div style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff;
+                      border-radius:12px;padding:14px 20px;width:100%;max-width:600px;">
+            <b>🔬 Layer 2 — 细胞/组织尺度</b><br/><span style="font-size:0.85em;">MRNetB网络推断（TCGA-COAD）</span>
+            <div style="font-size:0.82em;margin-top:6px;">{cell_metrics}</div>
+          </div>
+        </div>
+        """
+
     def run_full_cascade(self, disease_name: str,
                          network_type: str = "interaction",
                          data_type: str = "gene",
