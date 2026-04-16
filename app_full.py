@@ -1115,12 +1115,29 @@ def create_gradio_interface():
         border-radius: 10px;
         margin-bottom: 20px;
     }
+    .tab-banner {
+        color: white;
+        padding: 16px 22px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+    }
+    .tab-banner h3 { margin: 0 0 4px 0; font-size: 1.3em; }
+    .tab-banner p  { margin: 0; opacity: 0.9; font-size: 0.92em; }
+    .banner-purple  { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .banner-pink    { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .banner-green   { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #222; }
+    .banner-blue    { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+    .banner-orange  { background: linear-gradient(135deg, #fa709a, #fee140); color: #222; }
+    .banner-teal    { background: linear-gradient(135deg, #0ba360, #3cba92); }
+    .banner-red     { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+    .banner-indigo  { background: linear-gradient(135deg, #5f72bd, #9b23ea); }
+    .banner-slate   { background: linear-gradient(135deg, #616161, #9bc5c3); }
     """
     
     # 创建主题
     custom_theme = gr.themes.Soft(primary_hue="purple")
     
-    with gr.Blocks(title="基因网络仿真计算模型") as demo:
+    with gr.Blocks(title="基因网络仿真计算模型", css=custom_css, theme=custom_theme) as demo:
         
         # 标题
         if USE_PREPROCESSED:
@@ -1141,9 +1158,233 @@ def create_gradio_interface():
         
         with gr.Tabs() as tabs:
             
+            # ========== Tab 0: 多尺度联动分析 ==========
+            with gr.Tab("🔗 多尺度联动分析", id=0):
+                gr.HTML("""<div class="tab-banner banner-purple">
+                    <h3>🔗 多尺度联动分析</h3>
+                    <p>分子层指标 → 自动推导 → 细胞层种子基因 → 自动推导 → 群体层传播参数</p>
+                </div>""")
+
+                with gr.Tabs():
+
+                    # ---- 子Tab 1: 跨尺度级联（参数传递） ----
+                    with gr.Tab("🚀 跨尺度级联"):
+                        gr.Markdown("#### 三层级联分析 — 参数自动传递")
+                        gr.Markdown("""
+                        **传递机制:**
+                        - Layer 1 → Layer 2: 分子层Hub基因 → 细胞层MRNetB种子节点
+                        - Layer 2 → Layer 3: 分子密度+细胞聚类系数 → 群体层感染率β和社区数c
+                        """)
+
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                cascade_disease = gr.Dropdown(
+                                    choices=diseases,
+                                    value=diseases[0] if diseases else None,
+                                    label="选择疾病",
+                                )
+                                cascade_net_type = gr.Radio(
+                                    choices=["interaction", "regulation"],
+                                    value="interaction", label="网络类型",
+                                )
+                                cascade_max_feat = gr.Slider(
+                                    50, 300, value=100, step=50,
+                                    label="最大特征数",
+                                )
+                                cascade_run_btn = gr.Button("🚀 运行三层级联分析",
+                                                             variant="primary", size="lg")
+                            with gr.Column(scale=2):
+                                cascade_status = gr.Markdown("")
+                                cascade_arch = gr.HTML(label="级联架构 + 参数传递")
+
+                        with gr.Row():
+                            with gr.Column():
+                                cascade_network_plot = gr.Plot(label="三层网络对比")
+                            with gr.Column():
+                                cascade_radar = gr.Plot(label="跨尺度雷达图")
+
+                        cascade_summary = gr.Dataframe(label="三层汇总表", interactive=False)
+                        cascade_insights = gr.Markdown("")
+
+                        def run_full_cascade(disease, net_type, max_feat):
+                            try:
+                                engine = CrossScaleEngine(
+                                    db=app.db,
+                                    social_sim=SocialNetworkSimulator(),
+                                    tcga_sim=TCGA_COAD_Simulator(),
+                                )
+                                report = engine.run_full_cascade(
+                                    disease_name=disease,
+                                    network_type=net_type,
+                                    max_features=int(max_feat),
+                                )
+                                arch = report.architecture_html
+                                network_fig = engine.create_three_network_plots(report)
+                                radar_fig = engine.create_radar_chart(report)
+                                summary = engine.cascade_summary_df(report)
+                                insights = "\n".join(
+                                    f"- {i}" for i in report.cross_scale_insights
+                                )
+                                return ("✅ 三层级联分析完成", arch,
+                                        network_fig, radar_fig, summary, insights)
+                            except Exception as e:
+                                import traceback
+                                return (f"❌ {e}", "", go.Figure(), go.Figure(),
+                                        pd.DataFrame(),
+                                        f"```\n{traceback.format_exc()}\n```")
+
+                        cascade_run_btn.click(
+                            fn=run_full_cascade,
+                            inputs=[cascade_disease, cascade_net_type, cascade_max_feat],
+                            outputs=[cascade_status, cascade_arch,
+                                     cascade_network_plot, cascade_radar,
+                                     cascade_summary, cascade_insights],
+                        )
+
+                    # ---- 子Tab 2: 多疾病对比 ----
+                    with gr.Tab("📊 多疾病对比"):
+                        gr.Markdown("#### 多疾病分子网络对比分析")
+                        gr.Markdown("选择 2-5 个疾病，对比它们在分子尺度的网络拓扑差异。")
+
+                        compare_diseases_select = gr.CheckboxGroup(
+                            choices=diseases,
+                            value=diseases[:3] if len(diseases) >= 3 else diseases,
+                            label="选择疾病（2-5个）",
+                        )
+                        compare_run_btn = gr.Button("📊 运行对比分析", variant="primary")
+                        compare_status = gr.Markdown("")
+                        compare_chart = gr.Plot(label="对比柱状图")
+                        compare_table = gr.Dataframe(label="对比数据表", interactive=False)
+
+                        def run_compare(selected_diseases):
+                            if not selected_diseases or len(selected_diseases) < 2:
+                                return "⚠️ 请至少选择2个疾病", go.Figure(), pd.DataFrame()
+                            try:
+                                engine = CrossScaleEngine(db=app.db)
+                                df, fig = engine.compare_diseases(selected_diseases)
+                                return "✅ 对比完成", fig, df
+                            except Exception as e:
+                                return f"❌ {e}", go.Figure(), pd.DataFrame()
+
+                        compare_run_btn.click(
+                            fn=run_compare,
+                            inputs=[compare_diseases_select],
+                            outputs=[compare_status, compare_chart, compare_table],
+                        )
+
+                    # ---- 子Tab 3: 基因追踪 ----
+                    with gr.Tab("🔍 基因追踪"):
+                        gr.Markdown("#### 基因跨尺度追踪")
+                        gr.Markdown("输入一个基因，追踪它从 **分子层→细胞层→群体层** 的角色变化。")
+
+                        with gr.Row():
+                            trace_gene_input = gr.Textbox(
+                                label="基因名称",
+                                placeholder="例如: TP53, BRCA1, KRAS",
+                                value="TP53",
+                            )
+                            trace_disease = gr.Dropdown(
+                                choices=diseases,
+                                value=diseases[0] if diseases else None,
+                                label="疾病背景",
+                            )
+                        trace_run_btn = gr.Button("🔍 追踪基因", variant="primary")
+                        trace_result = gr.HTML(label="基因档案卡")
+
+                        def run_trace(gene, disease):
+                            if not gene or not gene.strip():
+                                return "<p>⚠️ 请输入基因名称</p>"
+                            try:
+                                engine = CrossScaleEngine(
+                                    db=app.db,
+                                    tcga_sim=TCGA_COAD_Simulator(),
+                                    social_sim=SocialNetworkSimulator(),
+                                )
+                                return engine.trace_gene(gene.strip().upper(), disease)
+                            except Exception as e:
+                                return f"<p>❌ 追踪失败: {e}</p>"
+
+                        trace_run_btn.click(
+                            fn=run_trace,
+                            inputs=[trace_gene_input, trace_disease],
+                            outputs=[trace_result],
+                        )
+
+                    # ---- 子Tab 4: 跨尺度洞察说明 ----
+                    with gr.Tab("📖 跨尺度说明"):
+                        gr.Markdown("""
+                        #### 跨尺度联动机制说明
+
+                        本平台实现了 **分子 → 细胞/组织 → 群体** 三个生物学尺度的级联分析，
+                        采用经过文献验证的跨尺度桥接方法。
+
+                        ---
+
+                        ##### 🧬 Layer 1 → Layer 2: 分子 → 细胞 桥接
+
+                        **方法:** Hub基因种子定向推断
+
+                        分子层通过度中心性识别Hub基因，作为细胞层MRNetB推断的种子节点。
+                        这基于 **网络邻近性原理** — 疾病基因在互作组中倾向于聚集在
+                        同一网络邻域内 (Guney et al. *Nature Communications*, 2016;
+                        Menche et al. *Science*, 2015)。
+
+                        ##### 🔬 Layer 2 → Layer 3: 细胞 → 群体 桥接
+
+                        **方法:** Hill函数剂量-响应模型
+
+                        采用 PhysiCell 框架 (Ghaffarizadeh et al. *PLoS Comput Biol*, 2018)
+                        中的 **Hill函数信号-行为规则** 将跨尺度拓扑信号映射为群体传播参数:
+
+                        ```
+                        信号: s = (分子网络密度 + 细胞聚类系数) / 2
+                        感染率: β = B_min + (B_max - B_min) × s² / (s² + K²)
+                            其中 B_min=0.01, B_max=0.20, K=0.3, n=2
+                        ```
+
+                        Hill函数的生物学意义: 低连通性网络 → 低传播率（阈值行为），
+                        高连通性网络 → 趋于饱和的传播率（超敏感性）。
+
+                        ##### 👥 Layer 3: 群体层参数
+
+                        - **社区数 c**: 由Hub基因数量映射，类比疾病模块数
+                          (Menche et al. *Science*, 2015)
+                        - **基本再生数**: R₀ ≈ β⟨k⟩/γ，决定传播是否可持续
+
+                        ---
+
+                        ##### 📚 核心参考文献
+
+                        1. Ghaffarizadeh et al. "PhysiCell: An open source physics-based cell
+                           simulator for 3-D multicellular systems." *PLoS Comput Biol*, 2018.
+                        2. Guney et al. "Network-based in silico drug efficacy screening."
+                           *Nature Communications*, 2016.
+                        3. Menche et al. "Uncovering disease-disease relationships through
+                           the incomplete interactome." *Science*, 2015.
+                        4. Xue & Bhatt. "Coupling the within-host process and between-host
+                           transmission." *Bull Math Biol*, 2022.
+                        5. Moran, P.A.P. *The Statistical Processes of Evolutionary Theory*. 1962.
+                        6. Albert et al. "Error and attack tolerance of complex networks."
+                           *Nature*, 2000.
+
+                        ---
+
+                        ##### 🔍 基因追踪
+
+                        追踪单个基因在三层中的角色:
+                        - **分子层**: 连接度排名、是否为Hub、所在通路
+                        - **细胞层**: TCGA-COAD 真实表达量（均值/方差/排名）
+                        - **群体层**: 基于图论的网络角色分类 + Moran固定概率
+                          (相对适合度映射)
+                        """)
+
             # ========== Tab 1: 基因网络可视化 ==========
-            with gr.Tab("🔬 基因网络可视化", id=0):
-                
+            with gr.Tab("🔬 基因网络可视化", id=1):
+                gr.HTML("""<div class="tab-banner banner-indigo">
+                    <h3>🔬 基因网络可视化</h3>
+                    <p>分子尺度 · 基因互作网络 / 调控网络 · 通路查询</p>
+                </div>""")
+
                 gr.Markdown("### 🎯 选择疾病和网络类型")
                 
                 with gr.Row():
@@ -1243,10 +1484,13 @@ def create_gradio_interface():
                 )
             
             # ========== Tab 2: 网络模型计算 ==========
-            with gr.Tab("📊 网络模型计算", id=1):
-                
+            with gr.Tab("📊 网络模型计算", id=2):
+                gr.HTML("""<div class="tab-banner banner-pink">
+                    <h3>📊 IS系数计算</h3>
+                    <p>分子尺度 · 通路影响力评分 · 批量计算与可视化</p>
+                </div>""")
+
                 gr.Markdown("""
-                ### 🚀 IS系数计算
                 
                 **影响分数 (Influence Score)** 用于评估特定基因通路在疾病中的重要性。
                 
@@ -1348,10 +1592,12 @@ def create_gradio_interface():
                 )
             
             # ========== Tab 3: 数据统计 ==========
-            with gr.Tab("📈 数据统计", id=2):
-                
-                gr.Markdown("### 📊 数据库统计信息")
-                
+            with gr.Tab("📈 数据统计", id=3):
+                gr.HTML("""<div class="tab-banner banner-slate">
+                    <h3>📈 数据统计</h3>
+                    <p>数据库概览 · 基因/通路/疾病统计</p>
+                </div>""")
+
                 # 数据库类型选择
                 db_type_dropdown = gr.Dropdown(
                     choices=["基因网络", "社交网络"],
@@ -1480,12 +1726,12 @@ def create_gradio_interface():
                 stats_display.value = get_initial_stats()
             
             # ========== Tab 4: 社交网络仿真 ==========
-            with gr.Tab("🌐 社交网络仿真", id=3):
+            with gr.Tab("🌐 社交网络仿真", id=4):
+                gr.HTML("""<div class="tab-banner banner-green">
+                    <h3>🌐 SIS 传播动力学仿真</h3>
+                    <p>群体尺度 · 社区网络构建 · SIS传播模拟 · 感染状态可视化</p>
+                </div>""")
                 gr.Markdown("""
-                ## 🌐 社交网络传播仿真
-                
-                基于社区结构的SIS（Susceptible-Infected-Susceptible）传播模型仿真。
-                
                 ### 📊 功能说明
                 - **社区网络构建**：生成具有社区结构的社交网络
                 - **SIS传播仿真**：模拟疾病或信息在网络中的传播过程
@@ -1662,11 +1908,13 @@ def create_gradio_interface():
                     outputs=[snapshot_plot]
                 )
             
-            # ========== Tab 5: TCGA-COAD基因网络仿真 ==========
-            with gr.Tab("🧬 基因网络仿真", id=4):
+            # ========== Tab 5: 基因网络仿真 ==========
+            with gr.Tab("🧬 基因网络仿真", id=5):
+                gr.HTML("""<div class="tab-banner banner-blue">
+                    <h3>🧬 TCGA-COAD 基因表达网络</h3>
+                    <p>细胞/组织尺度 · MRNetB网络推断 · 年龄/性别/阶段分层分析</p>
+                </div>""")
                 gr.Markdown("""
-                ## 🧬 TCGA-COAD 基因网络仿真分析
-                
                 基于TCGA结肠腺癌(COAD)数据的基因网络构建和分析模块。
                 
                 ### 📊 功能说明
@@ -2020,9 +2268,11 @@ def create_gradio_interface():
                 )
 
             # ========== Tab 6: 模型库 ==========
-            with gr.Tab("📚 模型库", id=5):
-                gr.Markdown("### 📚 跨尺度仿真模型目录")
-                gr.Markdown("以下是本平台支持的所有仿真模型，涵盖 **分子 → 细胞/组织 → 群体** 三个尺度。")
+            with gr.Tab("📚 模型库", id=6):
+                gr.HTML("""<div class="tab-banner banner-orange">
+                    <h3>📚 跨尺度仿真模型目录</h3>
+                    <p>6个模型 · 分子/细胞/群体三尺度 · 完整算法与参数说明</p>
+                </div>""")
 
                 model_cards = gr.HTML(value=create_model_cards_html())
 
@@ -2041,233 +2291,15 @@ def create_gradio_interface():
                     gr.Dataframe(value=dist_df, label="各尺度模型数量", interactive=False)
 
 
-            # ========== Tab 6.5: 网络医学分析 (Phase 2) ==========
-            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=6.5):
+            # ========== Tab 7: 网络医学分析 (Phase 2) ==========
+            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=7):
                 create_phase2_network_medicine_tab()
 
-            # ========== Tab 6.7: SIS生物标志物发现 (Phase 3) ==========
-            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=6.7):
+            # ========== Tab 8: SIS生物标志物发现 (Phase 3) ==========
+            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=8):
                 create_phase3_biomarker_tab()
 
-            # ========== Tab 7: 多尺度联动分析 ==========
-            with gr.Tab("🔗 多尺度联动分析", id=6):
-                gr.Markdown("### 🔗 多尺度联动分析")
-                gr.Markdown("真正的跨尺度联动：**分子层指标 → 自动推导 → 细胞层种子基因 → 自动推导 → 群体层传播参数**")
-
-                with gr.Tabs():
-
-                    # ---- 子Tab 1: 跨尺度级联（参数传递） ----
-                    with gr.Tab("🚀 跨尺度级联"):
-                        gr.Markdown("#### 三层级联分析 — 参数自动传递")
-                        gr.Markdown("""
-                        **传递机制:**
-                        - Layer 1 → Layer 2: 分子层Hub基因 → 细胞层MRNetB种子节点
-                        - Layer 2 → Layer 3: 分子密度+细胞聚类系数 → 群体层感染率β和社区数c
-                        """)
-
-                        with gr.Row():
-                            with gr.Column(scale=1):
-                                cascade_disease = gr.Dropdown(
-                                    choices=diseases,
-                                    value=diseases[0] if diseases else None,
-                                    label="选择疾病",
-                                )
-                                cascade_net_type = gr.Radio(
-                                    choices=["interaction", "regulation"],
-                                    value="interaction", label="网络类型",
-                                )
-                                cascade_max_feat = gr.Slider(
-                                    50, 300, value=100, step=50,
-                                    label="最大特征数",
-                                )
-                                cascade_run_btn = gr.Button("🚀 运行三层级联分析",
-                                                             variant="primary", size="lg")
-                            with gr.Column(scale=2):
-                                cascade_status = gr.Markdown("")
-                                cascade_arch = gr.HTML(label="级联架构 + 参数传递")
-
-                        with gr.Row():
-                            with gr.Column():
-                                cascade_network_plot = gr.Plot(label="三层网络对比")
-                            with gr.Column():
-                                cascade_radar = gr.Plot(label="跨尺度雷达图")
-
-                        cascade_summary = gr.Dataframe(label="三层汇总表", interactive=False)
-                        cascade_insights = gr.Markdown("")
-
-                        def run_full_cascade(disease, net_type, max_feat):
-                            try:
-                                engine = CrossScaleEngine(
-                                    db=app.db,
-                                    social_sim=SocialNetworkSimulator(),
-                                    tcga_sim=TCGA_COAD_Simulator(),
-                                )
-                                report = engine.run_full_cascade(
-                                    disease_name=disease,
-                                    network_type=net_type,
-                                    max_features=int(max_feat),
-                                )
-                                arch = report.architecture_html
-                                network_fig = engine.create_three_network_plots(report)
-                                radar_fig = engine.create_radar_chart(report)
-                                summary = engine.cascade_summary_df(report)
-                                insights = "\n".join(
-                                    f"- {i}" for i in report.cross_scale_insights
-                                )
-                                return ("✅ 三层级联分析完成", arch,
-                                        network_fig, radar_fig, summary, insights)
-                            except Exception as e:
-                                import traceback
-                                return (f"❌ {e}", "", go.Figure(), go.Figure(),
-                                        pd.DataFrame(),
-                                        f"```\n{traceback.format_exc()}\n```")
-
-                        cascade_run_btn.click(
-                            fn=run_full_cascade,
-                            inputs=[cascade_disease, cascade_net_type, cascade_max_feat],
-                            outputs=[cascade_status, cascade_arch,
-                                     cascade_network_plot, cascade_radar,
-                                     cascade_summary, cascade_insights],
-                        )
-
-                    # ---- 子Tab 2: 多疾病对比 ----
-                    with gr.Tab("📊 多疾病对比"):
-                        gr.Markdown("#### 多疾病分子网络对比分析")
-                        gr.Markdown("选择 2-5 个疾病，对比它们在分子尺度的网络拓扑差异。")
-
-                        compare_diseases_select = gr.CheckboxGroup(
-                            choices=diseases,
-                            value=diseases[:3] if len(diseases) >= 3 else diseases,
-                            label="选择疾病（2-5个）",
-                        )
-                        compare_run_btn = gr.Button("📊 运行对比分析", variant="primary")
-                        compare_status = gr.Markdown("")
-                        compare_chart = gr.Plot(label="对比柱状图")
-                        compare_table = gr.Dataframe(label="对比数据表", interactive=False)
-
-                        def run_compare(selected_diseases):
-                            if not selected_diseases or len(selected_diseases) < 2:
-                                return "⚠️ 请至少选择2个疾病", go.Figure(), pd.DataFrame()
-                            try:
-                                engine = CrossScaleEngine(db=app.db)
-                                df, fig = engine.compare_diseases(selected_diseases)
-                                return "✅ 对比完成", fig, df
-                            except Exception as e:
-                                return f"❌ {e}", go.Figure(), pd.DataFrame()
-
-                        compare_run_btn.click(
-                            fn=run_compare,
-                            inputs=[compare_diseases_select],
-                            outputs=[compare_status, compare_chart, compare_table],
-                        )
-
-                    # ---- 子Tab 3: 基因追踪 ----
-                    with gr.Tab("🔍 基因追踪"):
-                        gr.Markdown("#### 基因跨尺度追踪")
-                        gr.Markdown("输入一个基因，追踪它从 **分子层→细胞层→群体层** 的角色变化。")
-
-                        with gr.Row():
-                            trace_gene_input = gr.Textbox(
-                                label="基因名称",
-                                placeholder="例如: TP53, BRCA1, KRAS",
-                                value="TP53",
-                            )
-                            trace_disease = gr.Dropdown(
-                                choices=diseases,
-                                value=diseases[0] if diseases else None,
-                                label="疾病背景",
-                            )
-                        trace_run_btn = gr.Button("🔍 追踪基因", variant="primary")
-                        trace_result = gr.HTML(label="基因档案卡")
-
-                        def run_trace(gene, disease):
-                            if not gene or not gene.strip():
-                                return "<p>⚠️ 请输入基因名称</p>"
-                            try:
-                                engine = CrossScaleEngine(
-                                    db=app.db,
-                                    tcga_sim=TCGA_COAD_Simulator(),
-                                    social_sim=SocialNetworkSimulator(),
-                                )
-                                return engine.trace_gene(gene.strip().upper(), disease)
-                            except Exception as e:
-                                return f"<p>❌ 追踪失败: {e}</p>"
-
-                        trace_run_btn.click(
-                            fn=run_trace,
-                            inputs=[trace_gene_input, trace_disease],
-                            outputs=[trace_result],
-                        )
-
-                    # ---- 子Tab 4: 跨尺度洞察说明 ----
-                    with gr.Tab("📖 跨尺度说明"):
-                        gr.Markdown("""
-                        #### 跨尺度联动机制说明
-
-                        本平台实现了 **分子 → 细胞/组织 → 群体** 三个生物学尺度的级联分析，
-                        采用经过文献验证的跨尺度桥接方法。
-
-                        ---
-
-                        ##### 🧬 Layer 1 → Layer 2: 分子 → 细胞 桥接
-
-                        **方法:** Hub基因种子定向推断
-
-                        分子层通过度中心性识别Hub基因，作为细胞层MRNetB推断的种子节点。
-                        这基于 **网络邻近性原理** — 疾病基因在互作组中倾向于聚集在
-                        同一网络邻域内 (Guney et al. *Nature Communications*, 2016;
-                        Menche et al. *Science*, 2015)。
-
-                        ##### 🔬 Layer 2 → Layer 3: 细胞 → 群体 桥接
-
-                        **方法:** Hill函数剂量-响应模型
-
-                        采用 PhysiCell 框架 (Ghaffarizadeh et al. *PLoS Comput Biol*, 2018)
-                        中的 **Hill函数信号-行为规则** 将跨尺度拓扑信号映射为群体传播参数:
-
-                        ```
-                        信号: s = (分子网络密度 + 细胞聚类系数) / 2
-                        感染率: β = B_min + (B_max - B_min) × s² / (s² + K²)
-                            其中 B_min=0.01, B_max=0.20, K=0.3, n=2
-                        ```
-
-                        Hill函数的生物学意义: 低连通性网络 → 低传播率（阈值行为），
-                        高连通性网络 → 趋于饱和的传播率（超敏感性）。
-
-                        ##### 👥 Layer 3: 群体层参数
-
-                        - **社区数 c**: 由Hub基因数量映射，类比疾病模块数
-                          (Menche et al. *Science*, 2015)
-                        - **基本再生数**: R₀ ≈ β⟨k⟩/γ，决定传播是否可持续
-
-                        ---
-
-                        ##### 📚 核心参考文献
-
-                        1. Ghaffarizadeh et al. "PhysiCell: An open source physics-based cell
-                           simulator for 3-D multicellular systems." *PLoS Comput Biol*, 2018.
-                        2. Guney et al. "Network-based in silico drug efficacy screening."
-                           *Nature Communications*, 2016.
-                        3. Menche et al. "Uncovering disease-disease relationships through
-                           the incomplete interactome." *Science*, 2015.
-                        4. Xue & Bhatt. "Coupling the within-host process and between-host
-                           transmission." *Bull Math Biol*, 2022.
-                        5. Moran, P.A.P. *The Statistical Processes of Evolutionary Theory*. 1962.
-                        6. Albert et al. "Error and attack tolerance of complex networks."
-                           *Nature*, 2000.
-
-                        ---
-
-                        ##### 🔍 基因追踪
-
-                        追踪单个基因在三层中的角色:
-                        - **分子层**: 连接度排名、是否为Hub、所在通路
-                        - **细胞层**: TCGA-COAD 真实表达量（均值/方差/排名）
-                        - **群体层**: 基于图论的网络角色分类 + Moran固定概率
-                          (相对适合度映射)
-                        """)
-
-            # ========== Tab 8: 关于系统（注释） ==========
+            # ========== Tab 9: 关于系统（注释） ==========
             # with gr.Tab("ℹ️ 关于", id=4):
                 
             #     gr.Markdown("""
@@ -2366,10 +2398,9 @@ def create_gradio_interface():
             #     """)
         
         # 底部信息
-        gr.Markdown("""
-        ---
-        <div style="text-align: center; color: #888; font-size: 0.9em;">
-            © 2025 基因网络与社交网络仿真计算模型 
+        gr.HTML("""
+        <div style="text-align:center; color:#999; font-size:0.85em; padding:16px 0 8px 0; border-top:1px solid #eee; margin-top:20px;">
+            🧬 大规模跨尺度仿真模型库 &nbsp;·&nbsp; Powered by Gradio + Plotly + NetworkX
         </div>
         """)
     

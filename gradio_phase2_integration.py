@@ -16,6 +16,7 @@ Last Updated: 2026-04-14
 import gradio as gr
 import pandas as pd
 import numpy as np
+import networkx as nx
 import logging
 import warnings
 from pathlib import Path
@@ -86,23 +87,36 @@ class Phase2DataLoader:
     def _load_expression_data(self):
         """Load TCGA-COAD expression and clinical data"""
         try:
-            # Load expression
-            expr_file = "data/TCGA-COAD/filtered_hiseq_data.csv"
-            if os.path.exists(expr_file):
-                self.gene_expression = pd.read_csv(expr_file, index_col=0)
-                logger.info(f"✓ Loaded expression: {self.gene_expression.shape}")
-            
+            # Prefer gene-symbol indexed files (TCGA-COAD/ without data/ prefix)
+            # data/TCGA-COAD/ has ENSG IDs which don't match gene symbols
+            expr_paths = ["TCGA-COAD/filtered_hiseq_data.csv", "data/TCGA-COAD/filtered_hiseq_data.csv"]
+            for expr_file in expr_paths:
+                if os.path.exists(expr_file):
+                    self.gene_expression = pd.read_csv(expr_file, index_col=0)
+                    # Verify it has gene symbols, not ENSG IDs
+                    if not str(self.gene_expression.index[0]).startswith('ENSG'):
+                        logger.info(f"✓ Loaded expression (gene symbols): {self.gene_expression.shape} from {expr_file}")
+                        break
+                    else:
+                        logger.warning(f"  Skipping {expr_file} (ENSG IDs, need gene symbols)")
+                        self.gene_expression = None
+
             # Load miRNA
-            mirna_file = "data/TCGA-COAD/filtered_miRNA_with_names.csv"
-            if os.path.exists(mirna_file):
-                self.mirna_expression = pd.read_csv(mirna_file, index_col=0)
-                logger.info(f"✓ Loaded miRNA: {self.mirna_expression.shape}")
-            
+            mirna_paths = ["TCGA-COAD/filtered_miRNA_with_names.csv", "data/TCGA-COAD/filtered_miRNA_with_names.csv"]
+            for mirna_file in mirna_paths:
+                if os.path.exists(mirna_file):
+                    self.mirna_expression = pd.read_csv(mirna_file, index_col=0)
+                    logger.info(f"✓ Loaded miRNA: {self.mirna_expression.shape}")
+                    break
+
             # Load clinical
-            clinical_file = "data/TCGA-COAD/filtered_clinical.csv"
-            if os.path.exists(clinical_file):
-                self.clinical_traits = pd.read_csv(clinical_file, index_col=0)
-                logger.info(f"✓ Loaded clinical: {self.clinical_traits.shape}")
+            clinical_paths = ["data/TCGA-COAD/filtered_clinical.csv", "TCGA-COAD/clinical.tsv"]
+            for clinical_file in clinical_paths:
+                if os.path.exists(clinical_file):
+                    sep = '\t' if clinical_file.endswith('.tsv') else ','
+                    self.clinical_traits = pd.read_csv(clinical_file, index_col=0, sep=sep)
+                    logger.info(f"✓ Loaded clinical: {self.clinical_traits.shape}")
+                    break
         except Exception as e:
             logger.error(f"Error loading expression data: {e}")
     
@@ -163,21 +177,27 @@ def create_disease_module_tab(data_loader: Phase2DataLoader):
             with gr.Column(scale=1):
                 gr.Markdown("### ⚙️ 分析参数")
                 
+                # 只显示基因数≥5的疾病，按基因数降序排列
+                _disease_choices = []
+                if data_loader.gene_disease is not None:
+                    _gd = data_loader.gene_disease
+                    _counts = _gd.groupby('disease_name')['gene_symbol'].nunique().sort_values(ascending=False)
+                    _disease_choices = [d for d, c in _counts.items() if c >= 5]
+
                 disease_select = gr.Dropdown(
-                    choices=["Colorectal Neoplasms", "Breast Neoplasms", "Lung Neoplasms"] 
-                    if data_loader.gene_disease is not None else [],
-                    value="Colorectal Neoplasms",
+                    choices=_disease_choices,
+                    value="Colorectal cancer" if "Colorectal cancer" in _disease_choices else (_disease_choices[0] if _disease_choices else None),
                     label="🏥 选择疾病",
-                    info="选择要分析的疾病"
+                    info="仅显示关联基因≥5个的疾病"
                 )
                 
                 module_min_size = gr.Slider(
-                    minimum=3,
+                    minimum=2,
                     maximum=50,
-                    value=10,
+                    value=3,
                     step=1,
                     label="🔢 最小模块大小",
-                    info="模块中基因的最少数量"
+                    info="模块中基因的最少数量（建议3-5）"
                 )
                 
                 comorbidity_thresh = gr.Slider(
@@ -240,68 +260,177 @@ def create_disease_module_tab(data_loader: Phase2DataLoader):
             try:
                 if not data_loader.loaded:
                     return None, pd.DataFrame(), None, pd.DataFrame(), "❌ 数据未加载", {}
-                
+
                 if data_loader.gene_disease is None:
                     return None, pd.DataFrame(), None, pd.DataFrame(), "❌ 基因-疾病数据未加载", {}
-                
-                progress(0.2, desc="构建PPI网络...")
-                # Build PPI network using simple simulation
-                disease_genes = list(set(data_loader.gene_disease[data_loader.gene_disease.iloc[:, 1] == disease].iloc[:, 0].values)) if len(data_loader.gene_disease.columns) > 1 else []
-                
+
+                progress(0.1, desc="提取疾病基因...")
+                # Extract disease genes using correct column names
+                gd = data_loader.gene_disease
+                disease_rows = gd[gd['disease_name'] == disease]
+                # gene_symbol column may have comma-separated aliases, take first
+                raw_genes = disease_rows['gene_symbol'].dropna().tolist()
+                disease_genes = []
+                for g in raw_genes:
+                    first = str(g).split(',')[0].strip()
+                    if first and first != 'NA':
+                        disease_genes.append(first)
+                disease_genes = list(set(disease_genes))
+
                 if not disease_genes:
-                    disease_genes = list(data_loader.gene_disease.iloc[:, 0].unique())[:100]
-                
-                # Create simple PPI network from expression correlation
-                builder = DiseaseNetworkBuilder()
-                
-                progress(0.5, desc="检测模块...")
-                # Build network adjacency from gene expression
-                expr_subset = data_loader.gene_expression[[g for g in disease_genes if g in data_loader.gene_expression.index]]
-                
-                if expr_subset.empty:
-                    return None, pd.DataFrame(), None, pd.DataFrame(), "❌ 未找到疾病相关基因", {}
-                
-                # Compute correlation-based adjacency
+                    return None, pd.DataFrame(), None, pd.DataFrame(), f"❌ 未找到 '{disease}' 的关联基因", {}
+
+                progress(0.2, desc="构建相关性网络...")
+                # Filter expression to available disease genes
+                available = [g for g in disease_genes if g in data_loader.gene_expression.index]
+                if len(available) < 3:
+                    return None, pd.DataFrame(), None, pd.DataFrame(), f"❌ 仅找到 {len(available)} 个基因，不足以构建网络", {}
+
+                expr_subset = data_loader.gene_expression.loc[available]
+                gene_names = list(expr_subset.index)
+
+                # Build correlation-based network as nx.Graph
                 corr_matrix = expr_subset.T.corr().values
-                adjacency = (abs(corr_matrix) > 0.3).astype(int)
-                np.fill_diagonal(adjacency, 0)
-                
-                # Detect communities
-                detector = CommunityDetector(adjacency, list(expr_subset.index))
-                communities = detector.detect_communities_louvain()
-                
-                # Filter by size
-                modules = {f"Module_{i}": genes for i, genes in enumerate(communities) if len(genes) >= min_size}
-                
-                progress(0.8, desc="计算共病...")
-                # Compute comorbidity
-                metrics = ModuleSeparationMetrics(adjacency, list(expr_subset.index))
-                separation = metrics.compute_network_separation(communities)
-                
-                # Prepare results tables
-                module_list = pd.DataFrame([
-                    {"模块": name, "基因数": len(genes), "分离度": separation.get(name, 0)}
-                    for name, genes in modules.items()
-                ])
-                
-                progress(0.95, desc="准备可视化...")
-                
-                status_text = f"""
-                ✅ 模块检测完成
-                
-                📊 结果统计:
-                - 疾病: {disease}
-                - 检测模块数: {len(modules)}
-                - 最小模块大小: {min_size}
-                - 平均分离度: {separation.get('mean_separation', 0):.3f}
-                """
-                
-                return None, module_list, None, pd.DataFrame(), status_text, {
-                    'modules': modules,
-                    'separation': separation,
-                    'adjacency': adjacency
+                G = nx.Graph()
+                for i, g1 in enumerate(gene_names):
+                    G.add_node(g1)
+                    for j in range(i + 1, len(gene_names)):
+                        if abs(corr_matrix[i, j]) > 0.3:
+                            G.add_edge(g1, gene_names[j], weight=abs(corr_matrix[i, j]))
+
+                if G.number_of_edges() == 0:
+                    return None, pd.DataFrame(), None, pd.DataFrame(), "❌ 相关性阈值下无边生成，请降低阈值", {}
+
+                progress(0.5, desc="社区检测 (Louvain)...")
+                # Detect communities using CommunityDetector
+                detector = CommunityDetector()
+                communities = detector.detect_communities_louvain(G)
+
+                # Filter by minimum size
+                modules = {}
+                for i, comm in enumerate(communities):
+                    if len(comm) >= min_size:
+                        modules[f"Module_{i}"] = list(comm)
+
+                progress(0.7, desc="计算模块指标...")
+                # Compute module statistics
+                module_rows = []
+                for name, genes in modules.items():
+                    subgraph = G.subgraph(genes)
+                    density = nx.density(subgraph) if len(genes) > 1 else 0
+                    module_rows.append({
+                        "模块ID": name,
+                        "基因数": len(genes),
+                        "密度": round(density, 4),
+                        "分离度": round(1 - density, 4),  # simplified
+                    })
+                module_list = pd.DataFrame(module_rows) if module_rows else pd.DataFrame()
+
+                # Hub genes per module
+                hub_rows = []
+                for name, genes in modules.items():
+                    subgraph = G.subgraph(genes)
+                    if subgraph.number_of_nodes() > 0:
+                        dc = nx.degree_centrality(subgraph)
+                        bc = nx.betweenness_centrality(subgraph) if subgraph.number_of_edges() > 0 else {g: 0 for g in genes}
+                        top = sorted(dc.items(), key=lambda x: x[1], reverse=True)[:5]
+                        for gene, deg_c in top:
+                            hub_rows.append({
+                                "模块ID": name,
+                                "基因": gene,
+                                "度中心性": round(deg_c, 4),
+                                "中介中心性": round(bc.get(gene, 0), 4),
+                            })
+                hub_df = pd.DataFrame(hub_rows) if hub_rows else pd.DataFrame()
+
+                progress(0.85, desc="生成可视化...")
+                # 生成网络可视化
+                import plotly.graph_objects as go
+                network_fig = go.Figure()
+                pos = nx.spring_layout(G, seed=42, k=0.8)
+                ex, ey = [], []
+                for e in G.edges():
+                    x0, y0 = pos[e[0]]
+                    x1, y1 = pos[e[1]]
+                    ex.extend([x0, x1, None])
+                    ey.extend([y0, y1, None])
+                network_fig.add_trace(go.Scatter(x=ex, y=ey, mode='lines',
+                    line=dict(width=0.5, color='#ccc'), hoverinfo='none', showlegend=False))
+                colors_map = {}
+                palette = ['#667eea','#f5576c','#43e97b','#ffa07a','#4ecdc4','#bb8fce','#f7dc6f','#85c1e2']
+                for i, (mname, mgenes) in enumerate(modules.items()):
+                    for g in mgenes:
+                        colors_map[g] = palette[i % len(palette)]
+                for node in G.nodes():
+                    if node not in colors_map:
+                        colors_map[node] = '#888'
+                node_list = list(G.nodes())
+                nx_arr = [pos[n][0] for n in node_list]
+                ny_arr = [pos[n][1] for n in node_list]
+                nc = [colors_map[n] for n in node_list]
+                degs = [G.degree(n) for n in node_list]
+                max_deg = max(degs) if degs else 1
+                sizes = [6 + 14 * d / max_deg for d in degs]
+                network_fig.add_trace(go.Scatter(x=nx_arr, y=ny_arr, mode='markers+text',
+                    marker=dict(size=sizes, color=nc, line=dict(width=0.5, color='white')),
+                    text=node_list, textposition='top center', textfont=dict(size=8),
+                    hovertext=[f'{n}<br>度数: {G.degree(n)}' for n in node_list],
+                    hoverinfo='text', showlegend=False))
+                network_fig.update_layout(
+                    title=dict(text=f'疾病模块网络 — {disease} ({len(available)} 基因, {len(modules)} 模块)',
+                               x=0.5, font=dict(size=16)),
+                    xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+                    yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+                    plot_bgcolor='#fafafa', paper_bgcolor='white',
+                    height=550, margin=dict(l=20, r=20, t=50, b=20),
+                    hoverlabel=dict(bgcolor='white', font_size=12))
+
+                progress(0.95, desc="完成")
+                status_text = f"""✅ 模块检测完成
+
+📊 结果统计:
+- 疾病: {disease}
+- 疾病基因数: {len(available)}
+- 网络边数: {G.number_of_edges()}
+- 检测模块数: {len(modules)}
+- 最小模块大小: {min_size}"""
+
+                # 生成模块间共病热力图
+                heatmap_fig = None
+                if len(modules) >= 2:
+                    mod_names = list(modules.keys())
+                    n_mod = len(mod_names)
+                    sep_matrix = np.zeros((n_mod, n_mod))
+                    for i in range(n_mod):
+                        for j in range(n_mod):
+                            genes_i = set(modules[mod_names[i]])
+                            genes_j = set(modules[mod_names[j]])
+                            if i == j:
+                                sub = G.subgraph(genes_i)
+                                sep_matrix[i][j] = nx.density(sub) if len(genes_i) > 1 else 0
+                            else:
+                                # 模块间共享边数 / 可能的边数
+                                cross_edges = sum(1 for u, v in G.edges() if (u in genes_i and v in genes_j) or (u in genes_j and v in genes_i))
+                                max_edges = len(genes_i) * len(genes_j)
+                                sep_matrix[i][j] = cross_edges / max_edges if max_edges > 0 else 0
+
+                    heatmap_fig = go.Figure(data=go.Heatmap(
+                        z=sep_matrix, x=mod_names, y=mod_names,
+                        colorscale='Viridis', zmin=0, zmax=max(0.5, np.max(sep_matrix)),
+                        text=np.round(sep_matrix, 3), texttemplate='%{text}',
+                        textfont=dict(size=11),
+                        hovertemplate='%{x} ↔ %{y}<br>连接密度: %{z:.4f}<extra></extra>',
+                    ))
+                    heatmap_fig.update_layout(
+                        title=dict(text='模块间连接密度热力图', x=0.5, font=dict(size=15)),
+                        height=450, plot_bgcolor='white', paper_bgcolor='white',
+                        margin=dict(l=80, r=20, t=50, b=80),
+                        xaxis=dict(tickangle=45))
+
+                return network_fig, module_list, heatmap_fig, hub_df, status_text, {
+                    'modules': modules, 'graph': G
                 }
-                
+
             except Exception as e:
                 logger.error(f"Error in disease module detection: {e}")
                 import traceback
@@ -345,20 +474,21 @@ def create_wgcna_tab(data_loader: Phase2DataLoader):
                 gr.Markdown("### ⚙️ 分析参数")
                 
                 wgcna_trait_select = gr.Dropdown(
-                    choices=["Age_Group", "Gender", "Stage"] 
+                    choices=list(data_loader.clinical_traits.columns)
                     if data_loader.clinical_traits is not None else [],
-                    value="Stage",
+                    value=data_loader.clinical_traits.columns[0]
+                    if data_loader.clinical_traits is not None and len(data_loader.clinical_traits.columns) > 0 else None,
                     label="📋 临床特征",
                     info="要关联的临床特征"
                 )
                 
                 wgcna_min_module_size = gr.Slider(
-                    minimum=10,
+                    minimum=5,
                     maximum=100,
-                    value=30,
-                    step=10,
+                    value=15,
+                    step=5,
                     label="🔢 最小模块大小",
-                    info="模块的最少基因数"
+                    info="模块的最少基因数（建议10-30）"
                 )
                 
                 wgcna_top_modules = gr.Slider(
@@ -421,79 +551,122 @@ def create_wgcna_tab(data_loader: Phase2DataLoader):
             try:
                 if not data_loader.loaded or data_loader.gene_expression is None:
                     return None, pd.DataFrame(), pd.DataFrame(), None, "❌ 数据未加载", {}
-                
+
+                progress(0.1, desc="初始化WGCNA...")
+                # Use top variance genes for speed (full 14k genes is too slow)
+                expr = data_loader.gene_expression
+                variances = expr.var(axis=1)
+                top_genes = variances.nlargest(500).index
+                expr_subset = expr.loc[top_genes]
+
+                analyzer = WGCNAAnalyzer(expr_subset)
+
                 progress(0.2, desc="选择软幂...")
-                # Initialize WGCNA analyzer
-                analyzer = WGCNAAnalyzer(data_loader.gene_expression)
-                soft_power = analyzer.select_soft_power(max_sft=20)
-                
+                soft_power, r2_values = analyzer.select_soft_power()
+
                 progress(0.4, desc="构建网络...")
-                # Build network
-                analyzer.build_network(soft_power=soft_power, min_module_size=min_size)
-                
+                analyzer.build_network(soft_power=soft_power)
+
                 progress(0.6, desc="识别模块...")
-                # Identify modules (already done in build_network for this implementation)
-                
-                progress(0.8, desc="计算特征关联...")
-                # Compute trait correlation if clinical data available
-                module_trait_corr = None
-                if data_loader.clinical_traits is not None and trait in data_loader.clinical_traits.columns:
-                    trait_corr = ModuleTraitCorrelation(
-                        analyzer.eigengenes,
-                        data_loader.clinical_traits[[trait]]
-                    )
-                    module_trait_corr = trait_corr.compute_correlations()
-                
-                # Prepare module table
+                analyzer.identify_modules(min_module_size=min_size, distance_threshold=0.95)
+
+                if analyzer.modules is None or len(set(analyzer.modules.values())) == 0:
+                    return None, pd.DataFrame(), pd.DataFrame(), None, "⚠️ 未检测到模块，请调低最小模块大小", {}
+
+                progress(0.7, desc="计算模块特征基因...")
+                analyzer.compute_eigengenes()
+
+                progress(0.8, desc="计算性状关联...")
+                # Compute trait correlation
+                module_trait_results = None
+                if data_loader.clinical_traits is not None:
+                    try:
+                        trait_corr = ModuleTraitCorrelation(
+                            analyzer.eigengenes,
+                            data_loader.clinical_traits
+                        )
+                        module_trait_results = trait_corr.compute_correlations()
+                    except Exception as te:
+                        logger.warning(f"Trait correlation failed: {te}")
+
+                # Module summary table
+                module_colors = set(analyzer.modules.values())
                 module_data = []
-                if analyzer.modules is not None:
-                    for module_id, module_genes in analyzer.modules.items():
-                        avg_corr = 0.7  # Placeholder
-                        pval = 0.01 if module_trait_corr is not None else np.nan
-                        module_data.append({
-                            "模块ID": str(module_id),
-                            "基因数": len(module_genes),
-                            "平均相关性": avg_corr,
-                            "性状p值": pval
-                        })
-                
+                gene_names = list(expr_subset.index)
+                for color in sorted(module_colors):
+                    module_genes = [g for g, c in analyzer.modules.items() if c == color]
+                    # Get trait p-value if available
+                    pval = np.nan
+                    corr_val = 0
+                    if module_trait_results is not None and f"ME{color}" in module_trait_results.index:
+                        pval = module_trait_results.loc[f"ME{color}"].get("p_value", np.nan)
+                        corr_val = module_trait_results.loc[f"ME{color}"].get("correlation", 0)
+                    module_data.append({
+                        "模块ID": color,
+                        "基因数": len(module_genes),
+                        "平均相关性": round(float(corr_val), 4) if not np.isnan(corr_val) else 0,
+                        "性状p值": round(float(pval), 6) if not np.isnan(pval) else 1.0,
+                    })
                 module_list_df = pd.DataFrame(module_data).head(top_n) if module_data else pd.DataFrame()
-                
-                # Prepare hub gene table
+
+                # Hub genes per module
                 hub_data = []
-                if analyzer.modules is not None:
-                    for module_id, module_genes in analyzer.modules.items():
-                        for gene in list(module_genes)[:3]:  # Top 3 hub genes per module
-                            hub_data.append({
-                                "模块ID": str(module_id),
-                                "基因": gene,
-                                "模块成员资格": 0.8,
-                                "Hub分数": 0.75
-                            })
-                
-                hub_genes_df = pd.DataFrame(hub_data).head(top_n * 3) if hub_data else pd.DataFrame()
-                
-                progress(0.95, desc="准备结果...")
-                
-                status_text = f"""
-                ✅ WGCNA分析完成
-                
-                📊 结果统计:
-                - 临床特征: {trait}
-                - 最小模块大小: {min_size}
-                - 检测模块数: {len(analyzer.modules) if analyzer.modules else 0}
-                - 显示模块数: {len(module_list_df)}
-                - 总基因数: {data_loader.gene_expression.shape[0]}
-                - 软幂值: {soft_power}
-                """
-                
-                return None, module_list_df, hub_genes_df, None, status_text, {
+                for color in sorted(module_colors):
+                    try:
+                        hub_df = analyzer.identify_hub_genes(color, top_n=3)
+                        if hub_df is not None and len(hub_df) > 0:
+                            for _, row in hub_df.iterrows():
+                                hub_data.append({
+                                    "模块ID": color,
+                                    "基因": row.get("gene", ""),
+                                    "模块成员资格": round(float(row.get("module_membership", 0)), 4),
+                                    "Hub分数": round(float(row.get("hub_score", row.get("kME", 0))), 4),
+                                })
+                    except Exception:
+                        pass
+                hub_genes_df = pd.DataFrame(hub_data) if hub_data else pd.DataFrame()
+
+                progress(0.95, desc="完成")
+                n_modules = len(module_colors)
+                status_text = f"""✅ WGCNA分析完成
+
+📊 结果统计:
+- 输入基因数: {len(expr_subset)} (top方差)
+- 软幂值: {soft_power}
+- 检测模块数: {n_modules}
+- 临床特征: {trait}
+- 样本数: {expr_subset.shape[1]}"""
+
+                # 生成模块柱状图
+                import plotly.graph_objects as go
+                _palette = ['#667eea','#f5576c','#43e97b','#ffa07a','#4ecdc4','#bb8fce','#f7dc6f','#85c1e2','#ff6b6b','#45b7d1']
+                wgcna_fig = go.Figure()
+                if len(module_list_df) > 0:
+                    colors = _palette * (len(module_list_df) // len(_palette) + 1)
+                    wgcna_fig.add_trace(go.Bar(
+                        x=module_list_df['模块ID'].astype(str),
+                        y=module_list_df['基因数'],
+                        marker_color=colors[:len(module_list_df)],
+                        text=module_list_df['基因数'],
+                        textposition='outside',
+                        textfont=dict(size=12, color='#333'),
+                        hovertemplate='模块: %{x}<br>基因数: %{y}<extra></extra>',
+                    ))
+                    wgcna_fig.update_layout(
+                        title=dict(text=f'WGCNA 共表达模块分布 (软幂={soft_power}, {n_modules} 个模块)',
+                                   x=0.5, font=dict(size=15)),
+                        xaxis_title='模块颜色', yaxis_title='基因数量',
+                        plot_bgcolor='#fafafa', paper_bgcolor='white',
+                        height=450, margin=dict(l=60, r=20, t=60, b=60),
+                        xaxis=dict(tickangle=45),
+                        bargap=0.3)
+
+                return wgcna_fig, module_list_df, hub_genes_df, None, status_text, {
                     'modules': analyzer.modules,
                     'eigengenes': analyzer.eigengenes,
                     'soft_power': soft_power,
-                    'trait_corr': module_trait_corr
                 }
-                
+
             except Exception as e:
                 logger.error(f"Error in WGCNA analysis: {e}")
                 import traceback
@@ -617,99 +790,123 @@ def create_mirna_tab(data_loader: Phase2DataLoader):
             try:
                 if not data_loader.loaded or data_loader.mirna_expression is None or data_loader.gene_expression is None:
                     return None, pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), "❌ 数据未加载", {}
-                
-                progress(0.2, desc="预测靶基因...")
-                # Predict miRNA targets
+
+                progress(0.1, desc="预测靶基因（top 2000高方差基因）...")
+                # 限制基因数以加速（619 miRNA × 2000 genes 替代 14521）
+                gene_expr = data_loader.gene_expression
+                gene_var = gene_expr.var(axis=1)
+                top_gene_expr = gene_expr.loc[gene_var.nlargest(2000).index]
+
                 predictor = miRNATargetPredictor(
                     data_loader.mirna_expression,
-                    data_loader.gene_expression,
-                    method=method
+                    top_gene_expr
                 )
                 targets = predictor.predict_targets(
                     correlation_threshold=corr_thresh,
-                    pvalue_threshold=pval_thresh
+                    method=method
                 )
-                
+
+                total_pairs = sum(len(v) for v in targets.values())
+                if total_pairs == 0:
+                    return None, pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), "⚠️ 未找到满足阈值的调控关系，请调高相关性阈值（如 -0.2）", {}
+
                 progress(0.4, desc="构建调控网络...")
-                # Build regulatory network
-                network = miRNARegulatoryNetwork(targets)
+                pathway_genes = data_loader.pathway_genes or {}
+                network = miRNARegulatoryNetwork(targets, pathway_genes)
                 network.build_network()
-                
-                progress(0.6, desc="识别枢纽...")
-                # Identify hub miRNAs
-                hub_mirnas = network.identify_hub_mirnas()
-                
-                # Prepare hub miRNA table
-                hub_data = []
-                if hub_mirnas:
-                    for mirna, info in list(hub_mirnas.items())[:20]:
-                        hub_data.append({
-                            "miRNA": mirna,
-                            "靶基因数": info.get('n_targets', 0),
-                            "通路覆盖": info.get('pathway_coverage', 0),
-                            "Hub分数": info.get('hub_score', 0)
-                        })
-                
-                hub_mirnas_df = pd.DataFrame(hub_data) if hub_data else pd.DataFrame()
-                
-                progress(0.8, desc="映射通路...")
-                # Map to pathways if available
+
+                progress(0.6, desc="识别枢纽miRNA...")
+                hub_df = network.identify_hub_mirnas(top_n=20)
+
+                # Prepare hub miRNA table for UI
+                if hub_df is not None and len(hub_df) > 0:
+                    hub_mirnas_df = hub_df[['miRNA', 'n_targets', 'pathway_coverage', 'hub_score']].copy()
+                    hub_mirnas_df.columns = ['miRNA', '靶基因数', '通路覆盖', 'Hub分数']
+                else:
+                    hub_mirnas_df = pd.DataFrame()
+
+                progress(0.8, desc="通路映射...")
+                # Map miRNA to pathways
                 pathway_data = []
-                if data_loader.pathway_genes and hub_mirnas:
-                    for mirna in list(hub_mirnas.keys())[:10]:
-                        for pathway, genes in data_loader.pathway_genes.items():
-                            targets_in_pathway = len([g for g in targets.get(mirna, []) if g in genes])
-                            if targets_in_pathway > 0:
-                                coverage = targets_in_pathway / len(genes)
-                                pathway_data.append({
-                                    "miRNA": mirna,
-                                    "通路": pathway,
-                                    "靶基因数": targets_in_pathway,
-                                    "覆盖率": coverage
-                                })
-                
+                top_mirnas = list(targets.keys())[:20]
+                for mirna in top_mirnas:
+                    mirna_targets = targets[mirna]
+                    for pathway, genes in pathway_genes.items():
+                        overlap = [g for g in mirna_targets if g in genes]
+                        if overlap:
+                            pathway_data.append({
+                                "miRNA": mirna,
+                                "通路": pathway,
+                                "靶基因数": len(overlap),
+                                "覆盖率": round(len(overlap) / len(genes), 4),
+                            })
                 pathway_df = pd.DataFrame(pathway_data) if pathway_data else pd.DataFrame()
-                
-                # Identify regulatory modules
-                regulatory_analysis = RegulatoryModuleAnalysis(targets, hub_mirnas)
-                modules = regulatory_analysis.identify_regulatory_modules()
-                
-                # Prepare module table
-                module_data = []
-                if modules:
-                    for i, (module_mirnas, module_genes) in enumerate(modules.items()):
-                        module_data.append({
-                            "模块ID": f"M{i+1}",
-                            "miRNA数": len(module_mirnas),
-                            "基因数": len(module_genes),
-                            "重要性分数": 0.75
-                        })
-                
+
+                progress(0.9, desc="调控模块分析...")
+                # Regulatory module analysis
+                try:
+                    reg_analysis = RegulatoryModuleAnalysis(targets, pathway_genes)
+                    modules = reg_analysis.identify_regulatory_modules()
+                    module_data = []
+                    if modules:
+                        for i, mod in enumerate(modules if isinstance(modules, list) else modules.values()):
+                            module_data.append({
+                                "模块ID": f"M{i+1}",
+                                "miRNA数": mod.get('n_mirnas', 0) if isinstance(mod, dict) else 1,
+                                "基因数": mod.get('n_genes', 0) if isinstance(mod, dict) else 0,
+                                "重要性分数": round(mod.get('score', 0), 4) if isinstance(mod, dict) else 0,
+                            })
+                except Exception:
+                    module_data = []
                 module_df = pd.DataFrame(module_data) if module_data else pd.DataFrame()
-                
-                progress(0.95, desc="准备结果...")
-                
-                status_text = f"""
-                ✅ miRNA调控分析完成
-                
-                📊 结果统计:
-                - 相关性阈值: {corr_thresh}
-                - p值阈值: {pval_thresh}
-                - 相关性方法: {method}
-                - 预测靶关系数: {sum(len(v) for v in targets.values())}
-                - 枢纽miRNA数: {len(hub_mirnas) if hub_mirnas else 0}
-                - 调控模块数: {len(modules) if modules else 0}
-                - miRNA数: {data_loader.mirna_expression.shape[0]}
-                - 基因数: {data_loader.gene_expression.shape[0]}
-                """
-                
-                return None, hub_mirnas_df, pathway_df, module_df, status_text, {
-                    'targets': targets,
-                    'network': network,
-                    'hub_mirnas': hub_mirnas,
-                    'modules': modules
+
+                progress(0.95, desc="完成")
+                status_text = f"""✅ miRNA调控分析完成
+
+📊 结果统计:
+- 相关性阈值: {corr_thresh}
+- 方法: {method}
+- 预测调控关系: {total_pairs} 对
+- 枢纽miRNA: {len(hub_mirnas_df)} 个
+- miRNA总数: {data_loader.mirna_expression.shape[0]}
+- 基因总数: {data_loader.gene_expression.shape[0]}"""
+
+                # 生成miRNA hub柱状图
+                import plotly.graph_objects as go
+                mirna_fig = go.Figure()
+                if len(hub_mirnas_df) > 0:
+                    top_hubs = hub_mirnas_df.head(15)
+                    hub_scores = top_hubs['Hub分数'] if 'Hub分数' in top_hubs.columns else top_hubs.iloc[:, -1]
+                    mirna_names = top_hubs['miRNA'] if 'miRNA' in top_hubs.columns else top_hubs.iloc[:, 0]
+                    target_counts = top_hubs['靶基因数'] if '靶基因数' in top_hubs.columns else None
+
+                    mirna_fig.add_trace(go.Bar(
+                        y=mirna_names,
+                        x=hub_scores,
+                        orientation='h',
+                        marker=dict(
+                            color=hub_scores,
+                            colorscale='Reds',
+                            line=dict(width=0.5, color='white'),
+                        ),
+                        text=[f'{s:.1f}' for s in hub_scores],
+                        textposition='outside',
+                        textfont=dict(size=10),
+                        hovertemplate='%{y}<br>Hub分数: %{x:.2f}<br>靶基因数: %{text}<extra></extra>',
+                    ))
+                    mirna_fig.update_layout(
+                        title=dict(text=f'Top miRNA 调控枢纽 ({total_pairs} 调控关系)',
+                                   x=0.5, font=dict(size=15)),
+                        xaxis_title='Hub 分数', yaxis_title='',
+                        plot_bgcolor='#fafafa', paper_bgcolor='white',
+                        height=max(350, len(top_hubs) * 28 + 100),
+                        margin=dict(l=120, r=40, t=60, b=40),
+                        yaxis=dict(autorange='reversed'))
+
+                return mirna_fig, hub_mirnas_df, pathway_df, module_df, status_text, {
+                    'targets': targets, 'hub_df': hub_df
                 }
-                
+
             except Exception as e:
                 logger.error(f"Error in miRNA analysis: {e}")
                 import traceback
@@ -744,15 +941,14 @@ def create_phase2_network_medicine_tab():
         logger.warning("Phase 2 data loader encountered issues during initialization")
     
     with gr.Group():
-        gr.Markdown("""
-        # 🔗 网络医学分析 (Network Medicine Analysis) - Phase 2
-        
-        **跨尺度网络医学分析**: 从分子网络 → 疾病模块 → 调控关系
-        
-        本模块实现Phase 2的所有功能：
-        - 🔗 **疾病模块检测**: PPI网络中的疾病相关基因模块
-        - 🧬 **WGCNA共表达**: 功能相关基因的共表达模块
-        - 🎯 **miRNA调控**: 微RNA靶基因预测和调控网络
+        gr.HTML("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 12px;">
+            <h2 style="margin:0;">🔗 网络医学分析 (Network Medicine) — Phase 2</h2>
+            <p style="margin:6px 0 0 0; opacity:0.9;">
+                跨尺度网络医学: 疾病模块检测 · WGCNA共表达 · miRNA调控网络
+            </p>
+        </div>
         """)
         
         with gr.Tabs():

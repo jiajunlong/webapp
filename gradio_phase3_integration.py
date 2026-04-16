@@ -77,50 +77,65 @@ class Phase3DataLoader:
             return False
     
     def _load_expression_data(self):
-        """Load gene expression from Phase 1"""
+        """Load gene expression - prefer gene symbol indexed file"""
         try:
-            expr_file = "data/TCGA-COAD/filtered_hiseq_data.csv"
-            if os.path.exists(expr_file):
-                self.expr_data = pd.read_csv(expr_file, index_col=0)
-                logger.info(f"✓ Loaded expression: {self.expr_data.shape}")
+            # Prefer gene-symbol indexed (same fix as Phase 2)
+            for expr_file in ["TCGA-COAD/filtered_hiseq_data.csv", "data/TCGA-COAD/filtered_hiseq_data.csv"]:
+                if os.path.exists(expr_file):
+                    self.expr_data = pd.read_csv(expr_file, index_col=0)
+                    if not str(self.expr_data.index[0]).startswith('ENSG'):
+                        logger.info(f"✓ Loaded expression: {self.expr_data.shape}")
+                        break
+                    else:
+                        self.expr_data = None
         except Exception as e:
             logger.error(f"Error loading expression: {e}")
-    
+
     def _load_clinical_data(self):
         """Load clinical metadata"""
         try:
-            clinical_file = "data/TCGA-COAD/filtered_clinical.csv"
-            if os.path.exists(clinical_file):
-                self.sample_metadata = pd.read_csv(clinical_file, index_col=0)
-                logger.info(f"✓ Loaded clinical data: {self.sample_metadata.shape}")
+            for clinical_file in ["data/TCGA-COAD/filtered_clinical.csv", "TCGA-COAD/clinical.tsv"]:
+                if os.path.exists(clinical_file):
+                    sep = '\t' if clinical_file.endswith('.tsv') else ','
+                    self.sample_metadata = pd.read_csv(clinical_file, index_col=0, sep=sep)
+                    logger.info(f"✓ Loaded clinical data: {self.sample_metadata.shape}")
+                    break
         except Exception as e:
             logger.error(f"Error loading clinical data: {e}")
     
     def _load_disease_modules(self):
-        """Load disease modules from Phase 2"""
+        """Build disease modules from gene_disease.tsv (no pkl dependency)"""
         try:
-            modules_file = "data/phase2_disease_modules.pkl"
-            if os.path.exists(modules_file):
-                import pickle
-                with open(modules_file, 'rb') as f:
-                    self.disease_modules = pickle.load(f)
-                logger.info(f"✓ Loaded {len(self.disease_modules)} disease modules")
+            gd_file = "data/gene_disease.tsv"
+            if not os.path.exists(gd_file):
+                self.disease_modules = {}
+                return
+
+            gd = pd.read_csv(gd_file, sep='\t')
+            # Build modules: disease -> list of gene symbols
+            self.disease_modules = {}
+            for disease_name, group in gd.groupby('disease_name'):
+                raw = group['gene_symbol'].dropna().tolist()
+                genes = list(set(
+                    str(g).split(',')[0].strip()
+                    for g in raw if str(g).strip() and str(g).strip() != 'NA'
+                ))
+                # Only include diseases with enough genes for SIS analysis
+                if len(genes) >= 10 and self.expr_data is not None:
+                    available = [g for g in genes if g in self.expr_data.index]
+                    if len(available) >= 10:
+                        self.disease_modules[disease_name] = available
+
+            logger.info(f"✓ Built {len(self.disease_modules)} disease modules (≥10 genes in TCGA)")
         except Exception as e:
-            logger.error(f"Error loading disease modules: {e}")
-            # Fallback: create empty dict
+            logger.error(f"Error building disease modules: {e}")
             self.disease_modules = {}
     
     def _load_ppi_network(self):
-        """Load PPI network from Phase 2"""
-        try:
-            ppi_file = "data/phase2_ppi_network.pkl"
-            if os.path.exists(ppi_file):
-                import pickle
-                with open(ppi_file, 'rb') as f:
-                    self.ppi_network = pickle.load(f)
-                logger.info(f"✓ Loaded PPI network: {self.ppi_network.number_of_nodes()} nodes")
-        except Exception as e:
-            logger.error(f"Error loading PPI network: {e}")
+        """Build PPI-like network from expression correlation (no pkl dependency)"""
+        # Will be built on-demand per disease module in the callback
+        self.ppi_network = None
+        logger.info("  PPI network: will build on-demand from expression correlation")
     
     def _load_wgcna_modules(self):
         """Load WGCNA modules from Phase 2 (optional)"""
@@ -333,217 +348,166 @@ def create_phase3_biomarker_tab():
             
             try:
                 if not data_loaded or module_name is None:
-                    return None, None, None, None, "无法加载数据", {}, "❌ 数据未加载"
-                
+                    return pd.DataFrame(), None, pd.DataFrame(), pd.DataFrame(), "无法加载数据", "", "❌ 数据未加载或未选择模块", {}
+
                 progress(0.05, desc="初始化...")
-                
+
+                # Get disease module genes
+                disease_module_genes = data_loader.disease_modules.get(module_name, [])
+                if len(disease_module_genes) < 5:
+                    return (pd.DataFrame(), None, pd.DataFrame(), pd.DataFrame(),
+                            "模块基因不足", "", f"❌ 模块 '{module_name}' 仅有 {len(disease_module_genes)} 个基因", {})
+
                 # ==================== Step 1: Parameter Extraction ====================
                 progress(0.15, desc="提取SIS参数...")
-                
-                disease_module_genes = data_loader.disease_modules.get(module_name, [])
-                if not disease_module_genes:
-                    return (None, None, None, None, "无法找到模块", 
-                           {}, "❌ 模块不存在")
-                
-                # Create parameter extractor
+
                 extractor = ParameterExtractor(
-                    expression_data=data_loader.expr_data,
-                    sample_metadata=data_loader.sample_metadata,
                     disease_modules={module_name: disease_module_genes},
-                    ppi_network=data_loader.ppi_network if data_loader.ppi_network else None
+                    expression_data=data_loader.expr_data,
+                    clinical_data=data_loader.sample_metadata,
                 )
-                
-                params_all = extractor.extract_all_parameters()
-                params = params_all[module_name]
-                
-                # Override with user-selected parameters if provided
-                if beta > 0:
-                    params['beta'] = beta
-                if gamma > 0:
-                    params['gamma'] = gamma
-                
+
+                params = extractor.extract_all_parameters(module_name)
+
+                # Override with user-selected parameters
+                params['beta'] = beta
+                params['gamma'] = gamma
+
                 # ==================== Step 2: SIS Network Propagation ====================
                 progress(0.35, desc="运行SIS动力学...")
-                
+
                 propagation = SISNetworkPropagation(
-                    network_adjacency=params['adjacency'],
+                    adjacency_matrix=params['adjacency'],
                     gene_names=disease_module_genes,
-                    beta=params['beta'],
-                    gamma=params['gamma'],
-                    initial_infection=params['initial_infection'],
-                    random_seed=42
+                    parameters={
+                        'beta': params['beta'],
+                        'gamma': params['gamma'],
+                        'initial_infection': params['initial_infection'],
+                    }
                 )
-                
+
                 propagation.run_dynamics(n_steps=n_steps, n_runs=n_runs)
-                
-                # Get biomarkers
-                persistence_scores = propagation.get_persistence_scores()
-                biomarker_df = propagation.get_biomarker_table(
-                    top_n=max(1, len(disease_module_genes) // 4)
-                )
-                
-                # Get dynamics
-                dynamics_df = propagation.get_infection_dynamics()
-                
+
+                # Get biomarker results
+                top_n = max(1, len(disease_module_genes) // 4)
+                biomarker_df = propagation.get_biomarker_table(top_n=top_n)
+
                 progress(0.55, desc="准备生物标志物...")
-                
-                biomarkers = biomarker_df['gene'].tolist()
-                
-                # Convert biomarker table for display
-                display_biomarker_df = pd.DataFrame({
-                    '基因': biomarker_df['gene'],
-                    '持久性': np.round(biomarker_df['persistence'], 3),
-                    '网络度': biomarker_df['degree'].astype(int),
-                    '初始感染': np.round(biomarker_df['initial_infection'], 3),
-                    '综合评分': np.round(biomarker_df['weighted_biomarker_score'], 3)
-                })
-                
-                # ==================== Step 3: Validation (Optional) ====================
-                expr_validation_df = None
-                clinical_validation_df = None
-                literature_text = "未进行文献对标"
-                
+
+                # Format for display
+                display_cols = {}
+                display_cols['基因'] = biomarker_df['gene'] if 'gene' in biomarker_df.columns else biomarker_df.index
+                for col in ['persistence', 'degree', 'initial_infection', 'weighted_biomarker_score']:
+                    if col in biomarker_df.columns:
+                        display_cols[col] = np.round(biomarker_df[col], 3)
+                display_biomarker_df = pd.DataFrame(display_cols)
+
+                biomarkers = list(display_cols['基因'])
+
+                # ==================== Step 3: Validation ====================
+                expr_validation_df = pd.DataFrame()
+                clinical_validation_df = pd.DataFrame()
+                lit_text = "未进行文献对标"
+
                 if validate and len(biomarkers) > 0:
                     progress(0.65, desc="表达验证...")
-                    
-                    validator = BiomarkerValidator(
-                        expression_data=data_loader.expr_data,
-                        sample_metadata=data_loader.sample_metadata,
-                        biomarkers=biomarkers
-                    )
-                    
-                    expr_validation_df = validator.validate_expression_changes(
-                        disease_stage_col='Age_Group' if 'Age_Group' in data_loader.sample_metadata.columns else 'Stage'
-                    )
-                    
-                    # Format expression validation for display
-                    if expr_validation_df is not None:
-                        display_expr_df = pd.DataFrame({
-                            '基因': expr_validation_df.index,
-                            '健康平均表达': np.round(expr_validation_df['mean_expr_healthy'], 2),
-                            '疾病平均表达': np.round(expr_validation_df['mean_expr_disease'], 2),
-                            'log2倍数变化': np.round(expr_validation_df['fold_change'], 2),
-                            'Dysregulated': expr_validation_df['is_dysregulated']
-                        })
-                        expr_validation_df = display_expr_df
-                    
-                    progress(0.75, desc="临床相关性验证...")
-                    
-                    # Find numeric outcome variable
-                    outcome_var = None
-                    for col in data_loader.sample_metadata.columns:
-                        if pd.api.types.is_numeric_dtype(data_loader.sample_metadata[col]):
-                            outcome_var = col
-                            break
-                    
-                    if outcome_var:
-                        clinical_validation_df = validator.validate_clinical_correlation(
-                            outcome_variable=outcome_var
+                    try:
+                        validator = BiomarkerValidator(
+                            expression_data=data_loader.expr_data,
+                            sample_metadata=data_loader.sample_metadata,
+                            biomarkers=biomarkers
                         )
-                        
-                        # Format clinical validation for display
-                        display_clinical_df = pd.DataFrame({
-                            '基因': clinical_validation_df['biomarker'],
-                            '皮尔逊相关': np.round(clinical_validation_df['pearson_corr'], 3),
-                            'p值': clinical_validation_df['pearson_pval'].apply(lambda x: f"{x:.2e}"),
-                            'Spearman相关': np.round(clinical_validation_df['spearman_corr'], 3),
-                            '显著': clinical_validation_df['significant']
-                        })
-                        clinical_validation_df = display_clinical_df
-                    
-                    progress(0.85, desc="文献对标...")
-                    
-                    # Try to compare with known biomarkers
-                    lit_comp = validator.compare_with_literature(
-                        known_biomarkers=[]  # Would need literature reference data
-                    )
-                    
-                    literature_text = f"""
-                    已识别的生物标志物: {len(biomarkers)}
-                    其中dysregulated: {(expr_validation_df['Dysregulated'].sum() if expr_validation_df is not None else 0)}/{len(biomarkers)}
-                    临床相关的: {(clinical_validation_df is not None and len(clinical_validation_df) or 0)} 个
-                    """
-                
+
+                        stage_col = 'Age_Group' if 'Age_Group' in data_loader.sample_metadata.columns else 'Stage'
+                        ev = validator.validate_expression_changes(disease_stage_col=stage_col)
+                        if ev is not None and len(ev) > 0:
+                            expr_validation_df = pd.DataFrame({
+                                '基因': ev.index if hasattr(ev, 'index') else ev.get('gene', []),
+                                '健康平均表达': np.round(ev.get('mean_expr_healthy', ev.iloc[:, 0] if len(ev.columns) > 0 else 0), 2),
+                                '疾病平均表达': np.round(ev.get('mean_expr_disease', ev.iloc[:, 1] if len(ev.columns) > 1 else 0), 2),
+                                'log2倍数变化': np.round(ev.get('fold_change', 0), 2),
+                                'Dysregulated': ev.get('is_dysregulated', False),
+                            })
+                    except Exception as ve:
+                        logger.warning(f"Expression validation failed: {ve}")
+
+                    progress(0.75, desc="临床相关性...")
+                    try:
+                        outcome_var = None
+                        for col in data_loader.sample_metadata.columns:
+                            if pd.api.types.is_numeric_dtype(data_loader.sample_metadata[col]):
+                                outcome_var = col
+                                break
+                        if outcome_var:
+                            cv = validator.validate_clinical_correlation(outcome_variable=outcome_var)
+                            if cv is not None and len(cv) > 0:
+                                clinical_validation_df = pd.DataFrame({
+                                    '基因': cv.get('biomarker', cv.index if hasattr(cv, 'index') else []),
+                                    '皮尔逊相关': np.round(cv.get('pearson_corr', 0), 3),
+                                    'p值': cv.get('pearson_pval', 1).apply(lambda x: f"{x:.2e}") if 'pearson_pval' in cv else 'N/A',
+                                    'Spearman相关': np.round(cv.get('spearman_corr', 0), 3),
+                                    '显著': cv.get('significant', False),
+                                })
+                    except Exception as ce:
+                        logger.warning(f"Clinical validation failed: {ce}")
+
+                    n_dys = expr_validation_df['Dysregulated'].sum() if 'Dysregulated' in expr_validation_df.columns else 0
+                    lit_text = f"已识别生物标志物: {len(biomarkers)}\n其中dysregulated: {n_dys}/{len(biomarkers)}\n临床相关: {len(clinical_validation_df)} 个"
+
                 progress(0.92, desc="生成参数摘要...")
-                
-                # Generate parameter summary
-                param_summary = f"""
-                SIS模型参数摘要
-                ===============
-                
-                传播速率 (β): {params['beta']:.4f}
-                恢复速率 (γ): {params['gamma']:.4f}
-                
-                模块信息
-                -------
-                疾病模块: {module_name}
-                基因数: {len(disease_module_genes)}
-                网络边数: {params['n_edges']}
-                平均连接度: {params['n_edges'] * 2 / len(disease_module_genes):.2f}
-                
-                仿真参数
-                -------
-                时间步数: {n_steps}
-                随机实现: {n_runs}
-                总轨迹数: {n_steps * n_runs}
-                
-                结果统计
-                -------
-                已识别生物标志物: {len(biomarkers)}
-                平均持久性: {np.mean(persistence_scores):.3f}
-                最高持久性: {np.max(persistence_scores):.3f}
-                最低持久性: {np.min(persistence_scores):.3f}
-                """
-                
-                progress(0.98, desc="完成...")
-                
-                status_msg = f"""
-                ✅ SIS生物标志物发现完成
-                
-                📊 结果摘要:
-                - 识别生物标志物: {len(biomarkers)}
-                - 模块大小: {len(disease_module_genes)} 基因
-                - β (传播速率): {params['beta']:.3f}
-                - γ (恢复速率): {params['gamma']:.3f}
-                - 平均持久性: {np.mean(persistence_scores):.3f}
-                """
-                
-                # Create dynamics visualization
-                import matplotlib.pyplot as plt
-                fig, ax = plt.subplots(figsize=(10, 6))
-                
-                if len(dynamics_df) > 0:
-                    ax.plot(dynamics_df['timestep'], dynamics_df['mean_infected'], 
-                           linewidth=2, color='red', label='平均感染比例')
-                    ax.fill_between(dynamics_df['timestep'], 
-                                   dynamics_df['mean_infected'] - dynamics_df['std_infected'],
-                                   dynamics_df['mean_infected'] + dynamics_df['std_infected'],
-                                   alpha=0.2, color='red')
-                    ax.set_xlabel('时间步')
-                    ax.set_ylabel('感染基因比例')
-                    ax.set_title(f'SIS动力学: {module_name}')
-                    ax.legend()
-                    ax.grid(True, alpha=0.3)
-                
-                # Store results
-                results_state = {
-                    'biomarkers': biomarkers,
-                    'persistence_scores': persistence_scores,
-                    'dynamics': dynamics_df,
-                    'expr_validation': expr_validation_df,
-                    'clinical_validation': clinical_validation_df,
-                    'parameters': params
-                }
-                
+
+                param_summary = f"""SIS模型参数摘要
+===============
+传播速率 (β): {params['beta']:.4f}
+恢复速率 (γ): {params['gamma']:.4f}
+
+模块信息
+-------
+疾病模块: {module_name}
+基因数: {len(disease_module_genes)}
+网络边数: {params.get('n_edges', 0)}
+
+仿真参数
+-------
+时间步数: {n_steps}
+随机实现: {n_runs}
+
+结果统计
+-------
+已识别生物标志物: {len(biomarkers)}
+"""
+
+                progress(0.96, desc="生成可视化...")
+                # Dynamics plot using Plotly
+                import plotly.graph_objects as go
+                fig = go.Figure()
+                if propagation.infection_history is not None:
+                    mean_infected = propagation.infection_history.mean(axis=(0, 2))  # avg over runs and nodes
+                    steps = np.arange(len(mean_infected))
+                    fig.add_trace(go.Scatter(x=steps, y=mean_infected,
+                        mode='lines', name='平均感染比例',
+                        line=dict(color='#f5576c', width=2)))
+                    fig.update_layout(
+                        title=dict(text=f'SIS 感染动力学 — {module_name}', x=0.5),
+                        xaxis_title='时间步', yaxis_title='感染基因比例',
+                        plot_bgcolor='#fafafa', paper_bgcolor='white', height=400)
+
+                progress(0.98, desc="完成")
+                status_msg = f"""✅ SIS生物标志物发现完成
+
+📊 结果摘要:
+- 识别生物标志物: {len(biomarkers)}
+- 模块大小: {len(disease_module_genes)} 基因
+- β={params['beta']:.3f}, γ={params['gamma']:.3f}"""
+
                 return (
-                    display_biomarker_df,
-                    fig,
-                    expr_validation_df,
-                    clinical_validation_df,
-                    literature_text,
-                    param_summary,
-                    status_msg,
-                    results_state
+                    display_biomarker_df, fig,
+                    expr_validation_df, clinical_validation_df,
+                    lit_text, param_summary,
+                    status_msg, {
+                        'biomarkers': biomarkers,
+                        'parameters': params,
+                    }
                 )
                 
             except Exception as e:
