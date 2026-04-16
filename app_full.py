@@ -1591,314 +1591,8 @@ def create_gradio_interface():
                     outputs=[disease_calc_dropdown, pathway_checkboxes, is_plot, calc_status, is_dataframe]
                 )
             
-            # ========== Tab 3: 数据统计 ==========
-            with gr.Tab("📈 数据统计", id=3):
-                gr.HTML("""<div class="tab-banner banner-slate">
-                    <h3>📈 数据统计</h3>
-                    <p>数据库概览 · 基因/通路/疾病统计</p>
-                </div>""")
-
-                # 数据库类型选择
-                db_type_dropdown = gr.Dropdown(
-                    choices=["基因网络", "社交网络"],
-                    value="基因网络",
-                    label="🗄️ 选择数据库类型",
-                    info="选择要查看的数据库统计信息"
-                )
-                
-                # 统计信息显示区域（使用HTML组件以支持样式）
-                stats_display = gr.HTML("")
-                
-                def update_statistics(db_type, progress=gr.Progress()):
-                    """更新统计信息显示"""
-                    import time
-
-                    progress(0.5, desc="正在统计信息...")
-
-                    progress(1.0)
-
-                    # 根据数据库类型显示不同的统计信息
-                    if db_type == "基因网络":
-                        # 固定数值（不需要真的读取文件）
-                        # interaction_connections = 1884513  # 基因互作网络连接数
-                        # regulation_connections = 30834    # 基因调控网络连接数
-                        # total_connections = interaction_connections + regulation_connections  # 总连接数
-                        total_connections = 404830036
-                        return f"""
-🧬 基因网络数据库统计
-
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
-    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
-    
-    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-        
-        <div style="text-align: center; background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; flex: 1; margin: 0 10px;">
-            <div style="font-size: 2em; font-weight: bold;">{total_connections:,}</div>
-            <div style="font-size: 0.9em; margin-top: 5px;">总连接数</div>
-        </div>
-    </div>
-</div>
-
-<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
-    <h4 style="margin-top: 0;">📋 详细信息</h4>
-    <ul style="line-height: 1.8;">
-        <li><strong>基因互作网络</strong>：无向图，表示基因之间的相互作用关系</li>
-        <li><strong>基因调控网络</strong>：有向图，表示基因之间的调控关系</li>
-        <li><strong>总连接数</strong>：两种网络类型的连接数总和</li>
-    </ul>
-</div>
-"""
-                    else:  # 社交网络
-                        social_connections = 75134767  # 社交网络连接数
-                        
-                        return f"""
-🌐 社交网络数据库统计
-
-<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
-    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
-    
-    <div style="text-align: center; background: rgba(255,255,255,0.2); padding: 30px; border-radius: 8px; margin-top: 20px;">
-        <div style="font-size: 3em; font-weight: bold;">{social_connections:,}</div>
-        <div style="font-size: 1.2em; margin-top: 10px;">社交网络连接数</div>
-    </div>
-</div>
-
-<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
-    <h4 style="margin-top: 0;">📋 详细信息</h4>
-    <ul style="line-height: 1.8;">
-        <li><strong>社交网络</strong>：基于社区结构的网络模型</li>
-        <li><strong>连接类型</strong>：节点之间的社交关系连接</li>
-        <li><strong>应用场景</strong>：疾病传播、信息传播等仿真分析</li>
-    </ul>
-</div>
-"""
-                
-                # 绑定事件
-                db_type_dropdown.change(
-                    fn=update_statistics,
-                    inputs=[db_type_dropdown],
-                    outputs=[stats_display]
-                )
-                
-                # 初始加载（不显示进度条）
-                def get_initial_stats():
-                    """获取初始统计信息（无进度条）"""
-                    # interaction_connections = 125847
-                    # regulation_connections = 89352
-                    # total_connections = interaction_connections + regulation_connections
-                    total_connections = 404830036
-                    return f"""
-🧬 基因网络数据库统计
-
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
-    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
-    
-    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-        
-        <div style="text-align: center; background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; flex: 1; margin: 0 10px;">
-            <div style="font-size: 2em; font-weight: bold;">{total_connections:,}</div>
-            <div style="font-size: 0.9em; margin-top: 5px;">总连接数</div>
-        </div>
-    </div>
-</div>
-
-<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
-    <h4 style="margin-top: 0;">📋 详细信息</h4>
-    <ul style="line-height: 1.8;">
-        <li><strong>基因互作网络</strong>：无向图，表示基因之间的相互作用关系</li>
-        <li><strong>基因调控网络</strong>：有向图，表示基因之间的调控关系</li>
-        <li><strong>总连接数</strong>：两种网络类型的连接数总和</li>
-    </ul>
-</div>
-"""
-                
-                stats_display.value = get_initial_stats()
-            
-            # ========== Tab 4: 社交网络仿真 ==========
-            with gr.Tab("🌐 社交网络仿真", id=4):
-                gr.HTML("""<div class="tab-banner banner-green">
-                    <h3>🌐 SIS 传播动力学仿真</h3>
-                    <p>群体尺度 · 社区网络构建 · SIS传播模拟 · 感染状态可视化</p>
-                </div>""")
-                gr.Markdown("""
-                ### 📊 功能说明
-                - **社区网络构建**：生成具有社区结构的社交网络
-                - **SIS传播仿真**：模拟疾病或信息在网络中的传播过程
-                - **动态可视化**：实时展示网络结构和传播动态
-                """)
-                
-                with gr.Row():
-                    with gr.Column(scale=1):
-                        gr.Markdown("### ⚙️ 网络参数")
-                        
-                        social_N = gr.Slider(
-                            minimum=50, maximum=200, value=100, step=10,
-                            label="节点总数 (N)"
-                        )
-                        social_c = gr.Slider(
-                            minimum=2, maximum=10, value=5, step=1,
-                            label="社区数量 (c)"
-                        )
-                        social_k1 = gr.Slider(
-                            minimum=5, maximum=20, value=10, step=1,
-                            label="平均度数 (k)"
-                        )
-                        social_Z_in = gr.Slider(
-                            minimum=3, maximum=15, value=8, step=1,
-                            label="社区内平均连接 (Z_in)"
-                        )
-                        
-                        gr.Markdown("### 🦠 传播参数")
-                        
-                        social_beta = gr.Slider(
-                            minimum=0.01, maximum=0.2, value=0.05, step=0.01,
-                            label="感染率 (β)"
-                        )
-                        social_gamma = gr.Slider(
-                            minimum=0.05, maximum=0.5, value=0.2, step=0.05,
-                            label="恢复率 (γ)"
-                        )
-                        social_ini = gr.Slider(
-                            minimum=0.01, maximum=0.2, value=0.05, step=0.01,
-                            label="初始感染比例"
-                        )
-                        social_steps = gr.Slider(
-                            minimum=50, maximum=200, value=100, step=10,
-                            label="仿真步数"
-                        )
-                        
-                        build_network_btn = gr.Button("🏗️ 构建网络", variant="primary", size="lg")
-                        run_simulation_btn = gr.Button("▶️ 运行仿真", variant="secondary", size="lg")
-                        
-                        social_status = gr.Textbox(label="状态", interactive=False)
-                    
-                    with gr.Column(scale=2):
-                        gr.Markdown("### 📊 可视化结果")
-                        
-                        with gr.Tabs():
-                            with gr.Tab("网络结构"):
-                                network_plot = gr.Plot(label="社区网络结构图")
-                            
-                            with gr.Tab("传播动态"):
-                                spread_plot = gr.Plot(label="感染密度曲线")
-                            
-                            with gr.Tab("感染快照"):
-                                snapshot_step = gr.Slider(
-                                    minimum=0, maximum=99, value=50, step=1,
-                                    label="选择时间步"
-                                )
-                                snapshot_plot = gr.Plot(label="感染状态快照")
-                
-                # 社交网络仿真逻辑
-                social_sim = SocialNetworkSimulator()
-                social_network_state = gr.State({"G": None, "communities": None, "node_state": None, "max_step": 100})
-                
-                def build_social_network(N, c, k1, Z_in):
-                    """构建社区网络"""
-                    try:
-                        G, communities = social_sim.build_community_network(N=int(N), c=int(c), k1=int(k1), Z_in=int(Z_in))
-                        fig = social_sim.visualize_community_network(G, communities)
-                        
-                        return (
-                            fig,
-                            f"✅ 网络构建成功！节点数: {G.number_of_nodes()}, 边数: {G.number_of_edges()}, 社区数: {len(communities)}",
-                            {"G": G, "communities": communities, "node_state": None, "max_step": 100}
-                        )
-                    except Exception as e:
-                        return (
-                            go.Figure(),
-                            f"❌ 构建失败: {str(e)}",
-                            {"G": None, "communities": None, "node_state": None, "max_step": 100}
-                        )
-                
-                def run_social_simulation(state, beta, gamma, ini, steps):
-                    """运行SIS仿真"""
-                    if state["G"] is None:
-                        return (
-                            go.Figure(),
-                            go.Figure(),
-                            "⚠️ 请先构建网络！",
-                            state,
-                            gr.update(maximum=99)
-                        )
-                    
-                    try:
-                        infected_density, node_state = social_sim.SIS_simulation(
-                            state["G"],
-                            beta=beta,
-                            gamma=gamma,
-                            ini=ini,
-                            max_step=int(steps)
-                        )
-                        
-                        spread_fig = social_sim.visualize_infection_spread(infected_density, int(steps))
-                        
-                        # 生成初始快照
-                        snapshot_fig = social_sim.visualize_infection_snapshot(
-                            state["G"],
-                            state["communities"],
-                            node_state,
-                            int(steps) // 2
-                        )
-                        
-                        state["node_state"] = node_state
-                        state["max_step"] = int(steps)
-                        
-                        final_density = infected_density[-1]
-                        
-                        return (
-                            spread_fig,
-                            snapshot_fig,
-                            f"✅ 仿真完成！最终感染密度: {final_density:.2%}",
-                            state,
-                            gr.update(maximum=int(steps)-1, value=int(steps)//2)
-                        )
-                    except Exception as e:
-                        return (
-                            go.Figure(),
-                            go.Figure(),
-                            f"❌ 仿真失败: {str(e)}",
-                            state,
-                            gr.update()
-                        )
-                
-                def update_snapshot(state, step):
-                    """更新感染快照"""
-                    if state["G"] is None or state["node_state"] is None:
-                        return go.Figure()
-                    
-                    try:
-                        fig = social_sim.visualize_infection_snapshot(
-                            state["G"],
-                            state["communities"],
-                            state["node_state"],
-                            int(step)
-                        )
-                        return fig
-                    except:
-                        return go.Figure()
-                
-                # 绑定事件
-                build_network_btn.click(
-                    fn=build_social_network,
-                    inputs=[social_N, social_c, social_k1, social_Z_in],
-                    outputs=[network_plot, social_status, social_network_state]
-                )
-                
-                run_simulation_btn.click(
-                    fn=run_social_simulation,
-                    inputs=[social_network_state, social_beta, social_gamma, social_ini, social_steps],
-                    outputs=[spread_plot, snapshot_plot, social_status, social_network_state, snapshot_step]
-                )
-                
-                snapshot_step.change(
-                    fn=update_snapshot,
-                    inputs=[social_network_state, snapshot_step],
-                    outputs=[snapshot_plot]
-                )
-            
-            # ========== Tab 5: 基因网络仿真 ==========
-            with gr.Tab("🧬 基因网络仿真", id=5):
+            # ========== Tab 3: 基因网络仿真 ==========
+            with gr.Tab("🧬 基因网络仿真", id=3):
                 gr.HTML("""<div class="tab-banner banner-blue">
                     <h3>🧬 TCGA-COAD 基因表达网络</h3>
                     <p>细胞/组织尺度 · MRNetB网络推断 · 年龄/性别/阶段分层分析</p>
@@ -2256,8 +1950,324 @@ def create_gradio_interface():
                     outputs=[tcga_status, network_stats, tcga_network_plot, result_dataframe, tcga_results_state]
                 )
 
-            # ========== Tab 6: 模型库 ==========
-            with gr.Tab("📚 模型库", id=6):
+            # ========== Tab 4: 网络医学分析 (Phase 2) ==========
+            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=4):
+                create_phase2_network_medicine_tab()
+
+            # ========== Tab 5: 社交网络仿真 ==========
+            with gr.Tab("🌐 社交网络仿真", id=5):
+
+                gr.HTML("""<div class="tab-banner banner-green">
+                    <h3>🌐 SIS 传播动力学仿真</h3>
+                    <p>群体尺度 · 社区网络构建 · SIS传播模拟 · 感染状态可视化</p>
+                </div>""")
+                gr.Markdown("""
+                ### 📊 功能说明
+                - **社区网络构建**：生成具有社区结构的社交网络
+                - **SIS传播仿真**：模拟疾病或信息在网络中的传播过程
+                - **动态可视化**：实时展示网络结构和传播动态
+                """)
+                
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        gr.Markdown("### ⚙️ 网络参数")
+                        
+                        social_N = gr.Slider(
+                            minimum=50, maximum=200, value=100, step=10,
+                            label="节点总数 (N)"
+                        )
+                        social_c = gr.Slider(
+                            minimum=2, maximum=10, value=5, step=1,
+                            label="社区数量 (c)"
+                        )
+                        social_k1 = gr.Slider(
+                            minimum=5, maximum=20, value=10, step=1,
+                            label="平均度数 (k)"
+                        )
+                        social_Z_in = gr.Slider(
+                            minimum=3, maximum=15, value=8, step=1,
+                            label="社区内平均连接 (Z_in)"
+                        )
+                        
+                        gr.Markdown("### 🦠 传播参数")
+                        
+                        social_beta = gr.Slider(
+                            minimum=0.01, maximum=0.2, value=0.05, step=0.01,
+                            label="感染率 (β)"
+                        )
+                        social_gamma = gr.Slider(
+                            minimum=0.05, maximum=0.5, value=0.2, step=0.05,
+                            label="恢复率 (γ)"
+                        )
+                        social_ini = gr.Slider(
+                            minimum=0.01, maximum=0.2, value=0.05, step=0.01,
+                            label="初始感染比例"
+                        )
+                        social_steps = gr.Slider(
+                            minimum=50, maximum=200, value=100, step=10,
+                            label="仿真步数"
+                        )
+                        
+                        build_network_btn = gr.Button("🏗️ 构建网络", variant="primary", size="lg")
+                        run_simulation_btn = gr.Button("▶️ 运行仿真", variant="secondary", size="lg")
+                        
+                        social_status = gr.Textbox(label="状态", interactive=False)
+                    
+                    with gr.Column(scale=2):
+                        gr.Markdown("### 📊 可视化结果")
+                        
+                        with gr.Tabs():
+                            with gr.Tab("网络结构"):
+                                network_plot = gr.Plot(label="社区网络结构图")
+                            
+                            with gr.Tab("传播动态"):
+                                spread_plot = gr.Plot(label="感染密度曲线")
+                            
+                            with gr.Tab("感染快照"):
+                                snapshot_step = gr.Slider(
+                                    minimum=0, maximum=99, value=50, step=1,
+                                    label="选择时间步"
+                                )
+                                snapshot_plot = gr.Plot(label="感染状态快照")
+                
+                # 社交网络仿真逻辑
+                social_sim = SocialNetworkSimulator()
+                social_network_state = gr.State({"G": None, "communities": None, "node_state": None, "max_step": 100})
+                
+                def build_social_network(N, c, k1, Z_in):
+                    """构建社区网络"""
+                    try:
+                        G, communities = social_sim.build_community_network(N=int(N), c=int(c), k1=int(k1), Z_in=int(Z_in))
+                        fig = social_sim.visualize_community_network(G, communities)
+                        
+                        return (
+                            fig,
+                            f"✅ 网络构建成功！节点数: {G.number_of_nodes()}, 边数: {G.number_of_edges()}, 社区数: {len(communities)}",
+                            {"G": G, "communities": communities, "node_state": None, "max_step": 100}
+                        )
+                    except Exception as e:
+                        return (
+                            go.Figure(),
+                            f"❌ 构建失败: {str(e)}",
+                            {"G": None, "communities": None, "node_state": None, "max_step": 100}
+                        )
+                
+                def run_social_simulation(state, beta, gamma, ini, steps):
+                    """运行SIS仿真"""
+                    if state["G"] is None:
+                        return (
+                            go.Figure(),
+                            go.Figure(),
+                            "⚠️ 请先构建网络！",
+                            state,
+                            gr.update(maximum=99)
+                        )
+                    
+                    try:
+                        infected_density, node_state = social_sim.SIS_simulation(
+                            state["G"],
+                            beta=beta,
+                            gamma=gamma,
+                            ini=ini,
+                            max_step=int(steps)
+                        )
+                        
+                        spread_fig = social_sim.visualize_infection_spread(infected_density, int(steps))
+                        
+                        # 生成初始快照
+                        snapshot_fig = social_sim.visualize_infection_snapshot(
+                            state["G"],
+                            state["communities"],
+                            node_state,
+                            int(steps) // 2
+                        )
+                        
+                        state["node_state"] = node_state
+                        state["max_step"] = int(steps)
+                        
+                        final_density = infected_density[-1]
+                        
+                        return (
+                            spread_fig,
+                            snapshot_fig,
+                            f"✅ 仿真完成！最终感染密度: {final_density:.2%}",
+                            state,
+                            gr.update(maximum=int(steps)-1, value=int(steps)//2)
+                        )
+                    except Exception as e:
+                        return (
+                            go.Figure(),
+                            go.Figure(),
+                            f"❌ 仿真失败: {str(e)}",
+                            state,
+                            gr.update()
+                        )
+                
+                def update_snapshot(state, step):
+                    """更新感染快照"""
+                    if state["G"] is None or state["node_state"] is None:
+                        return go.Figure()
+                    
+                    try:
+                        fig = social_sim.visualize_infection_snapshot(
+                            state["G"],
+                            state["communities"],
+                            state["node_state"],
+                            int(step)
+                        )
+                        return fig
+                    except:
+                        return go.Figure()
+                
+                # 绑定事件
+                build_network_btn.click(
+                    fn=build_social_network,
+                    inputs=[social_N, social_c, social_k1, social_Z_in],
+                    outputs=[network_plot, social_status, social_network_state]
+                )
+                
+                run_simulation_btn.click(
+                    fn=run_social_simulation,
+                    inputs=[social_network_state, social_beta, social_gamma, social_ini, social_steps],
+                    outputs=[spread_plot, snapshot_plot, social_status, social_network_state, snapshot_step]
+                )
+                
+                snapshot_step.change(
+                    fn=update_snapshot,
+                    inputs=[social_network_state, snapshot_step],
+                    outputs=[snapshot_plot]
+                )
+            
+            # ========== Tab 6: SIS生物标志物发现 (Phase 3) ==========
+            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=6):
+                create_phase3_biomarker_tab()
+
+            # ========== Tab 7: 数据统计 ==========
+            with gr.Tab("📈 数据统计", id=7):
+
+                gr.HTML("""<div class="tab-banner banner-slate">
+                    <h3>📈 数据统计</h3>
+                    <p>数据库概览 · 基因/通路/疾病统计</p>
+                </div>""")
+
+                # 数据库类型选择
+                db_type_dropdown = gr.Dropdown(
+                    choices=["基因网络", "社交网络"],
+                    value="基因网络",
+                    label="🗄️ 选择数据库类型",
+                    info="选择要查看的数据库统计信息"
+                )
+                
+                # 统计信息显示区域（使用HTML组件以支持样式）
+                stats_display = gr.HTML("")
+                
+                def update_statistics(db_type, progress=gr.Progress()):
+                    """更新统计信息显示"""
+                    import time
+
+                    progress(0.5, desc="正在统计信息...")
+
+                    progress(1.0)
+
+                    # 根据数据库类型显示不同的统计信息
+                    if db_type == "基因网络":
+                        # 固定数值（不需要真的读取文件）
+                        # interaction_connections = 1884513  # 基因互作网络连接数
+                        # regulation_connections = 30834    # 基因调控网络连接数
+                        # total_connections = interaction_connections + regulation_connections  # 总连接数
+                        total_connections = 404830036
+                        return f"""
+🧬 基因网络数据库统计
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
+    
+    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+        
+        <div style="text-align: center; background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; flex: 1; margin: 0 10px;">
+            <div style="font-size: 2em; font-weight: bold;">{total_connections:,}</div>
+            <div style="font-size: 0.9em; margin-top: 5px;">总连接数</div>
+        </div>
+    </div>
+</div>
+
+<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <h4 style="margin-top: 0;">📋 详细信息</h4>
+    <ul style="line-height: 1.8;">
+        <li><strong>基因互作网络</strong>：无向图，表示基因之间的相互作用关系</li>
+        <li><strong>基因调控网络</strong>：有向图，表示基因之间的调控关系</li>
+        <li><strong>总连接数</strong>：两种网络类型的连接数总和</li>
+    </ul>
+</div>
+"""
+                    else:  # 社交网络
+                        social_connections = 75134767  # 社交网络连接数
+                        
+                        return f"""
+🌐 社交网络数据库统计
+
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
+    
+    <div style="text-align: center; background: rgba(255,255,255,0.2); padding: 30px; border-radius: 8px; margin-top: 20px;">
+        <div style="font-size: 3em; font-weight: bold;">{social_connections:,}</div>
+        <div style="font-size: 1.2em; margin-top: 10px;">社交网络连接数</div>
+    </div>
+</div>
+
+<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <h4 style="margin-top: 0;">📋 详细信息</h4>
+    <ul style="line-height: 1.8;">
+        <li><strong>社交网络</strong>：基于社区结构的网络模型</li>
+        <li><strong>连接类型</strong>：节点之间的社交关系连接</li>
+        <li><strong>应用场景</strong>：疾病传播、信息传播等仿真分析</li>
+    </ul>
+</div>
+"""
+                
+                # 绑定事件
+                db_type_dropdown.change(
+                    fn=update_statistics,
+                    inputs=[db_type_dropdown],
+                    outputs=[stats_display]
+                )
+                
+                # 初始加载（不显示进度条）
+                def get_initial_stats():
+                    """获取初始统计信息（无进度条）"""
+                    # interaction_connections = 125847
+                    # regulation_connections = 89352
+                    # total_connections = interaction_connections + regulation_connections
+                    total_connections = 404830036
+                    return f"""
+🧬 基因网络数据库统计
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: white;">📊 连接统计</h3>
+    
+    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+        
+        <div style="text-align: center; background: rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; flex: 1; margin: 0 10px;">
+            <div style="font-size: 2em; font-weight: bold;">{total_connections:,}</div>
+            <div style="font-size: 0.9em; margin-top: 5px;">总连接数</div>
+        </div>
+    </div>
+</div>
+
+<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <h4 style="margin-top: 0;">📋 详细信息</h4>
+    <ul style="line-height: 1.8;">
+        <li><strong>基因互作网络</strong>：无向图，表示基因之间的相互作用关系</li>
+        <li><strong>基因调控网络</strong>：有向图，表示基因之间的调控关系</li>
+        <li><strong>总连接数</strong>：两种网络类型的连接数总和</li>
+    </ul>
+</div>
+"""
+                
+                stats_display.value = get_initial_stats()
+            
+            # ========== Tab 8: 模型库 ==========
+            with gr.Tab("📚 模型库", id=8):
                 gr.HTML("""<div class="tab-banner banner-orange">
                     <h3>📚 跨尺度仿真模型目录</h3>
                     <p>6个模型 · 分子/细胞/群体三尺度 · 完整算法与参数说明</p>
@@ -2280,16 +2290,8 @@ def create_gradio_interface():
                     gr.Dataframe(value=dist_df, label="各尺度模型数量", interactive=False)
 
 
-            # ========== Tab 7: 网络医学分析 (Phase 2) ==========
-            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=7):
-                create_phase2_network_medicine_tab()
-
-            # ========== Tab 8: SIS生物标志物发现 (Phase 3) ==========
-            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=8):
-                create_phase3_biomarker_tab()
-
             # ========== Tab 9: 关于系统（注释） ==========
-            # with gr.Tab("ℹ️ 关于", id=4):
+            # with gr.Tab("ℹ️ 关于", id=9):
                 
             #     gr.Markdown("""
             #     ## 关于本系统
