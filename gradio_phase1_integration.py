@@ -309,15 +309,34 @@ def create_pathway_analysis_tab():
                 diff_results_filtered = diff_results[diff_results['padj'] < pval_thresh].head(top_n)
                 
                 progress(0.7, desc="识别枢纽基因...")
-                
+
                 # Step 3: Hub gene identification
+                # 使用通路内部连接构建轻量网络（而非完全图）
                 import networkx as nx
-                gene_network = nx.complete_graph(
-                    list(set().union(*data_loader.pathway_genes.values()))
-                )
+                gene_network = nx.Graph()
+                for pw_name, pw_genes in data_loader.pathway_genes.items():
+                    # 通路内部相邻基因连边（链式连接，避免完全图爆炸）
+                    for i in range(len(pw_genes)):
+                        gene_network.add_node(pw_genes[i])
+                        if i > 0:
+                            gene_network.add_edge(pw_genes[i-1], pw_genes[i])
+                        # 每隔2个也连一条（增加一点连通性）
+                        if i > 1:
+                            gene_network.add_edge(pw_genes[i-2], pw_genes[i])
+
                 hub_finder = HubGeneIdentifier(data_loader.pathway_genes, gene_network)
                 hub_finder.expr_data = data_loader.tcga_expression
-                all_hub_genes = hub_finder.calculate_all_hub_genes()
+                # 只分析 top_n 个通路（避免全部347个通路的 Hub 计算太慢）
+                top_pathways = diff_results.head(top_n)['pathway'].tolist() if len(diff_results) > 0 else list(data_loader.pathway_genes.keys())[:top_n]
+                all_hub_genes = {}
+                for pw in top_pathways:
+                    if pw in data_loader.pathway_genes:
+                        try:
+                            hub_df = hub_finder.get_top_hub_genes(pw, top_n=3)
+                            if hub_df is not None and len(hub_df) > 0:
+                                all_hub_genes[pw] = hub_df
+                        except Exception:
+                            pass
                 
                 # Convert hub genes to DataFrame for display
                 hub_gene_records = []
