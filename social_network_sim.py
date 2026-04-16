@@ -158,7 +158,13 @@ class SocialNetworkSimulator:
         for comm_idx, comm in enumerate(communities):
             for node in comm:
                 node_community[node] = comm_idx
-                node_colors.append(colors[comm_idx % len(colors)])
+        # 处理不在任何社区的节点（N不能被c整除时）
+        for node in G.nodes():
+            if node not in node_community:
+                node_community[node] = len(communities) - 1
+
+        for node in G.nodes():
+            node_colors.append(colors[node_community[node] % len(colors)])
         
         # 绘制边
         edge_x = []
