@@ -29,13 +29,13 @@ from cross_scale_engine import CrossScaleEngine
 # 导入疾病溯源模块
 from disease_tracing import DiseaseTracer
 
-# 导入Phase 1通路分析模块
+# 导入通路分析模块
 from gradio_phase1_integration import create_pathway_analysis_tab, Phase1DataLoader
-from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
-# 导入Phase 2网络医学分析模块
+# from model_library import create_model_cards_html, create_model_summary_table, create_scale_distribution_data
+# 导入网络医学分析模块
 from gradio_phase2_integration import create_phase2_network_medicine_tab, Phase2DataLoader
-# 导入Phase 3 SIS生物标志物发现模块
-from gradio_phase3_integration import create_phase3_biomarker_tab, Phase3DataLoader
+# 导入SIS生物标志物发现模块（已禁用）
+# from gradio_phase3_integration import create_phase3_biomarker_tab, Phase3DataLoader
 
 # ==================== 配置 ====================
 
@@ -1166,7 +1166,6 @@ def create_gradio_interface():
                 gr.HTML("""<div class="tab-banner banner-purple">
                     <h3>🔗 基因网络多尺度联动分析</h3>
                     <p>基因网络: 分子(互作/调控) → 通路(IS系数) → 细胞/组织(TCGA表达) → 疾病模块(网络医学)</p>
-                    <p style="opacity:0.7; font-size:0.85em; margin-top:4px;">社交网络(SIS传播)为独立系统，见「SIS传播动力学」Tab</p>
                 </div>""")
 
                 with gr.Tabs():
@@ -1176,7 +1175,7 @@ def create_gradio_interface():
                         gr.Markdown("#### 基因网络两层级联：分子 → 细胞/组织")
                         gr.Markdown("""
                         **传递机制:**
-                        - **Layer 1 → Layer 2**: 分子层Hub基因 → 细胞层MRNetB种子节点（网络邻近性原理, Guney 2016）
+                        - **Layer 1 → Layer 2**: 分子层Hub基因 → 细胞层MRNetB种子节点
                         """)
 
                         with gr.Row():
@@ -1311,68 +1310,11 @@ def create_gradio_interface():
                             outputs=[trace_result],
                         )
 
-                    # ---- 子Tab 4: 跨尺度说明 ----
-                    with gr.Tab("📖 多尺度说明"):
-                        gr.Markdown("""
-                        #### 平台多尺度架构说明
-
-                        本平台包含两个独立的网络分析系统：
-
-                        ---
-
-                        ##### 🧬 系统一：基因网络多尺度分析
-
-                        | 尺度 | 模型 | 数据 | 关键方法 |
-                        |------|------|------|---------|
-                        | **分子** | 基因互作/调控网络 | gene_disease.tsv | 图论拓扑分析、Hub基因识别 |
-                        | **通路** | IS系数/通路活性 | pathway.tsv + TCGA表达 | ssGSEA/GSVA (Barbie 2009; Hänzelmann 2013) |
-                        | **细胞/组织** | MRNetB网络推断 | TCGA-COAD表达数据 | 互信息网络推断 (Meyer 2007) |
-                        | **疾病模块** | 网络医学分析 | PPI + 社区检测 | Louvain算法, 疾病模块分离度 (Menche 2015) |
-
-                        **跨尺度桥接:**
-                        - 分子层Hub基因 → 细胞层MRNetB种子节点（网络邻近性, Guney 2016）
-                        - WGCNA共表达模块 → 疾病模块重叠分析（Langfelder 2008）
-                        - miRNA调控网络 → 通路映射（靶基因-通路交集）
-
-                        ##### 🌐 系统二：社交网络传播动力学
-
-                        | 模型 | 算法 | 参数 |
-                        |------|------|------|
-                        | SIS传播 | 社区网络 + 随机传播 | β(感染率), γ(恢复率), N(节点数), c(社区数) |
-
-                        社交网络SIS模型是独立的传播动力学仿真，不与基因网络桥接。
-
-                        ##### 🔬 Phase 3: SIS-as-Biomarker（创新应用）
-
-                        Phase 3 将SIS动力学**类比性地**应用于基因网络：
-                        将dysregulated基因视为"感染"状态，通过表达相关性网络传播，
-                        持久感染的基因作为候选生物标志物。这是网络传播算法在
-                        基因优先级排序中的应用 (Cowen et al. *Nature Rev Genet*, 2017)，
-                        而非真正的群体传播。
-
-                        ---
-
-                        ##### 📚 核心参考文献
-
-                        1. Guney et al. "Network-based in silico drug efficacy screening."
-                           *Nature Communications*, 2016.
-                        2. Menche et al. "Uncovering disease-disease relationships through
-                           the incomplete interactome." *Science*, 2015.
-                        3. Langfelder & Horvath. "WGCNA: an R package for weighted correlation
-                           network analysis." *BMC Bioinformatics*, 2008.
-                        4. Meyer et al. "Information-theoretic inference of large transcriptional
-                           regulatory networks." *EURASIP J Bioinform Syst Biol*, 2007.
-                        5. Cowen et al. "Network propagation: a universal amplifier of genetic
-                           associations." *Nature Reviews Genetics*, 2017.
-                        6. Barbie et al. "Systematic RNA interference reveals oncogenic
-                           KRAS-driven cancers require TBK1." *Nature*, 2009. (ssGSEA)
-                        """)
-
             # ========== Tab 1: 疾病多尺度溯源 ==========
             with gr.Tab("🔬 疾病多尺度溯源", id=1):
                 gr.HTML("""<div class="tab-banner banner-red">
                     <h3>🔬 疾病多尺度溯源分析</h3>
-                    <p>疾病 → 信号通路 → 基因模块 → 表达特征 · 逐层下钻 · 论文方法驱动</p>
+                    <p>选择疾病 → 左图通路网络高亮疾病通路 → 右图基因网络高亮通路基因与共表达基因</p>
                 </div>""")
 
                 # 初始化溯源器
@@ -1380,75 +1322,142 @@ def create_gradio_interface():
                 _tracer.load_data()
                 _tracer_diseases = _tracer.get_disease_list()
 
+                # === 顶部：疾病选择 + 信息 ===
                 with gr.Row():
-                    # 左侧: 层级选择
+                    trace_disease = gr.Dropdown(
+                        choices=_tracer_diseases,
+                        value=_tracer_diseases[0] if _tracer_diseases else None,
+                        label="🏥 选择疾病（选择后自动更新两张网络图）",
+                        scale=2,
+                    )
+                    trace_disease_info = gr.Markdown("")
+
+                # === 核心：两张大网络图并排 ===
+                with gr.Row():
+                    trace_pw_universe = gr.Plot(label="🌌 通路网络 — 疾病相关通路高亮")
+                    trace_gene_universe = gr.Plot(label="🧬 基因网络 — 通路基因 + 共表达基因高亮")
+
+                # === 溯源方法说明 ===
+                with gr.Accordion("📖 溯源方法论与公式说明", open=False):
+                    gr.HTML("""
+                    <div style="background:#111827; border:1px solid #374151; border-radius:12px; padding:24px; color:#e5e7eb; font-size:14px; line-height:1.8;">
+
+                    <h3 style="color:#f5576c; margin-top:0;">🔬 多尺度溯源流程</h3>
+                    <p style="color:#9ca3af;">选择一个疾病后，系统依次执行以下三步分析，从宏观通路网络逐层下钻到微观基因表达：</p>
+
+                    <hr style="border-color:#374151;">
+
+                    <h4 style="color:#667eea;">Step 1: 通路影响力评分 — CV加权法</h4>
+                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
+                        PathwayScore(p, d) = |G<sub>p</sub> ∩ G<sub>d</sub>| × mean( CV(g) )<br><br>
+                        <span style="font-size:13px; color:#9ca3af;">
+                        其中 CV(g) = σ(expr<sub>g</sub>) / (|μ(expr<sub>g</sub>)| + ε) ，即基因 g 在样本中的表达变异系数<br>
+                        G<sub>p</sub> = 通路 p 的基因集合，G<sub>d</sub> = 疾病 d 的关联基因集合
+                        </span>
+                    </div>
+                    <p style="color:#9ca3af;">
+                        通路包含的疾病基因越多、且这些基因表达变异越大，说明该通路在不同样本间差异更显著，对疾病的影响力越高。
+                        左侧通路网络图中，节点大小和颜色深浅反映该评分。
+                    </p>
+
+                    <hr style="border-color:#374151;">
+
+                    <h4 style="color:#43e97b;">Step 2: 基因核心度评分 — 节点属性熵 (NAE)</h4>
+                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
+                        NAE(g) = −Σ<sub>k=1</sub><sup>K</sup> p<sub>k</sub> · log<sub>2</sub>(p<sub>k</sub>)<br><br>
+                        <span style="font-size:13px; color:#9ca3af;">
+                        属性向量: [度中心性, 介数中心性, 表达方差比, 通路参与数]<br>
+                        p<sub>k</sub> = attr<sub>k</sub> / Σ attr<sub>k</sub> （归一化为概率分布）
+                        </span>
+                    </div>
+                    <p style="color:#9ca3af;">
+                        NAE 衡量一个基因在多个维度上的"信息多样性"。
+                        NAE 越高，表示该基因同时具有高网络中心性、高表达变异、参与多条通路等特征，
+                        更可能是通路功能的核心调控基因。右侧基因网络图中，绿色节点按 NAE 排序。
+                    </p>
+
+                    <hr style="border-color:#374151;">
+
+                    <h4 style="color:#FFD700;">Step 3: miRNA-基因调控映射</h4>
+                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
+                        miRNA调控筛选: Pearson(miRNA<sub>i</sub>, Gene<sub>j</sub>) &lt; −0.3 且 p &lt; 0.05<br><br>
+                        <span style="font-size:13px; color:#9ca3af;">
+                        从 miRNA × 样本的表达矩阵中计算每条 miRNA 与目标基因的 Pearson 相关系数，<br>
+                        筛选显著负相关的 miRNA 作为潜在上游调控因子
+                        </span>
+                    </div>
+                    <p style="color:#9ca3af;">
+                        miRNA 通过结合 mRNA 的 3'UTR 抑制基因表达，因此 miRNA-gene 呈负相关。
+                        在"基因表达"子页中展示选中基因的 miRNA 调控网络。
+                    </p>
+
+                    </div>
+                    """)
+
+                # === 下方：详细分析（需选通路/基因后点按钮） ===
+                with gr.Row():
                     with gr.Column(scale=1):
-                        gr.Markdown("### 📋 逐层选择")
-
-                        trace_disease = gr.Dropdown(
-                            choices=_tracer_diseases,
-                            value=_tracer_diseases[0] if _tracer_diseases else None,
-                            label="🏥 Layer 1: 选择疾病",
-                        )
-                        trace_disease_info = gr.Markdown("")
-
+                        gr.Markdown("### 📋 深入分析")
                         trace_pathway = gr.Dropdown(
-                            choices=[], label="🔬 Layer 2: 选择通路",
+                            choices=[], label="🔬 选择通路",
                             info="按影响力评分排序（CV加权）",
                         )
-
                         trace_gene = gr.Dropdown(
-                            choices=[], label="🧬 Layer 3: 选择基因",
+                            choices=[], label="🧬 选择基因",
                             info="按NAE评分排序",
                         )
-
                         trace_run_btn = gr.Button("📋 生成溯源报告", variant="primary", size="lg")
 
-                    # 右侧: 结果
                     with gr.Column(scale=3):
                         with gr.Tabs():
-                            with gr.Tab("🌊 溯源全景"):
+                            with gr.Tab("🌊 Sankey溯源"):
                                 trace_sankey = gr.Plot(label="Sankey溯源图")
                                 trace_report = gr.HTML(label="溯源报告")
 
-                            with gr.Tab("📊 通路影响力"):
-                                trace_pw_bar = gr.Plot(label="通路排名")
+                            with gr.Tab("🕸️ 通路详情"):
+                                trace_pw_network = gr.Plot(label="通路关联网络")
+                                trace_pw_bar = gr.Plot(label="通路影响力排名")
                                 trace_pw_table = gr.Dataframe(label="通路详情", interactive=False)
 
-                            with gr.Tab("🧬 基因网络与NAE"):
+                            with gr.Tab("🧬 基因NAE"):
                                 trace_gene_network = gr.Plot(label="基因模块网络")
                                 trace_gene_table = gr.Dataframe(label="基因NAE排名", interactive=False)
 
-                            with gr.Tab("📈 基因表达档案"):
+                            with gr.Tab("📈 基因表达"):
                                 trace_expr_plot = gr.Plot(label="表达箱线图")
                                 trace_mirna_table = gr.Dataframe(label="miRNA调控关系", interactive=False)
                                 trace_expr_summary = gr.Markdown("")
 
                 # === 回调 ===
                 def on_disease_select(disease):
-                    """选择疾病后更新通路列表"""
+                    """选择疾病 → 立即更新两张大网络图 + 通路下拉"""
                     if not disease:
-                        return "", gr.update(choices=[]), gr.update(choices=[])
+                        return go.Figure(), go.Figure(), "", gr.update(choices=[]), gr.update(choices=[])
+
                     ov = _tracer.get_disease_overview(disease)
                     if "error" in ov:
-                        return f"❌ {ov['error']}", gr.update(choices=[]), gr.update(choices=[])
+                        return go.Figure(), go.Figure(), f"❌ {ov['error']}", gr.update(choices=[]), gr.update(choices=[])
 
-                    paper = ov.get('paper', '')
-                    method = ov.get('method', '')
+                    # 信息
                     info = f"**{disease}** | 关联基因: {ov['n_genes']} | TCGA可用: {ov['n_genes_in_tcga']} | 通路: {ov['n_pathways']}"
-                    if paper:
-                        info += f"\n\n📚 参考论文: *{paper}*\n\n🔬 分析方法: {method}"
 
+                    # 两张大网络图
+                    pw_universe = _tracer.create_pathway_universe(disease)
+                    gene_universe = _tracer.create_gene_universe(disease)
+
+                    # 更新通路下拉
                     pw_df = _tracer.get_pathway_ranking(disease)
                     pw_choices = [f"{row['通路']} ({row['影响力评分']:.2f})" for _, row in pw_df.head(30).iterrows()]
 
-                    return info, gr.update(choices=pw_choices, value=pw_choices[0] if pw_choices else None), gr.update(choices=[])
+                    return (pw_universe, gene_universe, info,
+                            gr.update(choices=pw_choices, value=pw_choices[0] if pw_choices else None),
+                            gr.update(choices=[]))
 
                 def on_pathway_select(disease, pathway_str):
-                    """选择通路后更新基因列表"""
+                    """选择通路 → 更新基因下拉"""
                     if not disease or not pathway_str:
                         return gr.update(choices=[])
-                    pathway = pathway_str.split(" (")[0]  # 去掉评分后缀
+                    pathway = pathway_str.split(" (")[0]
                     gene_df, _ = _tracer.get_gene_module(disease, pathway)
                     if gene_df.empty:
                         return gr.update(choices=[])
@@ -1456,8 +1465,8 @@ def create_gradio_interface():
                     return gr.update(choices=gene_choices, value=gene_choices[0] if gene_choices else None)
 
                 def run_full_trace(disease, pathway_str, gene_str):
-                    """运行完整溯源分析"""
-                    empty = (go.Figure(), "", go.Figure(), pd.DataFrame(),
+                    """点击按钮 → 生成详细分析"""
+                    empty = (go.Figure(), "", go.Figure(), go.Figure(), pd.DataFrame(),
                              go.Figure(), pd.DataFrame(), go.Figure(),
                              pd.DataFrame(), "")
                     if not disease or not pathway_str:
@@ -1468,42 +1477,60 @@ def create_gradio_interface():
 
                     try:
                         # Sankey
-                        sankey = _tracer.create_sankey_diagram(disease)
+                        sankey = _tracer.create_sankey_diagram(
+                            disease, selected_pathway=pathway, selected_gene=gene or None)
 
-                        # 通路
+                        # 通路星云图
                         pw_df = _tracer.get_pathway_ranking(disease)
+                        pw_network = _tracer.create_pathway_network(
+                            disease, selected_pathway=pathway)
                         pw_bar = _tracer.create_pathway_bar(pw_df)
 
                         # 基因模块
                         gene_df, G = _tracer.get_gene_module(disease, pathway)
-                        gene_net = _tracer.create_gene_network_plot(G, gene_df)
+                        pathway_gene_set = set(gene_df["基因"].tolist()) if len(gene_df) > 0 else set()
+                        neighbor_genes = []
+                        if not pw_df.empty and pathway_gene_set:
+                            nc = set()
+                            for _, pw_row in pw_df.iterrows():
+                                if pw_row["通路"] == pathway:
+                                    continue
+                                pw_set = set(pw_row["基因列表"].split(", "))
+                                if pw_set & pathway_gene_set:
+                                    nc.update(list(pw_set - pathway_gene_set)[:3])
+                            neighbor_genes = list(nc)[:20]
+                        gene_net = _tracer.create_gene_network_plot(
+                            G, gene_df, selected_gene=gene or None,
+                            neighbor_genes=neighbor_genes if neighbor_genes else None)
 
                         # 基因表达
                         expr_plot = go.Figure()
                         mirna_df = pd.DataFrame()
                         expr_summary = ""
+                        ctx = gene_df["基因"].tolist()[:15] if len(gene_df) > 0 else None
                         if gene and gene in (_tracer.expr_data.index if _tracer.expr_data is not None else []):
                             profile = _tracer.get_gene_expression_profile(gene)
-                            expr_plot = _tracer.create_expression_boxplot(gene, profile)
+                            expr_plot = _tracer.create_expression_boxplot(gene, profile, context_genes=ctx)
                             mirnas = profile.get("mirna_regulators", [])
                             mirna_df = pd.DataFrame(mirnas) if mirnas else pd.DataFrame()
-                            expr_summary = f"""**{gene}** | 表达均值: {profile.get('expr_mean','N/A')} | 排名: #{profile.get('expr_rank','N/A')}/{profile.get('total_genes','N/A')} | miRNA调控: {len(mirnas)} 个"""
+                            expr_summary = f"""**★ {gene}** | 均值: {profile.get('expr_mean','N/A')} | 排名: #{profile.get('expr_rank','N/A')}/{profile.get('total_genes','N/A')} | miRNA: {len(mirnas)} 个"""
 
-                        # 报告
                         report = _tracer.generate_tracing_report(disease, pathway, gene) if gene else ""
 
-                        return (sankey, report, pw_bar, pw_df.head(20),
+                        return (sankey, report, pw_network, pw_bar, pw_df.head(20),
                                 gene_net, gene_df, expr_plot, mirna_df, expr_summary)
                     except Exception as e:
                         import traceback
-                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), pd.DataFrame(),
+                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), go.Figure(), pd.DataFrame(),
                                 go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(),
                                 f"❌ {traceback.format_exc()}")
 
+                # 选择疾病 → 立即更新两张网络图
                 trace_disease.change(
                     on_disease_select,
                     inputs=[trace_disease],
-                    outputs=[trace_disease_info, trace_pathway, trace_gene],
+                    outputs=[trace_pw_universe, trace_gene_universe, trace_disease_info,
+                             trace_pathway, trace_gene],
                 )
                 trace_pathway.change(
                     on_pathway_select,
@@ -1513,13 +1540,13 @@ def create_gradio_interface():
                 trace_run_btn.click(
                     run_full_trace,
                     inputs=[trace_disease, trace_pathway, trace_gene],
-                    outputs=[trace_sankey, trace_report, trace_pw_bar, trace_pw_table,
+                    outputs=[trace_sankey, trace_report, trace_pw_network, trace_pw_bar, trace_pw_table,
                              trace_gene_network, trace_gene_table, trace_expr_plot,
                              trace_mirna_table, trace_expr_summary],
                 )
 
             # ========== Tab 2: 基因网络可视化 ==========
-            with gr.Tab("🔬 基因网络可视化", id=1):
+            with gr.Tab("🔬 基因网络可视化", id=2):
                 gr.HTML("""<div class="tab-banner banner-indigo">
                     <h3>🔬 基因网络可视化</h3>
                     <p>分子尺度 · 基因互作网络 / 调控网络 · 通路查询</p>
@@ -1624,7 +1651,7 @@ def create_gradio_interface():
                 )
             
             # ========== Tab 2: 网络模型计算 ==========
-            with gr.Tab("📊 网络模型计算", id=2):
+            with gr.Tab("📊 网络模型计算", id=3):
                 gr.HTML("""<div class="tab-banner banner-pink">
                     <h3>📊 IS系数计算</h3>
                     <p>分子尺度 · 通路影响力评分 · 批量计算与可视化</p>
@@ -1732,7 +1759,7 @@ def create_gradio_interface():
                 )
             
             # ========== Tab 3: 基因网络仿真 ==========
-            with gr.Tab("🧬 基因网络仿真", id=3):
+            with gr.Tab("🧬 基因网络仿真", id=4):
                 gr.HTML("""<div class="tab-banner banner-blue">
                     <h3>🧬 TCGA-COAD 基因表达网络</h3>
                     <p>细胞/组织尺度 · MRNetB网络推断 · 年龄/性别/阶段分层分析</p>
@@ -2102,12 +2129,12 @@ def create_gradio_interface():
                     outputs=[tcga_status, network_stats, tcga_network_plot, result_dataframe, tcga_results_state]
                 )
 
-            # ========== Tab 4: 网络医学分析 (Phase 2) ==========
-            with gr.Tab("🔗 网络医学分析 (Phase 2)", id=4):
+            # ========== Tab 4: 网络医学分析 ==========
+            with gr.Tab("🔗 网络医学分析", id=5):
                 create_phase2_network_medicine_tab()
 
             # ========== Tab 5: 社交网络仿真 ==========
-            with gr.Tab("🌐 社交网络仿真", id=5):
+            with gr.Tab("🌐 社交网络仿真", id=6):
 
                 gr.HTML("""<div class="tab-banner banner-green">
                     <h3>🌐 SIS 传播动力学仿真</h3>
@@ -2306,12 +2333,8 @@ def create_gradio_interface():
                     outputs=[snapshot_plot]
                 )
             
-            # ========== Tab 6: SIS生物标志物发现 (Phase 3) ==========
-            with gr.Tab("🔬 SIS生物标志物发现 (Phase 3)", id=6):
-                create_phase3_biomarker_tab()
-
             # ========== Tab 7: 数据统计 ==========
-            with gr.Tab("📈 数据统计", id=7):
+            with gr.Tab("📈 数据统计", id=8):
 
                 gr.HTML("""<div class="tab-banner banner-slate">
                     <h3>📈 数据统计</h3>
@@ -2434,29 +2457,6 @@ def create_gradio_interface():
                 
                 stats_display.value = get_initial_stats()
             
-            # ========== Tab 8: 模型库 ==========
-            with gr.Tab("📚 模型库", id=8):
-                gr.HTML("""<div class="tab-banner banner-orange">
-                    <h3>📚 跨尺度仿真模型目录</h3>
-                    <p>6个模型 · 分子/细胞/群体三尺度 · 完整算法与参数说明</p>
-                </div>""")
-
-                model_cards = gr.HTML(value=create_model_cards_html())
-
-                with gr.Accordion("📊 模型汇总表格", open=False):
-                    model_table = gr.Dataframe(
-                        value=create_model_summary_table(),
-                        label="模型列表",
-                        interactive=False,
-                    )
-
-                with gr.Accordion("📈 尺度分布", open=False):
-                    dist = create_scale_distribution_data()
-                    dist_df = pd.DataFrame(
-                        {"尺度": list(dist.keys()), "模型数": list(dist.values())}
-                    )
-                    gr.Dataframe(value=dist_df, label="各尺度模型数量", interactive=False)
-
 
             # ========== Tab 9: 关于系统（注释） ==========
             # with gr.Tab("ℹ️ 关于", id=9):

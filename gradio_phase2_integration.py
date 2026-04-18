@@ -972,7 +972,7 @@ def create_phase2_network_medicine_tab():
         gr.HTML("""
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 12px;">
-            <h2 style="margin:0;">🔗 网络医学分析 (Network Medicine) — Phase 2</h2>
+            <h2 style="margin:0;">🔗 网络医学分析 (Network Medicine)</h2>
             <p style="margin:6px 0 0 0; opacity:0.9;">
                 跨尺度网络医学: 疾病模块检测 · WGCNA共表达 · miRNA调控网络
             </p>

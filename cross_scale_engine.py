@@ -270,9 +270,8 @@ class CrossScaleEngine:
         """
         从分子层 + 细胞层指标 推导 群体层SIS参数
 
-        方法论依据:
-            采用 Hill函数 剂量-响应模型（PhysiCell框架, Ghaffarizadeh et al. 2018,
-            PLoS Comput Biol）将分子/细胞层拓扑"信号"映射为群体层"行为率"。
+        方法:
+            采用 Hill函数 剂量-响应模型将分子/细胞层拓扑"信号"映射为群体层"行为率"。
 
             Hill函数: B(s) = B_min + (B_max - B_min) × s^n / (s^n + K^n)
 
@@ -282,16 +281,8 @@ class CrossScaleEngine:
 
             参数:
                 β: 感染率 — Hill(s, B_min=0.01, B_max=0.20, K=0.3, n=2)
-                c: 社区数 — 由Hub基因数量映射，类比疾病模块数 (Menche et al. 2015, Science)
+                c: 社区数 — 由Hub基因数量映射，类比疾病模块数
                 γ: 恢复率 — 0.2 (固定基线)
-
-        参考文献:
-            [1] Ghaffarizadeh et al. "PhysiCell: An open source physics-based cell simulator
-                for 3-D multicellular systems." PLoS Comput Biol, 2018.
-            [2] Menche et al. "Uncovering disease-disease relationships through the incomplete
-                interactome." Science, 2015.
-            [3] Xue & Bhatt. "Coupling the within-host process and between-host transmission."
-                Bull Math Biol, 2022.
         """
         mol_density = mol_summary.get("density", 0)
         cell_clustering = cell_summary.get("cell_clustering", 0)
@@ -310,7 +301,7 @@ class CrossScaleEngine:
         beta = B_min + (B_max - B_min) * hill_val
         beta = round(min(max(beta, 0.01), 0.20), 4)
 
-        # 社区数: 类比疾病模块划分 (Menche 2015)
+        # 社区数: 类比疾病模块划分
         c = max(2, min(8, len(hub_genes) // 2))
         N = 100
         gamma = 0.2
@@ -324,11 +315,7 @@ class CrossScaleEngine:
                 f"  β = 0.01 + 0.19 × {s:.4f}²/({s:.4f}²+0.3²) = {beta:.4f}"
             ),
             "formula_c": f"c = max(2, min(8, {len(hub_genes)}//2)) = {c}  [类比疾病模块数]",
-            "references": [
-                "Ghaffarizadeh et al. PLoS Comput Biol, 2018 (PhysiCell Hill函数)",
-                "Menche et al. Science, 2015 (疾病模块分离度)",
-                "Xue & Bhatt. Bull Math Biol, 2022 (宿主内-宿主间耦合)",
-            ],
+            "references": [],
         }
 
     def run_gene_cascade(self, disease_name: str,
@@ -386,7 +373,7 @@ class CrossScaleEngine:
         if hub_genes and "error" not in cell.summary:
             insights.append(
                 f"📐 跨尺度传递: {len(seed_genes)} 个Hub基因作为种子节点定向推断细胞层网络"
-                f"（网络邻近性原理, Guney et al. 2016）。"
+                f"（网络邻近性原理）。"
             )
         report.cross_scale_insights = insights or ["未产生洞察。"]
 
@@ -529,7 +516,7 @@ class CrossScaleEngine:
             insights.append(
                 f"🔬 细胞层: {si}，从 TCGA-COAD 推断出 {cn} 个节点、{te} 条功能关联。"
                 f" Hub基因作为种子节点定向推断，"
-                f"依据网络邻近性原理 (Guney et al. Nat Commun 2016)。"
+                f"依据网络邻近性原理。"
             )
 
         if pt:
