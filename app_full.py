@@ -1161,7 +1161,903 @@ def create_gradio_interface():
         
         with gr.Tabs() as tabs:
             
-            # ========== Tab 0: 多尺度联动分析 ==========
+            # ========== Tab 0: 多尺度联动分析 —— 已移至 Tab 1.5（跨尺度社交网络溯源）之后 ==========
+
+            # ========== Tab 1: 疾病多尺度溯源 ==========
+            with gr.Tab("🔬 疾病多尺度溯源", id=1):
+                gr.HTML("""<div class="tab-banner banner-red">
+                    <h3>🔬 疾病多尺度溯源分析</h3>
+                    <p>选择疾病 → 查看关联基因 → 阅读分析公式 → 点击「开始溯源」→ 通路网络 → 基因网络 → 深入分析</p>
+                </div>""")
+
+                # 初始化溯源器
+                _tracer = DiseaseTracer()
+                _tracer.load_data()
+                _tracer_diseases = _tracer.get_disease_list()
+
+                # === Step 1: 疾病选择 ===
+                gr.Markdown("### 🏥 Step 1 · 选择疾病")
+                with gr.Row():
+                    trace_disease = gr.Dropdown(
+                        choices=_tracer_diseases,
+                        value=_tracer_diseases[0] if _tracer_diseases else None,
+                        label="选择疾病",
+                        scale=2,
+                    )
+                    trace_disease_info = gr.Markdown("👆 请选择疾病查看关联基因")
+
+                # === Step 2: 疾病关联基因列表 ===
+                gr.Markdown("### 🧬 Step 2 · 疾病关联基因列表")
+                with gr.Row():
+                    trace_gene_list_df = gr.Dataframe(
+                        headers=["基因", "TCGA 可用"],
+                        label="关联基因",
+                        interactive=False,
+                        wrap=True,
+                        row_count=(10, "dynamic"),
+                    )
+                    trace_gene_list_summary = gr.Markdown("")
+
+                # === Step 3: 分析方法与公式说明 ===
+                gr.Markdown("### 📖 Step 3 · 多尺度溯源方法与公式")
+                gr.Markdown(
+                    r"""
+系统依次执行以下三步分析，从宏观通路网络逐层下钻到微观基因表达调控：
+
+---
+
+#### 🔹 Step A · 通路影响力评分（CV 加权法）
+
+$$
+\text{PathwayScore}(p, d) \;=\; \bigl|\, G_p \cap G_d \,\bigr| \,\times\, \operatorname*{mean}_{g \in G_p \cap G_d} \bigl[\, \mathrm{CV}(g) \,\bigr]
+$$
+
+$$
+\mathrm{CV}(g) \;=\; \frac{\sigma\!\left(\mathrm{expr}_g\right)}{\bigl|\,\mu\!\left(\mathrm{expr}_g\right)\,\bigr| \,+\, \varepsilon}
+$$
+
+其中 $G_p$ 为通路 $p$ 的基因集合，$G_d$ 为疾病 $d$ 的关联基因集合；$\sigma$ 与 $\mu$ 分别为基因 $g$ 在样本间的表达标准差与均值，$\varepsilon$ 为避免除零的小常数。通路包含的疾病基因越多且表达变异越大，评分越高。
+
+---
+
+#### 🔹 Step B · 基因核心度评分（节点属性熵 NAE）
+
+$$
+\mathrm{NAE}(g) \;=\; -\,\sum_{k=1}^{K} p_k \,\cdot\, \log_2 p_k
+$$
+
+$$
+p_k \;=\; \frac{\mathrm{attr}_k(g)}{\sum_{j=1}^{K} \mathrm{attr}_j(g)}
+$$
+
+属性向量 $\mathrm{attr}(g) = [\text{度中心性},\ \text{介数中心性},\ \text{表达方差比},\ \text{通路参与数}]$，$K=4$。NAE 越高，表明该基因在多个维度上信息分布更均衡，越可能是核心调控基因。
+
+---
+
+#### 🔹 Step C · miRNA–基因调控映射
+
+$$
+r_{ij} \;=\; \operatorname{Pearson}\!\left(\,\mathrm{miRNA}_i\,,\ \mathrm{Gene}_j\,\right)
+$$
+
+$$
+\text{筛选条件:}\quad r_{ij} < -0.3 \ \land\ p_{ij} < 0.05
+$$
+
+miRNA 通过结合 mRNA 的 3′UTR 抑制基因表达，故 miRNA–基因呈负相关。满足上述阈值的 miRNA 被视作目标基因的潜在上游调控因子。
+""",
+                    latex_delimiters=[
+                        {"left": "$$", "right": "$$", "display": True},
+                        {"left": "$", "right": "$", "display": False},
+                    ],
+                )
+
+                # === Step 4: 开始溯源按钮 ===
+                gr.Markdown("### 🚀 Step 4 · 执行溯源")
+                with gr.Row():
+                    trace_start_btn = gr.Button(
+                        "🔬 开始溯源（生成通路 & 基因网络）",
+                        variant="primary", size="lg", scale=1,
+                    )
+
+                # === Step 5: 通路网络 ===
+                gr.Markdown("### 🌌 Step 5 · 通路网络（疾病相关通路高亮）")
+                trace_pw_universe = gr.Plot(label="通路网络 — 疾病相关通路高亮")
+
+                # === Step 6: 基因网络 ===
+                gr.Markdown("### 🧬 Step 6 · 基因网络（通路基因 + 共表达基因高亮）")
+                trace_gene_universe = gr.Plot(label="基因网络 — 通路基因 + 共表达基因高亮")
+
+                # === Step 7: 深入分析 ===
+                gr.Markdown("### 📋 Step 7 · 深入分析（选择通路 / 基因后生成详细报告）")
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        trace_pathway = gr.Dropdown(
+                            choices=[], label="🔬 选择通路",
+                            info="按影响力评分排序（CV加权）",
+                        )
+                        trace_gene = gr.Dropdown(
+                            choices=[], label="🧬 选择基因",
+                            info="按NAE评分排序",
+                        )
+                        trace_run_btn = gr.Button("📋 生成溯源报告", variant="primary", size="lg")
+
+                    with gr.Column(scale=3):
+                        with gr.Tabs():
+                            with gr.Tab("🌊 Sankey溯源"):
+                                trace_sankey = gr.Plot(label="Sankey溯源图")
+                                trace_report = gr.HTML(label="溯源报告")
+
+                            with gr.Tab("🕸️ 通路详情"):
+                                trace_pw_network = gr.Plot(label="通路关联网络")
+                                trace_pw_bar = gr.Plot(label="通路影响力排名")
+                                trace_pw_table = gr.Dataframe(label="通路详情", interactive=False)
+
+                            with gr.Tab("🧬 基因NAE"):
+                                trace_gene_network = gr.Plot(label="基因模块网络")
+                                trace_gene_table = gr.Dataframe(label="基因NAE排名", interactive=False)
+
+                            with gr.Tab("📈 基因表达"):
+                                trace_expr_plot = gr.Plot(label="表达箱线图")
+                                trace_mirna_table = gr.Dataframe(label="miRNA调控关系", interactive=False)
+                                trace_expr_summary = gr.Markdown("")
+
+                # === 回调 ===
+                def on_disease_select(disease):
+                    """选择疾病 → 只展示基本信息 + 关联基因列表（不生成网络图，不阻塞）"""
+                    if not disease:
+                        return "", pd.DataFrame(), ""
+
+                    try:
+                        ov = _tracer.get_disease_overview(disease)
+                    except Exception as e:
+                        return f"❌ 读取失败: {e}", pd.DataFrame(), ""
+                    if "error" in ov:
+                        return f"❌ {ov['error']}", pd.DataFrame(), ""
+
+                    info = (
+                        f"**{disease}** | 分类: {ov.get('category','未知')} | "
+                        f"关联基因: {ov['n_genes']} | TCGA可用: {ov['n_genes_in_tcga']} | "
+                        f"通路: {ov['n_pathways']}"
+                    )
+
+                    avail_set = set(ov.get("available_genes", []))
+                    genes_sorted = sorted(ov.get("genes", []))
+                    gene_rows = [
+                        [g, "✅" if g in avail_set else "—"]
+                        for g in genes_sorted
+                    ]
+                    gene_df = pd.DataFrame(gene_rows, columns=["基因", "TCGA 可用"])
+
+                    summary = (
+                        f"共 **{len(genes_sorted)}** 个关联基因，其中 "
+                        f"**{len(avail_set)}** 个在 TCGA 表达矩阵中可用。"
+                        " 👉 点击下方「开始溯源」生成通路与基因网络。"
+                    )
+                    return info, gene_df, summary
+
+                def run_trace(disease):
+                    """点击「开始溯源」→ 生成通路网络 + 基因网络 + 填充通路下拉"""
+                    if not disease:
+                        return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+
+                    try:
+                        ov = _tracer.get_disease_overview(disease)
+                        if "error" in ov:
+                            return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+
+                        pw_universe = _tracer.create_pathway_universe(disease)
+                        gene_universe = _tracer.create_gene_universe(disease)
+
+                        pw_df = _tracer.get_pathway_ranking(disease)
+                        pw_choices = [
+                            f"{row['通路']} ({row['影响力评分']:.2f})"
+                            for _, row in pw_df.head(30).iterrows()
+                        ]
+
+                        return (
+                            pw_universe,
+                            gene_universe,
+                            gr.update(choices=pw_choices, value=pw_choices[0] if pw_choices else None),
+                            gr.update(choices=[]),
+                        )
+                    except Exception:
+                        return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+
+                def on_pathway_select(disease, pathway_str):
+                    """选择通路 → 更新基因下拉"""
+                    if not disease or not pathway_str:
+                        return gr.update(choices=[])
+                    pathway = pathway_str.split(" (")[0]
+                    gene_df, _ = _tracer.get_gene_module(disease, pathway)
+                    if gene_df.empty:
+                        return gr.update(choices=[])
+                    gene_choices = [f"{row['基因']} (NAE:{row['NAE评分']:.3f})" for _, row in gene_df.iterrows()]
+                    return gr.update(choices=gene_choices, value=gene_choices[0] if gene_choices else None)
+
+                def run_full_trace(disease, pathway_str, gene_str):
+                    """点击按钮 → 生成详细分析"""
+                    empty = (go.Figure(), "", go.Figure(), go.Figure(), pd.DataFrame(),
+                             go.Figure(), pd.DataFrame(), go.Figure(),
+                             pd.DataFrame(), "")
+                    if not disease or not pathway_str:
+                        return empty
+
+                    pathway = pathway_str.split(" (")[0]
+                    gene = gene_str.split(" (")[0] if gene_str else ""
+
+                    try:
+                        # Sankey
+                        sankey = _tracer.create_sankey_diagram(
+                            disease, selected_pathway=pathway, selected_gene=gene or None)
+
+                        # 通路星云图
+                        pw_df = _tracer.get_pathway_ranking(disease)
+                        pw_network = _tracer.create_pathway_network(
+                            disease, selected_pathway=pathway)
+                        pw_bar = _tracer.create_pathway_bar(pw_df)
+
+                        # 基因模块
+                        gene_df, G = _tracer.get_gene_module(disease, pathway)
+                        pathway_gene_set = set(gene_df["基因"].tolist()) if len(gene_df) > 0 else set()
+                        neighbor_genes = []
+                        if not pw_df.empty and pathway_gene_set:
+                            nc = set()
+                            for _, pw_row in pw_df.iterrows():
+                                if pw_row["通路"] == pathway:
+                                    continue
+                                pw_set = set(pw_row["基因列表"].split(", "))
+                                if pw_set & pathway_gene_set:
+                                    nc.update(list(pw_set - pathway_gene_set)[:3])
+                            neighbor_genes = list(nc)[:20]
+                        gene_net = _tracer.create_gene_network_plot(
+                            G, gene_df, selected_gene=gene or None,
+                            neighbor_genes=neighbor_genes if neighbor_genes else None)
+
+                        # 基因表达
+                        expr_plot = go.Figure()
+                        mirna_df = pd.DataFrame()
+                        expr_summary = ""
+                        ctx = gene_df["基因"].tolist()[:15] if len(gene_df) > 0 else None
+                        if gene and gene in (_tracer.expr_data.index if _tracer.expr_data is not None else []):
+                            profile = _tracer.get_gene_expression_profile(gene)
+                            expr_plot = _tracer.create_expression_boxplot(gene, profile, context_genes=ctx)
+                            mirnas = profile.get("mirna_regulators", [])
+                            mirna_df = pd.DataFrame(mirnas) if mirnas else pd.DataFrame()
+                            expr_summary = f"""**★ {gene}** | 均值: {profile.get('expr_mean','N/A')} | 排名: #{profile.get('expr_rank','N/A')}/{profile.get('total_genes','N/A')} | miRNA: {len(mirnas)} 个"""
+
+                        report = _tracer.generate_tracing_report(disease, pathway, gene) if gene else ""
+
+                        return (sankey, report, pw_network, pw_bar, pw_df.head(20),
+                                gene_net, gene_df, expr_plot, mirna_df, expr_summary)
+                    except Exception as e:
+                        import traceback
+                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), go.Figure(), pd.DataFrame(),
+                                go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(),
+                                f"❌ {traceback.format_exc()}")
+
+                # 选择疾病 → 只显示基本信息 + 关联基因列表（不生成网络图，不阻塞首屏）
+                trace_disease.change(
+                    on_disease_select,
+                    inputs=[trace_disease],
+                    outputs=[trace_disease_info, trace_gene_list_df, trace_gene_list_summary],
+                )
+                # 点击「开始溯源」→ 渲染通路网络 + 基因网络 + 填充通路下拉
+                trace_start_btn.click(
+                    run_trace,
+                    inputs=[trace_disease],
+                    outputs=[trace_pw_universe, trace_gene_universe,
+                             trace_pathway, trace_gene],
+                )
+                trace_pathway.change(
+                    on_pathway_select,
+                    inputs=[trace_disease, trace_pathway],
+                    outputs=[trace_gene],
+                )
+                trace_run_btn.click(
+                    run_full_trace,
+                    inputs=[trace_disease, trace_pathway, trace_gene],
+                    outputs=[trace_sankey, trace_report, trace_pw_network, trace_pw_bar, trace_pw_table,
+                             trace_gene_network, trace_gene_table, trace_expr_plot,
+                             trace_mirna_table, trace_expr_summary],
+                )
+
+            # ========== Tab 1.5: 跨尺度社交网络溯源 ==========
+            # 逻辑对标疾病多尺度溯源：议题 → 话题社区 → 用户影响力
+            with gr.Tab("🌐 跨尺度社交网络溯源", id=10):
+                gr.HTML("""<div class="tab-banner banner-purple">
+                    <h3>🌐 跨尺度社交网络溯源分析</h3>
+                    <p>选择议题 → 查看关联话题 → 阅读分析公式 → 点击「开始溯源」→ 话题社区网络 → 用户影响力网络 → 深入分析</p>
+                </div>""")
+
+                # === 内置议题库（竞选/公共议题样例） ===
+                _SN_ISSUES = {
+                    "Election2024-Immigration": {
+                        "category": "政治竞选",
+                        "topics": [
+                            "BorderSecurity", "Asylum", "PathToCitizenship",
+                            "H1B-Policy", "SanctuaryCity", "ICE-Enforcement",
+                            "Dreamers", "BorderWall", "RefugeeQuota", "WorkVisa",
+                        ],
+                        "stance_polarity": 0.72,
+                    },
+                    "Election2024-ClimateChange": {
+                        "category": "政策议题",
+                        "topics": [
+                            "CarbonTax", "GreenNewDeal", "EV-Subsidy",
+                            "FossilFuels", "RenewableGrid", "ParisAccord",
+                            "MethaneRegs", "OilDrilling", "SolarCredit", "CoalMines",
+                        ],
+                        "stance_polarity": 0.65,
+                    },
+                    "Election2024-Healthcare": {
+                        "category": "民生议题",
+                        "topics": [
+                            "MedicareForAll", "ACA-Repeal", "DrugPricing",
+                            "PrivateInsurance", "PublicOption", "Medicaid",
+                            "PreExisting", "TeleHealth", "MentalHealth", "Abortion",
+                        ],
+                        "stance_polarity": 0.81,
+                    },
+                    "Election2024-GunPolicy": {
+                        "category": "社会议题",
+                        "topics": [
+                            "AssaultWeaponsBan", "BackgroundChecks", "ConcealCarry",
+                            "RedFlagLaw", "2A-Rights", "StandYourGround",
+                            "GhostGuns", "HighCapMags", "ATF-Regs", "SchoolSafety",
+                        ],
+                        "stance_polarity": 0.78,
+                    },
+                    "Brexit-Referendum": {
+                        "category": "国际事件",
+                        "topics": [
+                            "Sovereignty", "SingleMarket", "Immigration-UK",
+                            "NHS-Funding", "TradeDeal", "IrishBorder",
+                            "FishingRights", "EuropeanCourt", "FreedomOfMovement", "CustomsUnion",
+                        ],
+                        "stance_polarity": 0.69,
+                    },
+                }
+                _sn_issue_choices = list(_SN_ISSUES.keys())
+
+                # === Step 1: 议题选择 ===
+                gr.Markdown("### 🏛️ Step 1 · 选择政治议题 / 竞选事件")
+                with gr.Row():
+                    sn_issue = gr.Dropdown(
+                        choices=_sn_issue_choices,
+                        value=_sn_issue_choices[0],
+                        label="选择议题",
+                        scale=2,
+                    )
+                    sn_issue_info = gr.Markdown("👆 请选择议题查看关联话题")
+
+                # === Step 2: 议题关联话题列表 ===
+                gr.Markdown("### 🏷️ Step 2 · 议题关联话题（Topics / Hashtags）列表")
+                with gr.Row():
+                    sn_topic_list_df = gr.Dataframe(
+                        headers=["话题", "热度指数", "极化倾向"],
+                        label="关联话题",
+                        interactive=False,
+                        wrap=True,
+                        row_count=(10, "dynamic"),
+                    )
+                    sn_topic_list_summary = gr.Markdown("")
+
+                # === Step 3: 分析方法与公式 ===
+                gr.Markdown("### 📖 Step 3 · 跨尺度极化溯源方法与公式")
+                gr.Markdown(
+                    r"""
+系统依次执行三步分析，从宏观舆论极化逐层下钻到微观用户影响力：
+
+---
+
+#### 🔹 Step A · 意见动力学（非线性耦合演化方程）
+
+$$
+\dot{x}_i \;=\; -\,x_i \,+\, K \sum_{j=1}^{N} A_{ij}(t)\,\tanh\!\bigl(\alpha\, x_j\bigr)
+$$
+
+其中 $x_i \in \mathbb{R}$ 为用户 $i$ 的意见（正负号=阵营，绝对值=激进度）；$A_{ij}(t)$ 为时变社交邻接矩阵；$\alpha$ 为议题 **争议性（controversialness）**，控制 $\tanh$ 饱和斜率；$K$ 为 **社会影响强度耦合常数**。线性衰减项 $-x_i$ 建模意见回归中性的心理阻力，非线性求和项刻画邻居对意见的饱和型社会影响。
+
+---
+
+#### 🔹 Step B · 活动驱动网络与同质性连边
+
+每个用户 $i$ 具有活动率 $a_i$，服从幂律分布：
+
+$$
+F(a) \;\propto\; a^{-\gamma}, \quad a \in [\,\epsilon,\, 1\,]
+$$
+
+在时间窗 $\Delta t$ 内，用户 $i$ 以概率 $a_i\,\Delta t$ 激活；激活时随机连出 $m$ 条边。连边目标 $j$ 由 **同质性（homophily）** 规则确定：
+
+$$
+p_{ij} \;=\; \frac{\bigl|\,x_i - x_j\,\bigr|^{-\beta}}{\displaystyle\sum_{k \neq i} \bigl|\,x_i - x_k\,\bigr|^{-\beta}}
+$$
+
+其中 $\beta \ge 0$ 为 **同质性强度**：$\beta=0$ 退化为随机连边；$\beta$ 越大，用户越倾向于连接意见相近者，形成 **回音室（echo chamber）**。
+
+---
+
+#### 🔹 Step C · 极化相变与序参量
+
+系统的宏观极化程度由意见分布的一阶矩表征：
+
+$$
+\langle\,|x|\,\rangle \;=\; \frac{1}{N}\sum_{i=1}^{N} |x_i|
+$$
+
+$$
+\rho \;=\; \sqrt{\,\langle x^2 \rangle \,-\, \langle x \rangle^{2}\,}
+$$
+
+在参数空间 $(\alpha,\beta)$ 中，系统呈现三个相：**共识相**（$\langle |x|\rangle \to 0$，单峰分布于 0）、**激进相**（单峰但 $\langle |x|\rangle$ 大）、**极化相**（双峰分布，$\rho$ 跃升）。极化相的判据：
+
+$$
+\mathrm{sign}(x_i)\ \text{呈双峰分布}\ \land\ \langle |x| \rangle > x_c
+$$
+
+其中 $x_c$ 为双峰/单峰分界的临界意见幅度。
+""",
+                    latex_delimiters=[
+                        {"left": "$$", "right": "$$", "display": True},
+                        {"left": "$", "right": "$", "display": False},
+                    ],
+                )
+
+                # === Step 4: 开始溯源按钮 ===
+                gr.Markdown("### 🚀 Step 4 · 执行溯源")
+                with gr.Row():
+                    sn_start_btn = gr.Button(
+                        "🌐 开始溯源（生成话题社区 & 用户影响力网络）",
+                        variant="primary", size="lg", scale=1,
+                    )
+
+                # === Step 5: 话题社区网络 ===
+                gr.Markdown("### 🗺️ Step 5 · 话题社区网络（议题相关话题高亮）")
+                sn_topic_network = gr.Plot(label="话题社区网络 — 议题相关话题高亮")
+
+                # === Step 6: 用户影响力网络 ===
+                gr.Markdown("### 👥 Step 6 · 用户影响力网络（意见领袖 + 跨阵营桥接节点高亮）")
+                sn_user_network = gr.Plot(label="用户影响力网络 — 按阵营 + NAE 着色")
+
+                # === Step 7: 深入分析 ===
+                gr.Markdown("### 📋 Step 7 · 深入分析（选择话题 / 用户后生成详细报告）")
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        sn_topic = gr.Dropdown(
+                            choices=[], label="🏷️ 选择话题",
+                            info="按极化度评分排序",
+                        )
+                        sn_user = gr.Dropdown(
+                            choices=[], label="👤 选择用户",
+                            info="按影响力 NAE 评分排序",
+                        )
+                        sn_run_btn = gr.Button("📋 生成溯源报告", variant="primary", size="lg")
+
+                    with gr.Column(scale=3):
+                        with gr.Tabs():
+                            with gr.Tab("🌊 Sankey溯源"):
+                                sn_sankey = gr.Plot(label="议题→话题→用户 Sankey 溯源图")
+                                sn_report = gr.HTML(label="溯源报告")
+
+                            with gr.Tab("🕸️ 话题详情"):
+                                sn_topic_detail_net = gr.Plot(label="话题关联网络")
+                                sn_topic_bar = gr.Plot(label="话题极化度排名")
+                                sn_topic_table = gr.Dataframe(label="话题详情", interactive=False)
+
+                            with gr.Tab("👥 用户 NAE"):
+                                sn_user_detail_net = gr.Plot(label="用户模块网络")
+                                sn_user_table = gr.Dataframe(label="用户 NAE 排名", interactive=False)
+
+                            with gr.Tab("📈 意见时序"):
+                                sn_opinion_plot = gr.Plot(label="用户意见演化曲线")
+                                sn_neighbor_table = gr.Dataframe(label="邻居意见 & 影响", interactive=False)
+                                sn_opinion_summary = gr.Markdown("")
+
+                # === 回调 ===
+                def _sn_get_issue_overview(issue):
+                    """返回议题基本信息 + 话题排序表"""
+                    cfg = _SN_ISSUES.get(issue, {})
+                    if not cfg:
+                        return None
+                    rng = np.random.default_rng(abs(hash(issue)) % (2**32))
+                    topics = cfg["topics"]
+                    # 热度指数 (0~1) & 极化倾向 (-1~+1)
+                    heat = rng.uniform(0.2, 1.0, size=len(topics))
+                    polarity = rng.uniform(-1.0, 1.0, size=len(topics)) * cfg["stance_polarity"]
+                    df = pd.DataFrame({
+                        "话题": topics,
+                        "热度指数": np.round(heat, 3),
+                        "极化倾向": np.round(polarity, 3),
+                    }).sort_values("热度指数", ascending=False).reset_index(drop=True)
+                    # 极化度评分 = |极化倾向| × 热度
+                    df["极化度评分"] = np.round(np.abs(df["极化倾向"]) * df["热度指数"], 3)
+                    return df, cfg
+
+                def on_issue_select(issue):
+                    """选议题 → 展示话题列表（首屏不跑重型计算）"""
+                    if not issue:
+                        return "", pd.DataFrame(), ""
+                    res = _sn_get_issue_overview(issue)
+                    if res is None:
+                        return f"❌ 未找到议题: {issue}", pd.DataFrame(), ""
+                    df, cfg = res
+                    info = (
+                        f"**{issue}** | 分类: {cfg['category']} | "
+                        f"话题数: {len(df)} | 议题极化基线 ρ₀ = {cfg['stance_polarity']:.2f}"
+                    )
+                    show_df = df[["话题", "热度指数", "极化倾向"]].copy()
+                    summary = (
+                        f"共 **{len(df)}** 个关联话题，"
+                        f"正向倾向 **{int((df['极化倾向']>0).sum())}** 个 / "
+                        f"反向倾向 **{int((df['极化倾向']<0).sum())}** 个。"
+                        " 👉 点击下方「开始溯源」生成话题社区与用户影响力网络。"
+                    )
+                    return info, show_df, summary
+
+                def _sn_build_topic_network(df, cfg):
+                    """基于话题共现构建社区图（用于 Step 5）"""
+                    rng = np.random.default_rng(abs(hash(str(cfg))) % (2**32))
+                    G = nx.Graph()
+                    for _, r in df.iterrows():
+                        G.add_node(r["话题"], heat=r["热度指数"], polar=r["极化倾向"])
+                    topics = df["话题"].tolist()
+                    # 按极化同向/异向概率连边（同向高，异向低）
+                    for i, a in enumerate(topics):
+                        for b in topics[i+1:]:
+                            pa, pb = df.loc[df["话题"]==a, "极化倾向"].iloc[0], df.loc[df["话题"]==b, "极化倾向"].iloc[0]
+                            same = (pa * pb) > 0
+                            p = 0.55 if same else 0.12
+                            if rng.random() < p:
+                                G.add_edge(a, b, weight=float(rng.uniform(0.3, 1.0)))
+                    return G
+
+                def _sn_topic_plot(G, df):
+                    """Step 5 话题网络 plot"""
+                    pos = nx.spring_layout(G, seed=42, k=0.9)
+                    edge_x, edge_y = [], []
+                    for a, b in G.edges():
+                        edge_x += [pos[a][0], pos[b][0], None]
+                        edge_y += [pos[a][1], pos[b][1], None]
+                    node_x = [pos[n][0] for n in G.nodes()]
+                    node_y = [pos[n][1] for n in G.nodes()]
+                    polar_map = dict(zip(df["话题"], df["极化倾向"]))
+                    heat_map = dict(zip(df["话题"], df["热度指数"]))
+                    node_color = [polar_map.get(n, 0) for n in G.nodes()]
+                    node_size = [15 + heat_map.get(n, 0.3) * 35 for n in G.nodes()]
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode="lines",
+                                             line=dict(color="#6b7280", width=0.7),
+                                             hoverinfo="none", showlegend=False))
+                    fig.add_trace(go.Scatter(
+                        x=node_x, y=node_y, mode="markers+text",
+                        text=list(G.nodes()), textposition="top center",
+                        textfont=dict(size=10, color="#e5e7eb"),
+                        marker=dict(size=node_size, color=node_color,
+                                    colorscale="RdBu", cmin=-1, cmax=1,
+                                    line=dict(width=1, color="#111827"),
+                                    colorbar=dict(title="极化倾向")),
+                        hovertemplate="%{text}<br>极化:%{marker.color:.2f}<extra></extra>",
+                        showlegend=False,
+                    ))
+                    fig.update_layout(
+                        title="话题社区网络（红=保守/挺，蓝=自由/反；节点大小=热度）",
+                        paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                        font=dict(color="#e5e7eb"),
+                        xaxis=dict(visible=False), yaxis=dict(visible=False),
+                        height=560, margin=dict(l=10, r=10, t=50, b=10),
+                    )
+                    return fig
+
+                def _sn_build_user_network(df, cfg, n_users=80):
+                    """构建用户影响力网络（用于 Step 6）"""
+                    rng = np.random.default_rng((abs(hash(str(cfg))) + 7) % (2**32))
+                    # 每个话题分配一些用户
+                    G = nx.Graph()
+                    users = [f"u{i:03d}" for i in range(n_users)]
+                    # 给每个用户一个意见 x ∈ [-1, 1]，基于议题极化基线的混合分布（双峰）
+                    pol0 = cfg["stance_polarity"]
+                    signs = rng.choice([-1, 1], size=n_users, p=[0.5, 0.5])
+                    mags = np.abs(rng.normal(loc=pol0, scale=0.25, size=n_users))
+                    opinions = np.clip(signs * mags, -1, 1)
+                    for i, u in enumerate(users):
+                        G.add_node(u, opinion=float(opinions[i]))
+                    # 社交连边：意见相近者连接概率高
+                    for i in range(n_users):
+                        for j in range(i+1, n_users):
+                            diff = abs(opinions[i] - opinions[j])
+                            p = 0.35 * np.exp(-3 * diff) + 0.02  # 同阵营 0.37，跨阵营 0.02
+                            if rng.random() < p:
+                                G.add_edge(users[i], users[j])
+                    return G, opinions
+
+                def _sn_compute_nae(G, opinions):
+                    """计算每个用户的 NAE (5 维属性熵)"""
+                    if G.number_of_nodes() == 0:
+                        return pd.DataFrame()
+                    deg = dict(G.degree())
+                    try:
+                        btw = nx.betweenness_centrality(G)
+                    except Exception:
+                        btw = {n: 0.0 for n in G.nodes()}
+                    try:
+                        pr = nx.pagerank(G)
+                    except Exception:
+                        pr = {n: 1.0 / max(1, G.number_of_nodes()) for n in G.nodes()}
+                    users = list(G.nodes())
+                    op_map = dict(zip(users, opinions))
+                    # 跨阵营桥接度 = 连向异号邻居的比例
+                    bridge = {}
+                    for u in users:
+                        ns = list(G.neighbors(u))
+                        if not ns:
+                            bridge[u] = 0.0
+                        else:
+                            cross = sum(1 for v in ns if op_map[v] * op_map[u] < 0)
+                            bridge[u] = cross / len(ns)
+                    # 发帖活跃度 ~ |opinion| + noise
+                    rng = np.random.default_rng(123)
+                    activity = {u: float(abs(op_map[u]) + rng.uniform(0, 0.3)) for u in users}
+                    rows = []
+                    for u in users:
+                        v = np.array([
+                            deg.get(u, 0) + 1e-9,
+                            btw.get(u, 0) + 1e-9,
+                            pr.get(u, 0) + 1e-9,
+                            bridge.get(u, 0) + 1e-9,
+                            activity.get(u, 0) + 1e-9,
+                        ], dtype=float)
+                        p = v / v.sum()
+                        nae = float(-np.sum(p * np.log2(p)))
+                        rows.append({
+                            "用户": u, "意见": round(op_map[u], 3),
+                            "度": deg.get(u, 0),
+                            "介数": round(btw.get(u, 0), 4),
+                            "PageRank": round(pr.get(u, 0), 4),
+                            "跨阵营桥接": round(bridge.get(u, 0), 3),
+                            "活跃度": round(activity.get(u, 0), 3),
+                            "NAE评分": round(nae, 4),
+                        })
+                    return pd.DataFrame(rows).sort_values("NAE评分", ascending=False).reset_index(drop=True)
+
+                def _sn_user_plot(G, opinions, nae_df, highlight=None):
+                    pos = nx.spring_layout(G, seed=7, k=0.7)
+                    edge_x, edge_y = [], []
+                    for a, b in G.edges():
+                        edge_x += [pos[a][0], pos[b][0], None]
+                        edge_y += [pos[a][1], pos[b][1], None]
+                    users = list(G.nodes())
+                    op_map = dict(zip(users, opinions))
+                    nae_map = dict(zip(nae_df["用户"], nae_df["NAE评分"])) if not nae_df.empty else {}
+                    node_x = [pos[n][0] for n in users]
+                    node_y = [pos[n][1] for n in users]
+                    node_color = [op_map[n] for n in users]
+                    node_size = [8 + nae_map.get(n, 0) * 6 for n in users]
+                    text_labels = [n if (highlight and n in highlight) else "" for n in users]
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, mode="lines",
+                                             line=dict(color="#4b5563", width=0.4),
+                                             hoverinfo="none", showlegend=False))
+                    fig.add_trace(go.Scatter(
+                        x=node_x, y=node_y, mode="markers+text",
+                        text=text_labels, textposition="top center",
+                        textfont=dict(size=10, color="#fef3c7"),
+                        marker=dict(size=node_size, color=node_color,
+                                    colorscale="RdBu", cmin=-1, cmax=1,
+                                    line=dict(width=0.6, color="#111827"),
+                                    colorbar=dict(title="意见 x<sub>u</sub>")),
+                        hovertext=[f"{n}<br>x={op_map[n]:.2f}<br>NAE={nae_map.get(n,0):.3f}" for n in users],
+                        hoverinfo="text", showlegend=False,
+                    ))
+                    fig.update_layout(
+                        title="用户影响力网络（颜色=意见倾向；大小=NAE 影响力）",
+                        paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                        font=dict(color="#e5e7eb"),
+                        xaxis=dict(visible=False), yaxis=dict(visible=False),
+                        height=560, margin=dict(l=10, r=10, t=50, b=10),
+                    )
+                    return fig
+
+                # 用于跨回调共享当前网络（session 级简单缓存）
+                _sn_cache = {"issue": None, "df": None, "cfg": None,
+                             "Gtopic": None, "Guser": None, "opinions": None, "nae_df": None}
+
+                def run_sn_trace(issue):
+                    """点「开始溯源」→ Step5 + Step6 + 填充两个下拉"""
+                    if not issue:
+                        return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+                    try:
+                        res = _sn_get_issue_overview(issue)
+                        if res is None:
+                            return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+                        df, cfg = res
+                        Gtopic = _sn_build_topic_network(df, cfg)
+                        topic_fig = _sn_topic_plot(Gtopic, df)
+                        Guser, opinions = _sn_build_user_network(df, cfg)
+                        nae_df = _sn_compute_nae(Guser, opinions)
+                        user_fig = _sn_user_plot(Guser, opinions, nae_df)
+
+                        _sn_cache.update({
+                            "issue": issue, "df": df, "cfg": cfg,
+                            "Gtopic": Gtopic, "Guser": Guser,
+                            "opinions": opinions, "nae_df": nae_df,
+                        })
+
+                        topic_choices = [
+                            f"{r['话题']} ({r['极化度评分']:.2f})"
+                            for _, r in df.sort_values("极化度评分", ascending=False).head(30).iterrows()
+                        ]
+                        return (
+                            topic_fig, user_fig,
+                            gr.update(choices=topic_choices, value=topic_choices[0] if topic_choices else None),
+                            gr.update(choices=[]),
+                        )
+                    except Exception as e:
+                        import traceback; traceback.print_exc()
+                        return go.Figure(), go.Figure(), gr.update(choices=[]), gr.update(choices=[])
+
+                def on_sn_topic_select(issue, topic_str):
+                    """选话题 → 填充用户下拉（按 NAE 排序前 20）"""
+                    if not issue or not topic_str or _sn_cache.get("nae_df") is None:
+                        return gr.update(choices=[])
+                    nae_df = _sn_cache["nae_df"]
+                    if nae_df.empty:
+                        return gr.update(choices=[])
+                    user_choices = [
+                        f"{r['用户']} (NAE:{r['NAE评分']:.3f})"
+                        for _, r in nae_df.head(20).iterrows()
+                    ]
+                    return gr.update(choices=user_choices, value=user_choices[0] if user_choices else None)
+
+                def run_sn_full(issue, topic_str, user_str):
+                    """Step 7 深入分析"""
+                    empty = (go.Figure(), "", go.Figure(), go.Figure(), pd.DataFrame(),
+                             go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(), "")
+                    if not issue or _sn_cache.get("df") is None:
+                        return empty
+                    try:
+                        df = _sn_cache["df"]; cfg = _sn_cache["cfg"]
+                        Gtopic = _sn_cache["Gtopic"]; Guser = _sn_cache["Guser"]
+                        opinions = _sn_cache["opinions"]; nae_df = _sn_cache["nae_df"]
+                        topic = topic_str.split(" (")[0] if topic_str else ""
+                        user = user_str.split(" (")[0] if user_str else ""
+
+                        # Sankey: 议题 → 前5话题 → 前5用户
+                        top_topics = df.sort_values("极化度评分", ascending=False).head(5)
+                        top_users = nae_df.head(5)
+                        labels = [issue] + top_topics["话题"].tolist() + top_users["用户"].tolist()
+                        src, tgt, val = [], [], []
+                        for i, r in enumerate(top_topics.itertuples()):
+                            src.append(0); tgt.append(1 + i); val.append(float(r.极化度评分) * 10)
+                        base = 1 + len(top_topics)
+                        for i, r in enumerate(top_users.itertuples()):
+                            src.append(1); tgt.append(base + i); val.append(float(r.NAE评分) * 5)
+                        sankey = go.Figure(data=[go.Sankey(
+                            node=dict(label=labels, pad=14, thickness=18,
+                                      color=["#a78bfa"] + ["#60a5fa"]*len(top_topics) + ["#f472b6"]*len(top_users)),
+                            link=dict(source=src, target=tgt, value=val, color="rgba(167,139,250,0.35)"),
+                        )])
+                        sankey.update_layout(title=f"{issue} — 跨尺度极化溯源",
+                                             paper_bgcolor="#0b1120", font=dict(color="#e5e7eb"),
+                                             height=420)
+
+                        # 话题详情
+                        topic_net = _sn_topic_plot(Gtopic, df)
+                        top_bar_df = df.sort_values("极化度评分", ascending=False).head(15)
+                        topic_bar = go.Figure(go.Bar(
+                            x=top_bar_df["极化度评分"], y=top_bar_df["话题"], orientation="h",
+                            marker=dict(color=top_bar_df["极化倾向"], colorscale="RdBu", cmin=-1, cmax=1),
+                        ))
+                        topic_bar.update_layout(title="Top 话题极化度排名",
+                                                paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                                                font=dict(color="#e5e7eb"), height=420,
+                                                yaxis=dict(autorange="reversed"))
+                        topic_table = df.head(20)
+
+                        # 用户详情
+                        user_net = _sn_user_plot(Guser, opinions, nae_df,
+                                                 highlight=set([user]) if user else None)
+                        user_table = nae_df.head(20)
+
+                        # 意见时序（用非线性意见动力学迭代模拟几百步）
+                        opinion_plot = go.Figure()
+                        neighbor_df = pd.DataFrame()
+                        opinion_summary = ""
+                        if user and user in Guser.nodes():
+                            users_all = list(Guser.nodes())
+                            idx_of = {u: i for i, u in enumerate(users_all)}
+                            A = nx.to_numpy_array(Guser, nodelist=users_all)
+                            x = opinions.copy().astype(float)
+                            K, alpha = 0.3, 2.5
+                            history = [x.copy()]
+                            for _ in range(60):
+                                x = -x + K * (A @ np.tanh(alpha * x))
+                                x = np.clip(x, -2.5, 2.5)
+                                history.append(x.copy())
+                            hist_arr = np.array(history)
+                            ui = idx_of[user]
+                            opinion_plot.add_trace(go.Scatter(
+                                y=hist_arr[:, ui], mode="lines+markers",
+                                name=f"{user} 意见演化", line=dict(color="#f472b6", width=2),
+                            ))
+                            # 邻居
+                            for nb in list(Guser.neighbors(user))[:5]:
+                                opinion_plot.add_trace(go.Scatter(
+                                    y=hist_arr[:, idx_of[nb]], mode="lines",
+                                    name=f"邻居 {nb}", line=dict(width=1, dash="dot"),
+                                ))
+                            opinion_plot.update_layout(
+                                title=f"用户 {user} 及其邻居的意见演化",
+                                paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                                font=dict(color="#e5e7eb"), height=420,
+                                xaxis_title="时间步", yaxis_title="意见 x",
+                            )
+                            nb_rows = []
+                            for nb in Guser.neighbors(user):
+                                nb_rows.append({
+                                    "邻居": nb,
+                                    "意见": round(float(opinions[idx_of[nb]]), 3),
+                                    "NAE": float(nae_df.loc[nae_df["用户"]==nb, "NAE评分"].iloc[0]) if (nae_df["用户"]==nb).any() else None,
+                                    "阵营相同": "是" if opinions[idx_of[nb]] * opinions[ui] > 0 else "否",
+                                })
+                            neighbor_df = pd.DataFrame(nb_rows)
+                            final_x = float(hist_arr[-1, ui])
+                            rho = float(np.std(hist_arr[-1]))
+                            opinion_summary = (
+                                f"**★ {user}** | 初始意见: {opinions[ui]:+.2f} → 终态: {final_x:+.2f} | "
+                                f"邻居数: {Guser.degree(user)} | 终态系统极化 ρ = {rho:.3f}"
+                            )
+
+                        report_html = ""
+                        if topic and user:
+                            report_html = f"""
+                            <div style="background:#1e293b;padding:16px;border-radius:10px;color:#e5e7eb;">
+                            <h4 style="color:#a78bfa;margin-top:0;">跨尺度溯源报告</h4>
+                            <p><b>议题:</b> {issue} (极化基线 ρ₀ = {cfg['stance_polarity']})</p>
+                            <p><b>目标话题:</b> {topic}</p>
+                            <p><b>目标用户:</b> {user}</p>
+                            <p><b>结论:</b> 用户 {user} 在议题 <b>{issue}</b> 的话题 <b>{topic}</b>
+                               讨论中表现出意见 {opinions[idx_of[user]]:+.2f}，其邻域结构促使意见在
+                               非线性社会影响耦合下演化为 {float(hist_arr[-1, ui]):+.2f}。
+                               NAE = {float(nae_df.loc[nae_df['用户']==user,'NAE评分'].iloc[0]):.3f}，
+                               跨阵营桥接度 = {float(nae_df.loc[nae_df['用户']==user,'跨阵营桥接'].iloc[0]):.2f}。</p>
+                            </div>
+                            """
+
+                        return (sankey, report_html, topic_net, topic_bar, topic_table,
+                                user_net, user_table, opinion_plot, neighbor_df, opinion_summary)
+                    except Exception as e:
+                        import traceback
+                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), go.Figure(), pd.DataFrame(),
+                                go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(),
+                                f"❌ {traceback.format_exc()}")
+
+                # === 事件绑定 ===
+                sn_issue.change(
+                    on_issue_select,
+                    inputs=[sn_issue],
+                    outputs=[sn_issue_info, sn_topic_list_df, sn_topic_list_summary],
+                )
+                sn_start_btn.click(
+                    run_sn_trace,
+                    inputs=[sn_issue],
+                    outputs=[sn_topic_network, sn_user_network, sn_topic, sn_user],
+                )
+                sn_topic.change(
+                    on_sn_topic_select,
+                    inputs=[sn_issue, sn_topic],
+                    outputs=[sn_user],
+                )
+                sn_run_btn.click(
+                    run_sn_full,
+                    inputs=[sn_issue, sn_topic, sn_user],
+                    outputs=[sn_sankey, sn_report, sn_topic_detail_net, sn_topic_bar, sn_topic_table,
+                             sn_user_detail_net, sn_user_table, sn_opinion_plot,
+                             sn_neighbor_table, sn_opinion_summary],
+                )
+
+            # ========== Tab 0 (重排后): 多尺度联动分析 ==========
             with gr.Tab("🔗 多尺度联动分析", id=0):
                 gr.HTML("""<div class="tab-banner banner-purple">
                     <h3>🔗 基因网络多尺度联动分析</h3>
@@ -1279,20 +2175,20 @@ def create_gradio_interface():
                         gr.Markdown("输入一个基因，查看它在 **分子层（互作网络）** 和 **细胞层（TCGA表达）** 中的角色。")
 
                         with gr.Row():
-                            trace_gene_input = gr.Textbox(
+                            cascade_trace_gene_input = gr.Textbox(
                                 label="基因名称",
                                 placeholder="例如: TP53, BRCA1, KRAS",
                                 value="TP53",
                             )
-                            trace_disease = gr.Dropdown(
+                            cascade_trace_disease = gr.Dropdown(
                                 choices=diseases,
                                 value=diseases[0] if diseases else None,
                                 label="疾病背景",
                             )
-                        trace_run_btn = gr.Button("🔍 追踪基因", variant="primary")
-                        trace_result = gr.HTML(label="基因档案卡")
+                        cascade_trace_btn = gr.Button("🔍 追踪基因", variant="primary")
+                        cascade_trace_result = gr.HTML(label="基因档案卡")
 
-                        def run_trace(gene, disease):
+                        def run_cascade_trace(gene, disease):
                             if not gene or not gene.strip():
                                 return "<p>⚠️ 请输入基因名称</p>"
                             try:
@@ -1304,246 +2200,11 @@ def create_gradio_interface():
                             except Exception as e:
                                 return f"<p>❌ 追踪失败: {e}</p>"
 
-                        trace_run_btn.click(
-                            fn=run_trace,
-                            inputs=[trace_gene_input, trace_disease],
-                            outputs=[trace_result],
+                        cascade_trace_btn.click(
+                            fn=run_cascade_trace,
+                            inputs=[cascade_trace_gene_input, cascade_trace_disease],
+                            outputs=[cascade_trace_result],
                         )
-
-            # ========== Tab 1: 疾病多尺度溯源 ==========
-            with gr.Tab("🔬 疾病多尺度溯源", id=1):
-                gr.HTML("""<div class="tab-banner banner-red">
-                    <h3>🔬 疾病多尺度溯源分析</h3>
-                    <p>选择疾病 → 左图通路网络高亮疾病通路 → 右图基因网络高亮通路基因与共表达基因</p>
-                </div>""")
-
-                # 初始化溯源器
-                _tracer = DiseaseTracer()
-                _tracer.load_data()
-                _tracer_diseases = _tracer.get_disease_list()
-
-                # === 顶部：疾病选择 + 信息 ===
-                with gr.Row():
-                    trace_disease = gr.Dropdown(
-                        choices=_tracer_diseases,
-                        value=_tracer_diseases[0] if _tracer_diseases else None,
-                        label="🏥 选择疾病（选择后自动更新两张网络图）",
-                        scale=2,
-                    )
-                    trace_disease_info = gr.Markdown("")
-
-                # === 核心：两张大网络图并排 ===
-                with gr.Row():
-                    trace_pw_universe = gr.Plot(label="🌌 通路网络 — 疾病相关通路高亮")
-                    trace_gene_universe = gr.Plot(label="🧬 基因网络 — 通路基因 + 共表达基因高亮")
-
-                # === 溯源方法说明 ===
-                with gr.Accordion("📖 溯源方法论与公式说明", open=False):
-                    gr.HTML("""
-                    <div style="background:#111827; border:1px solid #374151; border-radius:12px; padding:24px; color:#e5e7eb; font-size:14px; line-height:1.8;">
-
-                    <h3 style="color:#f5576c; margin-top:0;">🔬 多尺度溯源流程</h3>
-                    <p style="color:#9ca3af;">选择一个疾病后，系统依次执行以下三步分析，从宏观通路网络逐层下钻到微观基因表达：</p>
-
-                    <hr style="border-color:#374151;">
-
-                    <h4 style="color:#667eea;">Step 1: 通路影响力评分 — CV加权法</h4>
-                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
-                        PathwayScore(p, d) = |G<sub>p</sub> ∩ G<sub>d</sub>| × mean( CV(g) )<br><br>
-                        <span style="font-size:13px; color:#9ca3af;">
-                        其中 CV(g) = σ(expr<sub>g</sub>) / (|μ(expr<sub>g</sub>)| + ε) ，即基因 g 在样本中的表达变异系数<br>
-                        G<sub>p</sub> = 通路 p 的基因集合，G<sub>d</sub> = 疾病 d 的关联基因集合
-                        </span>
-                    </div>
-                    <p style="color:#9ca3af;">
-                        通路包含的疾病基因越多、且这些基因表达变异越大，说明该通路在不同样本间差异更显著，对疾病的影响力越高。
-                        左侧通路网络图中，节点大小和颜色深浅反映该评分。
-                    </p>
-
-                    <hr style="border-color:#374151;">
-
-                    <h4 style="color:#43e97b;">Step 2: 基因核心度评分 — 节点属性熵 (NAE)</h4>
-                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
-                        NAE(g) = −Σ<sub>k=1</sub><sup>K</sup> p<sub>k</sub> · log<sub>2</sub>(p<sub>k</sub>)<br><br>
-                        <span style="font-size:13px; color:#9ca3af;">
-                        属性向量: [度中心性, 介数中心性, 表达方差比, 通路参与数]<br>
-                        p<sub>k</sub> = attr<sub>k</sub> / Σ attr<sub>k</sub> （归一化为概率分布）
-                        </span>
-                    </div>
-                    <p style="color:#9ca3af;">
-                        NAE 衡量一个基因在多个维度上的"信息多样性"。
-                        NAE 越高，表示该基因同时具有高网络中心性、高表达变异、参与多条通路等特征，
-                        更可能是通路功能的核心调控基因。右侧基因网络图中，绿色节点按 NAE 排序。
-                    </p>
-
-                    <hr style="border-color:#374151;">
-
-                    <h4 style="color:#FFD700;">Step 3: miRNA-基因调控映射</h4>
-                    <div style="background:#1e293b; border-radius:8px; padding:16px; margin:10px 0; font-family:monospace; font-size:15px; text-align:center; color:#f0f0f0;">
-                        miRNA调控筛选: Pearson(miRNA<sub>i</sub>, Gene<sub>j</sub>) &lt; −0.3 且 p &lt; 0.05<br><br>
-                        <span style="font-size:13px; color:#9ca3af;">
-                        从 miRNA × 样本的表达矩阵中计算每条 miRNA 与目标基因的 Pearson 相关系数，<br>
-                        筛选显著负相关的 miRNA 作为潜在上游调控因子
-                        </span>
-                    </div>
-                    <p style="color:#9ca3af;">
-                        miRNA 通过结合 mRNA 的 3'UTR 抑制基因表达，因此 miRNA-gene 呈负相关。
-                        在"基因表达"子页中展示选中基因的 miRNA 调控网络。
-                    </p>
-
-                    </div>
-                    """)
-
-                # === 下方：详细分析（需选通路/基因后点按钮） ===
-                with gr.Row():
-                    with gr.Column(scale=1):
-                        gr.Markdown("### 📋 深入分析")
-                        trace_pathway = gr.Dropdown(
-                            choices=[], label="🔬 选择通路",
-                            info="按影响力评分排序（CV加权）",
-                        )
-                        trace_gene = gr.Dropdown(
-                            choices=[], label="🧬 选择基因",
-                            info="按NAE评分排序",
-                        )
-                        trace_run_btn = gr.Button("📋 生成溯源报告", variant="primary", size="lg")
-
-                    with gr.Column(scale=3):
-                        with gr.Tabs():
-                            with gr.Tab("🌊 Sankey溯源"):
-                                trace_sankey = gr.Plot(label="Sankey溯源图")
-                                trace_report = gr.HTML(label="溯源报告")
-
-                            with gr.Tab("🕸️ 通路详情"):
-                                trace_pw_network = gr.Plot(label="通路关联网络")
-                                trace_pw_bar = gr.Plot(label="通路影响力排名")
-                                trace_pw_table = gr.Dataframe(label="通路详情", interactive=False)
-
-                            with gr.Tab("🧬 基因NAE"):
-                                trace_gene_network = gr.Plot(label="基因模块网络")
-                                trace_gene_table = gr.Dataframe(label="基因NAE排名", interactive=False)
-
-                            with gr.Tab("📈 基因表达"):
-                                trace_expr_plot = gr.Plot(label="表达箱线图")
-                                trace_mirna_table = gr.Dataframe(label="miRNA调控关系", interactive=False)
-                                trace_expr_summary = gr.Markdown("")
-
-                # === 回调 ===
-                def on_disease_select(disease):
-                    """选择疾病 → 立即更新两张大网络图 + 通路下拉"""
-                    if not disease:
-                        return go.Figure(), go.Figure(), "", gr.update(choices=[]), gr.update(choices=[])
-
-                    ov = _tracer.get_disease_overview(disease)
-                    if "error" in ov:
-                        return go.Figure(), go.Figure(), f"❌ {ov['error']}", gr.update(choices=[]), gr.update(choices=[])
-
-                    # 信息
-                    info = f"**{disease}** | 关联基因: {ov['n_genes']} | TCGA可用: {ov['n_genes_in_tcga']} | 通路: {ov['n_pathways']}"
-
-                    # 两张大网络图
-                    pw_universe = _tracer.create_pathway_universe(disease)
-                    gene_universe = _tracer.create_gene_universe(disease)
-
-                    # 更新通路下拉
-                    pw_df = _tracer.get_pathway_ranking(disease)
-                    pw_choices = [f"{row['通路']} ({row['影响力评分']:.2f})" for _, row in pw_df.head(30).iterrows()]
-
-                    return (pw_universe, gene_universe, info,
-                            gr.update(choices=pw_choices, value=pw_choices[0] if pw_choices else None),
-                            gr.update(choices=[]))
-
-                def on_pathway_select(disease, pathway_str):
-                    """选择通路 → 更新基因下拉"""
-                    if not disease or not pathway_str:
-                        return gr.update(choices=[])
-                    pathway = pathway_str.split(" (")[0]
-                    gene_df, _ = _tracer.get_gene_module(disease, pathway)
-                    if gene_df.empty:
-                        return gr.update(choices=[])
-                    gene_choices = [f"{row['基因']} (NAE:{row['NAE评分']:.3f})" for _, row in gene_df.iterrows()]
-                    return gr.update(choices=gene_choices, value=gene_choices[0] if gene_choices else None)
-
-                def run_full_trace(disease, pathway_str, gene_str):
-                    """点击按钮 → 生成详细分析"""
-                    empty = (go.Figure(), "", go.Figure(), go.Figure(), pd.DataFrame(),
-                             go.Figure(), pd.DataFrame(), go.Figure(),
-                             pd.DataFrame(), "")
-                    if not disease or not pathway_str:
-                        return empty
-
-                    pathway = pathway_str.split(" (")[0]
-                    gene = gene_str.split(" (")[0] if gene_str else ""
-
-                    try:
-                        # Sankey
-                        sankey = _tracer.create_sankey_diagram(
-                            disease, selected_pathway=pathway, selected_gene=gene or None)
-
-                        # 通路星云图
-                        pw_df = _tracer.get_pathway_ranking(disease)
-                        pw_network = _tracer.create_pathway_network(
-                            disease, selected_pathway=pathway)
-                        pw_bar = _tracer.create_pathway_bar(pw_df)
-
-                        # 基因模块
-                        gene_df, G = _tracer.get_gene_module(disease, pathway)
-                        pathway_gene_set = set(gene_df["基因"].tolist()) if len(gene_df) > 0 else set()
-                        neighbor_genes = []
-                        if not pw_df.empty and pathway_gene_set:
-                            nc = set()
-                            for _, pw_row in pw_df.iterrows():
-                                if pw_row["通路"] == pathway:
-                                    continue
-                                pw_set = set(pw_row["基因列表"].split(", "))
-                                if pw_set & pathway_gene_set:
-                                    nc.update(list(pw_set - pathway_gene_set)[:3])
-                            neighbor_genes = list(nc)[:20]
-                        gene_net = _tracer.create_gene_network_plot(
-                            G, gene_df, selected_gene=gene or None,
-                            neighbor_genes=neighbor_genes if neighbor_genes else None)
-
-                        # 基因表达
-                        expr_plot = go.Figure()
-                        mirna_df = pd.DataFrame()
-                        expr_summary = ""
-                        ctx = gene_df["基因"].tolist()[:15] if len(gene_df) > 0 else None
-                        if gene and gene in (_tracer.expr_data.index if _tracer.expr_data is not None else []):
-                            profile = _tracer.get_gene_expression_profile(gene)
-                            expr_plot = _tracer.create_expression_boxplot(gene, profile, context_genes=ctx)
-                            mirnas = profile.get("mirna_regulators", [])
-                            mirna_df = pd.DataFrame(mirnas) if mirnas else pd.DataFrame()
-                            expr_summary = f"""**★ {gene}** | 均值: {profile.get('expr_mean','N/A')} | 排名: #{profile.get('expr_rank','N/A')}/{profile.get('total_genes','N/A')} | miRNA: {len(mirnas)} 个"""
-
-                        report = _tracer.generate_tracing_report(disease, pathway, gene) if gene else ""
-
-                        return (sankey, report, pw_network, pw_bar, pw_df.head(20),
-                                gene_net, gene_df, expr_plot, mirna_df, expr_summary)
-                    except Exception as e:
-                        import traceback
-                        return (go.Figure(), f"<p>❌ {e}</p>", go.Figure(), go.Figure(), pd.DataFrame(),
-                                go.Figure(), pd.DataFrame(), go.Figure(), pd.DataFrame(),
-                                f"❌ {traceback.format_exc()}")
-
-                # 选择疾病 → 立即更新两张网络图
-                trace_disease.change(
-                    on_disease_select,
-                    inputs=[trace_disease],
-                    outputs=[trace_pw_universe, trace_gene_universe, trace_disease_info,
-                             trace_pathway, trace_gene],
-                )
-                trace_pathway.change(
-                    on_pathway_select,
-                    inputs=[trace_disease, trace_pathway],
-                    outputs=[trace_gene],
-                )
-                trace_run_btn.click(
-                    run_full_trace,
-                    inputs=[trace_disease, trace_pathway, trace_gene],
-                    outputs=[trace_sankey, trace_report, trace_pw_network, trace_pw_bar, trace_pw_table,
-                             trace_gene_network, trace_gene_table, trace_expr_plot,
-                             trace_mirna_table, trace_expr_summary],
-                )
 
             # ========== Tab 2: 基因网络可视化 ==========
             with gr.Tab("🔬 基因网络可视化", id=2):
