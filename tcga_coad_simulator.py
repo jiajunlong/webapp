@@ -148,8 +148,10 @@ class TCGA_COAD_Simulator:
             progress_callback(0.1, "计算互信息矩阵...")
         
         # 计算互信息矩阵
+        # 注意: n_jobs 改为适中的固定值 (4)，避免在多核服务器上 fork 大量子进程
+        # 导致数据序列化/IPC 开销 > 实际计算时间（joblib 在高核数机器上反而退化）
         mi_matrix = np.zeros((n_features, n_features))
-        results = Parallel(n_jobs=-1)(
+        results = Parallel(n_jobs=4, backend="threading")(
             delayed(self._calculate_mi)(i, j, data_t)
             for i, j in combinations(range(n_features), 2)
         )

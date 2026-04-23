@@ -6,6 +6,7 @@ Gene Network and Social Network Simulation Computing Model
 
 import gradio as gr
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import networkx as nx
 import pandas as pd
 import numpy as np
@@ -1198,14 +1199,13 @@ def create_gradio_interface():
                     )
                     trace_gene_list_summary = gr.Markdown("")
 
-                # === Step 3: 跨尺度说明 ===
                 # === Step 3: 跨尺度溯源目标 ===
                 gr.Markdown("### 🧭 Step 3 · 跨尺度溯源目标")
                 gr.Markdown(
                     r"""
 疾病是一种典型的**涌现现象（emergent phenomenon）**：其病理表型由**分子互作、基因表达调控、通路协同扰动**在多个生物学尺度上耦合作用共同决定。单尺度分析工具（ORA / GSEA / DEG / PPI 模块检测）仅能捕捉完整病理机制的一个投影。
 
-**跨尺度溯源的目标**，是从疾病这一宏观表型出发，**逐层下钻定位驱动其发生的分子因素**：首先在通路层定位被显著扰动的功能模块，进而在基因层识别通路中的核心驱动基因，最终在转录调控层追溯作用于该基因的上游 miRNA。整条分析链回答的是同一个问题——"**疾病 → 通路 → 基因 → miRNA**" 这条因果链上，哪些元素在每一层各自扮演关键角色。
+**跨尺度溯源的目标**，是从疾病这一宏观表型出发，**逐层下钻定位驱动其发生的分子因素**：首先在通路层定位被显著扰动的功能模块，进而在基因层识别通路中的核心驱动基因，最终在转录调控层追溯作用于该基因的上游 miRNA。整条分析链回答的是同一个问题——「**疾病 → 通路 → 基因 → miRNA**」这条因果链上，哪些元素在每一层各自扮演关键角色。
 """,
                 )
 
@@ -1217,12 +1217,12 @@ def create_gradio_interface():
                         variant="primary", size="lg", scale=1,
                     )
 
-                # === Step 5: 通路网络 ===
-                gr.Markdown("### 🌌 Step 5 · 通路网络（疾病相关通路高亮）")
-                trace_pw_universe = gr.Plot(label="通路网络 — 疾病相关通路高亮")
+                # === Step 5: 通路尺度 ===
+                gr.Markdown("### 🌌 Step 5 · 通路定位 — 哪几条通路值得下钻？")
+                trace_pw_universe = gr.Plot(label="疾病 → 通路 → 基因 · 三层跨尺度下钻")
 
-                # === Step 6: 基因网络 ===
-                gr.Markdown("### 🧬 Step 6 · 基因网络（通路基因 + 共表达基因高亮）")
+                # === Step 6: 基因尺度 ===
+                gr.Markdown("### 🧬 Step 6 · 基因尺度 — 通路内哪些基因是枢纽？")
                 trace_gene_universe = gr.Plot(label="基因网络 — 通路基因 + 共表达基因高亮")
 
                 # === 阶段性结论：承上（Step 5~6 产物）+ 启下（引向 Step 7） ===
@@ -1230,8 +1230,8 @@ def create_gradio_interface():
                     "_点击「开始溯源」后，此处将自动生成跨尺度阶段性结论。_"
                 )
 
-                # === Step 7: 深入分析 ===
-                gr.Markdown("### 📋 Step 7 · 深入分析（选择通路 / 基因后生成详细报告）")
+                # === Step 7: 转录调控尺度 ===
+                gr.Markdown("### 📈 Step 7 · 转录调控尺度 — 枢纽基因受谁调控？")
                 with gr.Row():
                     with gr.Column(scale=1):
                         trace_pathway = gr.Dropdown(
@@ -1315,10 +1315,95 @@ def create_gradio_interface():
                                     gr.update(choices=[]), gr.update(choices=[]),
                                     f"❌ {ov['error']}")
 
-                        pw_universe = _tracer.create_pathway_universe(disease)
-                        gene_universe = _tracer.create_gene_universe(disease)
+                        # ---- Step 5 改为"疾病 → 通路 → 基因"三层 Sankey ----
+                        def _build_disease_pathway_gene_sankey(disease_name, pw_ranking_df):
+                            """三层 Sankey：疾病 → Top N 通路 → Top M 基因"""
+                            if pw_ranking_df is None or pw_ranking_df.empty:
+                                empty = go.Figure()
+                                empty.update_layout(
+                                    title=dict(text="暂无通路数据", x=0.5),
+                                    paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                                    font=dict(color="#e5e7eb"), height=500,
+                                )
+                                return empty
+
+                            top_pw = pw_ranking_df.head(10)
+                            # 统计基因出现频次（一个基因可能在多个 top 通路里）
+                            gene_weight = {}  # gene -> 累积权重
+                            pw_gene_pairs = []  # (pw_name, gene, weight)
+                            for _, row in top_pw.iterrows():
+                                pw_name = row["通路"]
+                                pw_score = float(row["影响力评分"])
+                                genes = [g.strip() for g in str(row["基因列表"]).split(",") if g.strip()]
+                                if not genes:
+                                    continue
+                                per_gene_w = pw_score / len(genes)
+                                for g in genes:
+                                    gene_weight[g] = gene_weight.get(g, 0) + per_gene_w
+                                    pw_gene_pairs.append((pw_name, g, per_gene_w))
+                            # 基因按累积权重取 Top 30，减少视觉拥挤
+                            top_genes = sorted(gene_weight.items(),
+                                               key=lambda x: x[1], reverse=True)[:30]
+                            top_gene_names = set(g for g, _ in top_genes)
+
+                            # 构建 Sankey 节点列表：疾病 + 通路 + 基因
+                            labels = [disease_name] + top_pw["通路"].tolist() + [g for g, _ in top_genes]
+                            node_colors = (
+                                ["#a78bfa"]                                  # 疾病（紫）
+                                + ["#60a5fa"] * len(top_pw)                  # 通路（蓝）
+                                + ["#34d399"] * len(top_genes)               # 基因（绿）
+                            )
+                            idx_disease = 0
+                            idx_pw = {p: 1 + i for i, p in enumerate(top_pw["通路"].tolist())}
+                            idx_gene = {g: 1 + len(top_pw) + i for i, (g, _) in enumerate(top_genes)}
+
+                            sources, targets, values, link_colors = [], [], [], []
+                            # 疾病 → 通路
+                            for _, row in top_pw.iterrows():
+                                sources.append(idx_disease)
+                                targets.append(idx_pw[row["通路"]])
+                                values.append(float(row["影响力评分"]))
+                                link_colors.append("rgba(167,139,250,0.35)")
+                            # 通路 → 基因（仅 top 基因）
+                            for pw_name, g, w in pw_gene_pairs:
+                                if g in top_gene_names and pw_name in idx_pw:
+                                    sources.append(idx_pw[pw_name])
+                                    targets.append(idx_gene[g])
+                                    values.append(w)
+                                    link_colors.append("rgba(96,165,250,0.30)")
+
+                            fig = go.Figure(go.Sankey(
+                                arrangement="snap",
+                                node=dict(
+                                    label=labels,
+                                    pad=12, thickness=16,
+                                    color=node_colors,
+                                    line=dict(color="rgba(255,255,255,0.3)", width=0.5),
+                                ),
+                                link=dict(
+                                    source=sources, target=targets, value=values,
+                                    color=link_colors,
+                                ),
+                            ))
+                            fig.update_layout(
+                                title=dict(
+                                    text=f"<b>{disease_name}</b> · 疾病 → 通路 → 基因 三层下钻"
+                                         f"<br><span style='font-size:12px;color:#94a3b8'>"
+                                         f"左→右：疾病（1） → Top {len(top_pw)} 通路 → Top {len(top_genes)} 基因；"
+                                         f"连边粗细表示影响力权重</span>",
+                                    x=0.5, xanchor="center",
+                                    font=dict(color="#f8fafc", size=16),
+                                ),
+                                paper_bgcolor="#0b1120", plot_bgcolor="#0b1120",
+                                font=dict(color="#e5e7eb", size=11),
+                                height=560, margin=dict(l=10, r=10, t=80, b=20),
+                            )
+                            return fig
 
                         pw_df = _tracer.get_pathway_ranking(disease)
+                        pw_universe = _build_disease_pathway_gene_sankey(disease, pw_df)
+                        gene_universe = _tracer.create_gene_universe(disease)
+
                         pw_choices = [
                             f"{row['通路']} ({row['影响力评分']:.2f})"
                             for _, row in pw_df.head(30).iterrows()
@@ -1523,6 +1608,21 @@ def create_gradio_interface():
                                 cascade_status = gr.Markdown("")
                                 cascade_arch = gr.HTML(label="级联架构")
 
+                        # === 跨尺度可视化对照（新增）===
+                        gr.Markdown("#### 🔍 跨尺度网络对照")
+                        gr.Markdown(
+                            "下图使用**同一套空间坐标**绘制两层网络——同一个基因在左右两幅图中的位置完全相同，"
+                            "左图（紫色边）展示文献先验的**分子层互作关系**，右图（红色边）展示患者表达数据推断出的**细胞层功能关联**。"
+                            "肉眼对比即可判断：**哪些结构在两层中都存在**（跨尺度一致），**哪些只在一层出现**（尺度特异）。"
+                        )
+                        cascade_overlay_plot = gr.Plot(label="两层网络同坐标对照")
+
+                        gr.Markdown(
+                            "下图进一步聚焦于**核心枢纽基因（Hub）的跨尺度一致性**：韦恩图展示两层 Hub 集合的交集，"
+                            "**交集中的基因**即是在文献先验与患者数据中都处于拓扑中心地位的关键基因——跨尺度一致性最强的候选靶点。"
+                        )
+                        cascade_venn_plot = gr.Plot(label="Hub 基因跨尺度一致性（韦恩图）")
+
                         cascade_summary = gr.Dataframe(label="级联汇总表", interactive=False)
                         cascade_insights = gr.Markdown("")
 
@@ -1533,6 +1633,135 @@ def create_gradio_interface():
 
                         def run_gene_cascade(disease, net_type, max_feat):
                             empty_conclusion = "_运行「基因网络级联分析」后，此处将自动生成跨尺度阶段性结论。_"
+
+                            # --- 跨尺度可视化子函数 ---
+                            def _build_overlay_plot(mol_G, cell_G):
+                                """两层网络同坐标对照图"""
+                                if mol_G is None and cell_G is None:
+                                    return go.Figure()
+                                mol_G = mol_G if mol_G is not None else nx.Graph()
+                                cell_G = cell_G if cell_G is not None else nx.Graph()
+                                # 全集节点（统一坐标系）
+                                all_nodes = set(mol_G.nodes()) | set(cell_G.nodes())
+                                if not all_nodes:
+                                    return go.Figure()
+                                # 为统一坐标，构建一个"并集图"，用它算 spring 布局
+                                union_G = nx.Graph()
+                                union_G.add_nodes_from(all_nodes)
+                                for u, v in mol_G.edges():
+                                    union_G.add_edge(u, v)
+                                for u, v in cell_G.edges():
+                                    union_G.add_edge(u, v)
+                                # 限制节点数（以度数排序取前 60）
+                                if len(all_nodes) > 60:
+                                    deg = dict(union_G.degree())
+                                    top = [n for n, _ in sorted(deg.items(), key=lambda x: x[1], reverse=True)[:60]]
+                                    union_G = union_G.subgraph(top).copy()
+                                    mol_G = mol_G.subgraph([n for n in top if n in mol_G]).copy()
+                                    cell_G = cell_G.subgraph([n for n in top if n in cell_G]).copy()
+                                pos = nx.spring_layout(union_G, seed=42, k=0.6, iterations=40)
+
+                                fig = make_subplots(
+                                    rows=1, cols=2,
+                                    subplot_titles=("🧬 分子层（文献先验互作）", "🔬 细胞层（TCGA 推断共表达）"),
+                                    horizontal_spacing=0.06,
+                                )
+
+                                def _add_layer(G, color_edge, color_node, col):
+                                    if G is None or G.number_of_nodes() == 0:
+                                        fig.add_trace(go.Scatter(x=[0], y=[0], mode="text", text=["无数据"],
+                                                                 showlegend=False), row=1, col=col)
+                                        return
+                                    ex, ey = [], []
+                                    for u, v in G.edges():
+                                        if u in pos and v in pos:
+                                            x0, y0 = pos[u]; x1, y1 = pos[v]
+                                            ex += [x0, x1, None]; ey += [y0, y1, None]
+                                    fig.add_trace(go.Scatter(x=ex, y=ey, mode="lines",
+                                                             line=dict(width=1.2, color=color_edge),
+                                                             hoverinfo="none", showlegend=False),
+                                                  row=1, col=col)
+                                    nodes = list(G.nodes())
+                                    nx_arr = [pos[n][0] for n in nodes if n in pos]
+                                    ny_arr = [pos[n][1] for n in nodes if n in pos]
+                                    names = [n for n in nodes if n in pos]
+                                    degs = [G.degree(n) for n in names]
+                                    md = max(degs) if degs else 1
+                                    sizes = [6 + 18 * d / md for d in degs]
+                                    fig.add_trace(go.Scatter(
+                                        x=nx_arr, y=ny_arr, mode="markers",
+                                        marker=dict(size=sizes, color=color_node, opacity=0.9,
+                                                    line=dict(width=0.5, color="white")),
+                                        text=names, hoverinfo="text", showlegend=False,
+                                    ), row=1, col=col)
+
+                                _add_layer(mol_G, "rgba(118, 74, 162, 0.55)", "#764ba2", 1)
+                                _add_layer(cell_G, "rgba(245, 87, 108, 0.55)", "#f5576c", 2)
+
+                                for i in range(1, 3):
+                                    fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False, row=1, col=i)
+                                    fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False, row=1, col=i)
+                                fig.update_layout(
+                                    height=480,
+                                    title=dict(text="两层网络同坐标对照（位置对齐）", x=0.5),
+                                    plot_bgcolor="white", paper_bgcolor="white",
+                                )
+                                return fig
+
+                            def _build_venn_plot(mol_hubs, cell_hubs):
+                                """Hub 跨尺度一致性韦恩图"""
+                                mol_set = set(mol_hubs or [])
+                                cell_set = set(cell_hubs or [])
+                                both = mol_set & cell_set
+                                only_mol = mol_set - cell_set
+                                only_cell = cell_set - mol_set
+
+                                fig = go.Figure()
+                                # 两个圆
+                                fig.add_shape(type="circle", xref="x", yref="y",
+                                              x0=-1.4, y0=-1.0, x1=0.6, y1=1.0,
+                                              line=dict(color="#764ba2", width=3),
+                                              fillcolor="rgba(118,74,162,0.25)")
+                                fig.add_shape(type="circle", xref="x", yref="y",
+                                              x0=-0.6, y0=-1.0, x1=1.4, y1=1.0,
+                                              line=dict(color="#f5576c", width=3),
+                                              fillcolor="rgba(245,87,108,0.25)")
+                                # 文字
+                                fig.add_annotation(x=-0.9, y=1.15, text=f"<b>分子层 Hub</b><br>{len(mol_set)} 个",
+                                                   showarrow=False, font=dict(size=13, color="#764ba2"))
+                                fig.add_annotation(x=0.9, y=1.15, text=f"<b>细胞层 Hub</b><br>{len(cell_set)} 个",
+                                                   showarrow=False, font=dict(size=13, color="#f5576c"))
+                                fig.add_annotation(x=-1.0, y=0, text=f"仅分子<br><b>{len(only_mol)}</b>",
+                                                   showarrow=False, font=dict(size=14, color="#4a148c"))
+                                fig.add_annotation(x=1.0, y=0, text=f"仅细胞<br><b>{len(only_cell)}</b>",
+                                                   showarrow=False, font=dict(size=14, color="#880e4f"))
+                                fig.add_annotation(x=0, y=0, text=f"<b>共同 Hub</b><br><b>{len(both)}</b>",
+                                                   showarrow=False, font=dict(size=16, color="#1b5e20"))
+                                # 在图下方列出共同 Hub 基因名（最多 8 个）
+                                shared = sorted(both)[:8]
+                                shared_text = ("共同 Hub 基因: " + "、".join(shared)) if shared else "两层无共同 Hub 基因"
+                                if len(both) > 8:
+                                    shared_text += f" 等 {len(both)} 个"
+                                # 一致性比例
+                                union = mol_set | cell_set
+                                jaccard = (len(both) / len(union)) if union else 0.0
+                                fig.add_annotation(x=0, y=-1.35, text=shared_text,
+                                                   showarrow=False, font=dict(size=12, color="#333"))
+                                fig.add_annotation(x=0, y=-1.6,
+                                                   text=f"Jaccard 一致性指数: <b>{jaccard:.2f}</b>  "
+                                                        f"(0 = 完全不同 / 1 = 完全一致)",
+                                                   showarrow=False, font=dict(size=12, color="#1b5e20"))
+                                fig.update_layout(
+                                    title=dict(text="🔗 核心枢纽 (Hub) 跨尺度一致性", x=0.5),
+                                    xaxis=dict(visible=False, range=[-2.2, 2.2]),
+                                    yaxis=dict(visible=False, range=[-2.0, 1.6],
+                                               scaleanchor="x", scaleratio=1),
+                                    height=420,
+                                    plot_bgcolor="white", paper_bgcolor="white",
+                                    showlegend=False,
+                                )
+                                return fig
+
                             try:
                                 engine = CrossScaleEngine(
                                     db=app.db,
@@ -1562,6 +1791,20 @@ def create_gradio_interface():
                                 cell_nodes = cell_s.get("cell_nodes", cell_s.get("nodes", 0))
                                 cell_edges = cell_s.get("cell_edges", cell_s.get("edges", 0))
                                 cell_cluster = cell_s.get("cell_clustering", cell_s.get("clustering", 0.0))
+
+                                # === 构建跨尺度对照图 ===
+                                mol_G = mol.detail.get("graph") if mol and isinstance(mol.detail, dict) else None
+                                cell_G = cell.detail.get("graph") if cell and isinstance(cell.detail, dict) else None
+                                overlay_fig = _build_overlay_plot(mol_G, cell_G)
+
+                                # Hub 韦恩图：分子层用 hub_genes，细胞层取度数 Top N
+                                cell_hubs = []
+                                if cell_G is not None and cell_G.number_of_nodes() > 0:
+                                    deg_cell = sorted(dict(cell_G.degree()).items(),
+                                                     key=lambda x: x[1], reverse=True)
+                                    # 取 Top 10 或度数 >= 2 的节点作为细胞层 Hub
+                                    cell_hubs = [g for g, d in deg_cell[:10] if d >= 2]
+                                venn_fig = _build_venn_plot(hubs, cell_hubs)
 
                                 # === 根据实际数据下不同结论 ===
                                 # 判断两层网络的结构强弱
@@ -1614,10 +1857,12 @@ def create_gradio_interface():
 """
 
                                 return ("✅ 基因网络级联分析完成", arch,
+                                        overlay_fig, venn_fig,
                                         summary, insights, conclusion)
                             except Exception as e:
                                 import traceback
                                 return (f"❌ {e}", "",
+                                        go.Figure(), go.Figure(),
                                         pd.DataFrame(),
                                         f"```\n{traceback.format_exc()}\n```",
                                         empty_conclusion)
@@ -1626,6 +1871,7 @@ def create_gradio_interface():
                             fn=run_gene_cascade,
                             inputs=[cascade_disease, cascade_net_type, cascade_max_feat],
                             outputs=[cascade_status, cascade_arch,
+                                     cascade_overlay_plot, cascade_venn_plot,
                                      cascade_summary, cascade_insights,
                                      cascade_stage_conclusion],
                         )
@@ -1707,11 +1953,9 @@ def create_gradio_interface():
                 gr.Markdown("""
                 基于 TCGA 结肠腺癌（COAD）真实患者队列，以 **MRNetB 互信息算法** 从高维基因 / miRNA 表达矩阵中推断功能关联网络。
 
-                单一尺度的基因网络（如文献已知的基因互作或单个基因的差异表达）只能反映疾病机制的局部切面。本模块将**患者队列的临床表型**（年龄、性别、疾病阶段）与**分子层级的基因 / miRNA 表达**联动，在同一算法框架下为不同人群构建各自的基因网络，再通过对比不同人群的网络拓扑差异，揭示：
+                **疾病并非"铁板一块"**。同一种结肠癌，发生在不同年龄、不同性别、不同疾病阶段的患者身上，其分子调控网络往往呈现**截然不同的结构特征**——年轻患者可能具有更紧致的共表达模块（提示分子协同调控更强），老年患者网络则更碎片化（提示多通路共同失调）；早期与晚期肿瘤之间，基因的网络角色也会发生迁移（反映疾病进展伴随的网络重塑）。
 
-                - **个体尺度（临床特征）→ 分子尺度（基因 / miRNA 共表达）** 的双向联动 —— 临床变量的改变如何重塑分子网络结构；
-                - **基因尺度 ↔ miRNA 尺度** 的对称对照 —— 通过切换数据类型，可以在相同人群分层下独立构建基因网络与 miRNA 网络，两者互为参照；
-                - **人群分层之间的跨尺度异质性** —— 不同年龄 / 性别 / 阶段的患者在分子网络上的差异，即为疾病在临床 × 分子两个尺度上涌现的真实异质性证据。
+                本模块所做的事，就是把这些**个体尺度的临床差异**，具体化为**分子尺度的网络图像**：将患者按年龄 / 性别 / 疾病阶段分组后，分别构建各自的基因 / miRNA 共表达网络，然后并排观察这些网络在**密度、聚类、枢纽基因**上的差异。这些可见的差异，正是"个体尺度 → 分子尺度"跨尺度联动的直接证据，也是理解**疾病异质性分子机制**的入口。
                 """)
                 
                 with gr.Row():
@@ -1820,13 +2064,13 @@ def create_gradio_interface():
                         gr.Markdown("### 📊 分析结果")
                         
                         with gr.Tabs():
-                            with gr.Tab("网络统计"):
-                                network_stats = gr.Markdown("等待分析...")
-                            
-                            with gr.Tab("网络可视化"):
+                            with gr.Tab("🔬 网络可视化"):
                                 tcga_network_plot = gr.Plot(label="基因网络图")
-                            
-                            with gr.Tab("结果数据"):
+
+                            with gr.Tab("📊 网络统计"):
+                                network_stats = gr.Markdown("等待分析...")
+
+                            with gr.Tab("📄 结果数据"):
                                 result_dataframe = gr.Dataframe(
                                     label="网络边列表",
                                     headers=["节点1", "节点2", "权重"],
@@ -1951,95 +2195,233 @@ def create_gradio_interface():
                         
                         progress(0.9, desc="生成可视化...")
                         
-                        # 选择第一个结果进行可视化
+                        # === 为所有分组并排生成网络图 + 计算指标 ===
                         if results:
-                            first_key = list(results.keys())[0]
-                            first_network = results[first_key]
-                            
-                            if not first_network.empty:
-                                # 创建网络图
-                                G = nx.Graph()
-                                if is_gene:
-                                    for _, row in first_network.iterrows():
-                                        G.add_edge(row["gene1"], row["gene2"], weight=row["weight"])
-                                else:
-                                    for _, row in first_network.iterrows():
-                                        G.add_edge(row["mirna1"], row["mirna2"], weight=row["weight"])
-                                
-                                # 限制节点数量以提升性能
-                                if len(G.nodes()) > 50:
-                                    # 选择度最高的50个节点
-                                    degrees = dict(G.degree())
-                                    top_nodes = sorted(degrees.items(), key=lambda x: x[1], reverse=True)[:50]
-                                    top_node_names = [node for node, _ in top_nodes]
-                                    G = G.subgraph(top_node_names).copy()
-                                
-                                # 可视化
-                                pos = nx.spring_layout(G, k=1, iterations=30, seed=42)
-                                
-                                edge_x = []
-                                edge_y = []
-                                for edge in G.edges():
-                                    x0, y0 = pos[edge[0]]
-                                    x1, y1 = pos[edge[1]]
-                                    edge_x.extend([x0, x1, None])
-                                    edge_y.extend([y0, y1, None])
-                                
-                                edge_trace = go.Scatter(
-                                    x=edge_x, y=edge_y,
-                                    line=dict(width=0.5, color='#888'),
-                                    hoverinfo='none',
-                                    mode='lines'
-                                )
-                                
-                                node_x = [pos[node][0] for node in G.nodes()]
-                                node_y = [pos[node][1] for node in G.nodes()]
-                                
-                                node_trace = go.Scatter(
-                                    x=node_x, y=node_y,
-                                    mode='markers+text',
-                                    text=list(G.nodes()),
-                                    textposition="top center",
-                                    textfont=dict(size=8),
-                                    hoverinfo='text',
-                                    marker=dict(
-                                        size=10,
-                                        color='#4ECDC4',
-                                        line=dict(width=1, color='white')
-                                    )
-                                )
-                                
-                                fig = go.Figure(data=[edge_trace, node_trace])
-                                fig.update_layout(
-                                    title=f"{analysis_type_val} - {first_key} ({data_type_val})",
-                                    showlegend=False,
-                                    hovermode='closest',
-                                    margin=dict(b=20, l=5, r=5, t=40),
-                                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                                    height=500
-                                )
-                                
-                                # 准备数据表
-                                display_df = first_network.head(100).copy()
-                                if is_gene:
-                                    display_df.columns = ["节点1", "节点2", "权重"]
-                                else:
-                                    display_df.columns = ["节点1", "节点2", "权重"]
-                                
-                                n_nodes = G.number_of_nodes()
-                                n_edges = G.number_of_edges()
-                                density = nx.density(G) if n_nodes > 1 else 0
-                                clustering = nx.average_clustering(G) if n_nodes > 2 else 0
-                                top_genes = sorted(dict(G.degree()).items(), key=lambda x: x[1], reverse=True)[:5]
-                                top_gene_names = [g[0] for g in top_genes]
+                            # 过滤非空网络
+                            non_empty = {k: v for k, v in results.items() if not v.empty}
 
-                                status_msg = f"""✅ 分析完成！生成了 {len(results)} 个网络
+                            if non_empty:
+                                # 构建每组的 NetworkX 图 + 指标
+                                group_graphs = {}
+                                group_metrics = {}
+                                for g_name, g_df in non_empty.items():
+                                    G_sub = nx.Graph()
+                                    if is_gene:
+                                        for _, row in g_df.iterrows():
+                                            G_sub.add_edge(row["gene1"], row["gene2"], weight=row["weight"])
+                                    else:
+                                        for _, row in g_df.iterrows():
+                                            G_sub.add_edge(row["mirna1"], row["mirna2"], weight=row["weight"])
+                                    # 限制每组节点数到 40（并排视图下才放得开）
+                                    if G_sub.number_of_nodes() > 40:
+                                        degs = dict(G_sub.degree())
+                                        keep = [n for n, _ in sorted(degs.items(),
+                                                                     key=lambda x: x[1], reverse=True)[:40]]
+                                        G_sub = G_sub.subgraph(keep).copy()
+                                    group_graphs[g_name] = G_sub
+                                    n_n = G_sub.number_of_nodes()
+                                    n_e = G_sub.number_of_edges()
+                                    dens = nx.density(G_sub) if n_n > 1 else 0
+                                    clust = nx.average_clustering(G_sub) if n_n > 2 else 0
+                                    hub_sorted = sorted(dict(G_sub.degree()).items(),
+                                                        key=lambda x: x[1], reverse=True)[:5]
+                                    hubs_here = [h[0] for h in hub_sorted]
+                                    group_metrics[g_name] = {
+                                        "n_nodes": n_n, "n_edges": n_e,
+                                        "density": dens, "clustering": clust,
+                                        "hubs": hubs_here,
+                                    }
+
+                                n_groups = len(group_graphs)
+
+                                # 为每组生成 subplot 标题（带关键指标）
+                                sub_titles = []
+                                for g_name in group_graphs:
+                                    m = group_metrics[g_name]
+                                    sub_titles.append(
+                                        f"<b>{g_name}</b><br>"
+                                        f"<span style='font-size:11px;color:#94a3b8'>"
+                                        f"{m['n_nodes']} 节点 · {m['n_edges']} 边 · "
+                                        f"密度 {m['density']:.3f}</span>"
+                                    )
+
+                                fig = make_subplots(
+                                    rows=1, cols=n_groups,
+                                    subplot_titles=sub_titles,
+                                    horizontal_spacing=0.04,
+                                )
+
+                                # 收集所有组的度数，用同一个 colorscale 范围（便于跨图对比）
+                                all_degs = []
+                                for G_sub in group_graphs.values():
+                                    all_degs.extend(dict(G_sub.degree()).values())
+                                global_max_deg = max(all_degs) if all_degs else 1
+
+                                for col_idx, (g_name, G_sub) in enumerate(group_graphs.items(), start=1):
+                                    if G_sub.number_of_nodes() == 0:
+                                        continue
+                                    pos_sub = nx.spring_layout(G_sub, k=1, iterations=30, seed=42)
+
+                                    # 边
+                                    ex, ey = [], []
+                                    for u, v in G_sub.edges():
+                                        x0, y0 = pos_sub[u]; x1, y1 = pos_sub[v]
+                                        ex.extend([x0, x1, None]); ey.extend([y0, y1, None])
+                                    fig.add_trace(go.Scatter(
+                                        x=ex, y=ey, mode='lines',
+                                        line=dict(width=0.5, color='rgba(148,163,184,0.3)'),
+                                        hoverinfo='none', showlegend=False,
+                                    ), row=1, col=col_idx)
+
+                                    # 节点
+                                    nx_arr = [pos_sub[n][0] for n in G_sub.nodes()]
+                                    ny_arr = [pos_sub[n][1] for n in G_sub.nodes()]
+                                    names = list(G_sub.nodes())
+                                    degs = [G_sub.degree(n) for n in names]
+                                    sizes = [8 + 26 * d / global_max_deg for d in degs]
+                                    hover = [f"<b>{n}</b><br>度数: {d}" for n, d in zip(names, degs)]
+                                    # Top 3 显示文字
+                                    top_here = set(
+                                        n for n, _ in sorted(
+                                            zip(names, degs), key=lambda x: x[1], reverse=True
+                                        )[:3]
+                                    )
+                                    labels = [n if n in top_here else "" for n in names]
+
+                                    fig.add_trace(go.Scatter(
+                                        x=nx_arr, y=ny_arr,
+                                        mode='markers+text',
+                                        text=labels, textposition="top center",
+                                        textfont=dict(size=10, color='#fef3c7'),
+                                        hovertext=hover, hoverinfo='text',
+                                        marker=dict(
+                                            size=sizes, color=degs, colorscale='Viridis',
+                                            cmin=0, cmax=global_max_deg,
+                                            showscale=(col_idx == n_groups),  # 只在最后一个子图显示 colorbar
+                                            colorbar=dict(
+                                                title=dict(text="度数", font=dict(color='#e5e7eb')),
+                                                tickfont=dict(color='#e5e7eb'),
+                                                thickness=12, len=0.55,
+                                            ) if col_idx == n_groups else None,
+                                            line=dict(width=1, color='rgba(255,255,255,0.8)'),
+                                            opacity=0.95,
+                                        ),
+                                        showlegend=False,
+                                    ), row=1, col=col_idx)
+
+                                    fig.update_xaxes(showgrid=False, zeroline=False,
+                                                     showticklabels=False, row=1, col=col_idx)
+                                    fig.update_yaxes(showgrid=False, zeroline=False,
+                                                     showticklabels=False, row=1, col=col_idx)
+
+                                fig.update_layout(
+                                    title=dict(
+                                        text=f"<b>{analysis_type_val} · {data_type_val} 网络并排对照</b>"
+                                             f"<br><span style='font-size:12px;color:#94a3b8'>"
+                                             f"共 {n_groups} 个分组 | Top 3 Hub 已标注</span>",
+                                        x=0.5, xanchor='center',
+                                        font=dict(color='#f8fafc', size=16),
+                                    ),
+                                    height=560,
+                                    paper_bgcolor='#0b1120',
+                                    plot_bgcolor='#0b1120',
+                                    font=dict(color='#e5e7eb'),
+                                    margin=dict(b=20, l=10, r=10, t=100),
+                                )
+                                # 子图标题颜色
+                                for ann in fig.layout.annotations:
+                                    ann.font = dict(color='#e5e7eb', size=13)
+
+                                # 准备数据表（取指标最丰富的那组做主展示）
+                                main_group = max(group_metrics.items(),
+                                                 key=lambda kv: kv[1]['n_edges'])[0]
+                                main_df = non_empty[main_group].head(100).copy()
+                                main_df.columns = ["节点1", "节点2", "权重"]
+                                display_df = main_df
+
+                                # 把下方所有字段用"主组"填，便于老代码继续工作
+                                n_nodes = group_metrics[main_group]["n_nodes"]
+                                n_edges = group_metrics[main_group]["n_edges"]
+                                density = group_metrics[main_group]["density"]
+                                clustering = group_metrics[main_group]["clustering"]
+                                top_gene_names = group_metrics[main_group]["hubs"]
+                                first_key = main_group  # 兼容下面 status_msg 使用
+
+                                # === 差异解读段：基于跨组指标自动生成 ===
+                                # 找出密度最大/最小组、最密集/最稀疏组
+                                by_density = sorted(group_metrics.items(),
+                                                    key=lambda kv: kv[1]['density'], reverse=True)
+                                by_edges = sorted(group_metrics.items(),
+                                                  key=lambda kv: kv[1]['n_edges'], reverse=True)
+                                densest_name, densest_m = by_density[0]
+                                sparsest_name, sparsest_m = by_density[-1]
+
+                                # Hub 重叠情况
+                                hub_sets = {k: set(v['hubs']) for k, v in group_metrics.items()}
+                                common_hubs = set.intersection(*hub_sets.values()) if hub_sets else set()
+                                # 每组独有 Hub
+                                unique_hubs = {}
+                                for k, hs in hub_sets.items():
+                                    others = set().union(*(v for kk, v in hub_sets.items() if kk != k))
+                                    unique_hubs[k] = hs - others
+
+                                # 生成差异解读文本
+                                diff_lines = []
+                                diff_lines.append(
+                                    f"**密度对比**：{densest_name} 组网络密度最高（{densest_m['density']:.3f}，"
+                                    f"{densest_m['n_edges']} 边），"
+                                    f"{sparsest_name} 组最低（{sparsest_m['density']:.3f}，"
+                                    f"{sparsest_m['n_edges']} 边）"
+                                )
+                                if densest_m['density'] > 0 and sparsest_m['density'] > 0:
+                                    ratio = densest_m['density'] / max(sparsest_m['density'], 1e-9)
+                                    diff_lines[-1] += f"；密度相差约 **{ratio:.1f}×**，"
+                                    if ratio >= 1.5:
+                                        diff_lines[-1] += (
+                                            f"提示 **{densest_name}** 人群的分子调控协同更强，"
+                                            f"可能表现出更紧致的共表达模块；而 **{sparsest_name}** 人群"
+                                            f"网络更松散，可能反映更异质的调控状态或样本内差异更大。"
+                                        )
+                                    else:
+                                        diff_lines[-1] += "各组网络密度相近，拓扑差异较小。"
+                                else:
+                                    diff_lines[-1] += "。"
+
+                                if common_hubs:
+                                    diff_lines.append(
+                                        f"**共享 Hub**：{'、'.join(sorted(common_hubs))} "
+                                        f"在所有分组中均为 Top 5 枢纽，是跨人群稳定的核心调控节点。"
+                                    )
+                                else:
+                                    diff_lines.append(
+                                        "**共享 Hub**：各组 Top 5 枢纽基因**完全不同**，"
+                                        "说明不同人群的核心调控基因结构存在显著分化，"
+                                        "提示疾病的关键驱动基因可能具有人群特异性。"
+                                    )
+
+                                specific_list = [(k, v) for k, v in unique_hubs.items() if v]
+                                if specific_list:
+                                    piece = "；".join(
+                                        f"**{k}** 组特有：{'、'.join(sorted(vs))}"
+                                        for k, vs in specific_list
+                                    )
+                                    diff_lines.append(f"**组间差异性 Hub**：{piece}。这些基因可能反映了各人群的特异调控信号。")
+
+                                diff_interp = f"""
+### 🔍 跨组差异解读
+
+{chr(10).join('- ' + line for line in diff_lines)}
+
+上述差异正是**跨尺度联动的直接证据**：宏观的临床分层（{analysis_type_val}）在分子网络的拓扑结构上留下了可量化的印记。
+"""
+
+                                status_msg = f"""✅ 分析完成！生成了 {n_groups} 个网络
 
 📝 分析摘要:
-使用 MRNetB 互信息算法从 TCGA-COAD 表达数据推断出 {n_nodes} 个节点、{n_edges} 条边的基因功能关联网络。
+以 **{main_group}** 组为例，使用 MRNetB 互信息算法从 TCGA-COAD 表达数据推断出 {n_nodes} 个节点、{n_edges} 条边的功能关联网络。
 网络密度 {density:.4f}，聚类系数 {clustering:.4f}。
-{'核心基因（度数最高）: ' + ', '.join(top_gene_names) + '，这些基因与大量其他基因存在表达关联，可能是关键调控节点。' if top_gene_names else ''}"""
+
+{diff_interp}"""
 
                                 # === 阶段性结论（叙述性）===
                                 group_count = len(results)
@@ -2102,7 +2484,7 @@ def create_gradio_interface():
                 )
 
             # ========== Tab 2: 基因网络可视化 ==========
-            with gr.Tab("🔬 基因网络可视化", id=2):
+            with gr.Tab("🔬 基因网络可视化", id=2, visible=False):
                 gr.HTML("""<div class="tab-banner banner-indigo">
                     <h3>🔬 基因网络可视化</h3>
                     <p>分子尺度 · 基因互作网络 / 调控网络 · 通路查询</p>
@@ -2322,7 +2704,7 @@ def create_gradio_interface():
             
             # ========== Tab 1.5: 跨尺度社交网络溯源 ==========
             # 逻辑对标跨尺度疾病溯源：议题 → 话题社区 → 用户影响力
-            with gr.Tab("🌐 跨尺度社交网络溯源", id=10):
+            with gr.Tab("🌐 跨尺度社交网络溯源", id=10, visible=False):
                 gr.HTML("""<div class="tab-banner banner-purple">
                     <h3>🌐 跨尺度社交网络溯源分析</h3>
                     <p>选择议题 → 点击「开始溯源」→ 话题 / 用户影响力网络 → 深入分析</p>
@@ -2922,7 +3304,7 @@ $$
             #     create_phase2_network_medicine_tab()
 
             # ========== Tab 5: 社交网络仿真 ==========
-            with gr.Tab("🌐 社交网络仿真", id=6):
+            with gr.Tab("🌐 社交网络仿真", id=6, visible=False):
 
                 gr.HTML("""<div class="tab-banner banner-green">
                     <h3>🌐 SIS 传播动力学仿真</h3>
@@ -3380,7 +3762,7 @@ if __name__ == "__main__":
     
     demo.launch(
         server_name="0.0.0.0",  # 对所有接口开放（局域网 / 外部均可访问）
-        server_port=83,         # 注意: macOS/Linux 上 <1024 端口需 sudo 启动
+        server_port=7860,       # 部署上线时改为 83（需 sudo）
         share=False,
         show_error=True
     )
