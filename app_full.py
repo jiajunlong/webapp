@@ -1014,24 +1014,110 @@ class GeneNetworkApp:
         return fig
     
     def calculate_is_scores(self, disease: str, pathways: List[str], progress=gr.Progress()):
-        """计算IS系数"""
+        """计算IS系数（优化版：预加载疾病 + 互作索引 + 批量计算）"""
         if not disease:
             return go.Figure(), "⚠️ 请先选择疾病", None
-        
+
         if not pathways:
             return go.Figure(), "⚠️ 请至少选择一个基因通路", None
-        
-        progress(0, desc="开始计算...")
-        
+
+        progress(0, desc="加载疾病数据...")
+
+        # ========== 优化 1: 一次性加载 disease ==========
+        if disease not in self.db.diseases:
+            return go.Figure(), f"⚠️ 疾病不存在: {disease}", None
+
+        if hasattr(self.db, '_loader'):
+            if self.db.diseases[disease] is None:
+                disease_obj = self.db._loader._load_disease_data(disease)
+            else:
+                disease_obj = self.db.diseases[disease]
+        else:
+            disease_obj = self.db.diseases[disease]
+
+        if disease_obj is None or not disease_obj.genes:
+            return go.Figure(), f"⚠️ 疾病数据加载失败或基因为空: {disease}", None
+
+        # 预处理疾病基因集（UPPER）
+        disease_genes_upper = {g.upper() for g in disease_obj.genes if g}
+
+        # ========== 优化 2: 构建互作索引（无向邻接集）==========
+        # 查询"两基因是否有互作"从 O(N_interactions) 变成 O(1)
+        progress(0.05, desc="构建互作索引...")
+        interaction_set = set()
+        for inter in disease_obj.interactions:
+            g1 = inter.gene1.upper()
+            g2 = inter.gene2.upper()
+            if g1 == g2:
+                continue
+            key = (g1, g2) if g1 < g2 else (g2, g1)
+            interaction_set.add(key)
+
+        # ========== 优化 3: 预加载 pathways（批量）==========
+        progress(0.10, desc="加载通路数据...")
+        pathway_objs = {}
+        for pw_name in pathways:
+            if pw_name not in self.db.pathways:
+                continue
+            if hasattr(self.db, '_loader'):
+                if self.db.pathways[pw_name] is None:
+                    pw_obj = self.db._loader._load_pathway_data(pw_name)
+                else:
+                    pw_obj = self.db.pathways[pw_name]
+            else:
+                pw_obj = self.db.pathways[pw_name]
+            if pw_obj and pw_obj.genes:
+                pathway_objs[pw_name] = pw_obj
+
+        # ========== 优化 4: 循环内部只做集合运算 + 查表，无 IO/print ==========
         pathway_names = []
         is_scores = []
-        
-        for i, pathway in enumerate(pathways):
-            progress((i + 1) / len(pathways), desc=f"计算中... {i+1}/{len(pathways)}")
-            score = self.db.calculate_is_score(disease, pathway)
-            pathway_names.append(pathway)
-            is_scores.append(score)
-        
+        total = max(len(pathways), 1)
+
+        for i, pw_name in enumerate(pathways):
+            progress(0.10 + 0.85 * (i + 1) / total, desc=f"计算 {i+1}/{total}")
+
+            pw_obj = pathway_objs.get(pw_name)
+            if pw_obj is None:
+                pathway_names.append(pw_name)
+                is_scores.append(0.0)
+                continue
+
+            pathway_genes_upper = {g.upper() for g in pw_obj.genes if g}
+            overlap = disease_genes_upper & pathway_genes_upper
+
+            if not overlap or not pathway_genes_upper or not disease_genes_upper:
+                pathway_names.append(pw_name)
+                is_scores.append(0.0)
+                continue
+
+            ratio_in_pathway = len(overlap) / len(pathway_genes_upper)
+            ratio_in_disease = len(overlap) / len(disease_genes_upper)
+
+            # O(1) 查表算连接密度
+            max_edges = len(overlap) * (len(overlap) - 1) / 2
+            if max_edges > 0:
+                overlap_list = list(overlap)
+                edge_count = 0
+                for a_idx in range(len(overlap_list)):
+                    ga = overlap_list[a_idx]
+                    for b_idx in range(a_idx + 1, len(overlap_list)):
+                        gb = overlap_list[b_idx]
+                        key = (ga, gb) if ga < gb else (gb, ga)
+                        if key in interaction_set:
+                            edge_count += 1
+                connectivity = edge_count / max_edges
+            else:
+                connectivity = 0.0
+
+            is_score = ratio_in_pathway * ratio_in_disease * (1 + connectivity)
+            is_score *= (0.9 + random.random() * 0.2)  # 保留原始微扰
+
+            pathway_names.append(pw_name)
+            is_scores.append(round(is_score, 4))
+
+        progress(0.98, desc="生成图表...")
+
         # 创建柱状图
         fig = go.Figure(data=[
             go.Bar(
@@ -1050,7 +1136,7 @@ class GeneNetworkApp:
                 hovertemplate='<b>%{y}</b><br>IS系数: %{x:.4f}<extra></extra>'
             )
         ])
-        
+
         fig.update_layout(
             title=dict(
                 text=f"影响分数 (Influence Score, IS系数)<br><sub>疾病: {disease}</sub>",
@@ -1067,9 +1153,9 @@ class GeneNetworkApp:
             paper_bgcolor='white',
             margin=dict(l=200, r=20, t=100, b=60)
         )
-        
+
         status = f"""✅ 计算完成！
-        
+
 📊 **计算结果:**
 - 计算疾病: {disease}
 - 计算通路数: {len(pathways)}
@@ -1078,14 +1164,14 @@ class GeneNetworkApp:
 - 平均IS系数: {np.mean(is_scores):.4f}
 
 💡 **解读:** IS系数越高，表示该通路在疾病中的影响越大"""
-        
+
         # 创建数据表
         df = pd.DataFrame({
             '通路名称': pathway_names,
             'IS系数': [f"{score:.4f}" for score in is_scores]
         })
         df = df.sort_values('IS系数', ascending=False)
-        
+
         return fig, status, df
 
 
